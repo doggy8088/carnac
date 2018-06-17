@@ -58,15 +58,24 @@ If you are learning Rx and want to be shown through Carnac's codebase then this 
 
 ### Publish a new version using ClickOnce
 
-Steps to publish new version:
+Steps to setup dev environment:
 
 1. `cd /D G:\Projects`
 2. `git clone https://github.com/doggy8088/carnac.git carnac -b dev`
 3. `git clone https://github.com/doggy8088/carnac.git carnac-publish -b gh-pages`
 4. `cd carnac\src`
 5. Open `Carnac.sln` in Visual Studio 2017
-6. Hit `Publish` in `Carnac` project in the Solution Explorer
-7. `cd ..\..\carnac-publish`
-8. `git add .`
-9. `git commit -m "Carnac_1_0_0_X"`
-10. `git push`
+
+Steps to publish a new version
+
+1. Modify some code
+2. Build / Test
+3. Publish
+    1. Hit `Publish` in `Carnac` project in the Solution Explorer. ( **You MUST be publish first to increment the Publish version number automatically.** )
+    2. `git add .`
+    3. `git commit -m "Write Some Release Notes"`
+    4. `git push`
+    2. `cd ..\..\carnac-publish`
+    3. `git add .`
+    4. `git commit -m "Carnac_1_0_0_X"`
+    5. `git push`
