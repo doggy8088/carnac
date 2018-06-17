@@ -130,7 +130,7 @@
                                 <TextBox Foreground="White" Text="{Binding Settings.FontSize}" />
                             </ui:PreferencesField.SecondaryControl>
                         </ui:PreferencesField>
-                        <ui:PreferencesField Header="Font Colour">
+                        <ui:PreferencesField Header="Font Color">
                             <ComboBox SelectedItem="{Binding FontColor}"
                               ItemsSource="{Binding AvailableColors}"
                               ItemTemplate="{StaticResource ColourPickerTemplate}" />
