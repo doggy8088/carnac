@@ -18,13 +18,20 @@ namespace Carnac
             {
                 Text = Properties.Resources.ShellView_Exit
             };
+            var prefMenuItem = new MenuItem
+            {
+                Text = "Preferences"
+            };
 
             var iconStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Carnac.icon.embedded.ico");
 
             trayIcon = new NotifyIcon
             {
                 Icon = new Icon(iconStream),
-                ContextMenu = new ContextMenu(new[] { exitMenuItem })
+                ContextMenu = new ContextMenu(new[] {
+                    prefMenuItem,
+                    exitMenuItem
+                })
             };
 
             exitMenuItem.Click += (sender, args) =>
@@ -32,11 +39,25 @@ namespace Carnac
                 trayIcon.Visible = false;
                 Application.Current.Shutdown();
             };
+
+            prefMenuItem.Click += (sender, args) =>
+            {
+                var preferencesWindow = Application.Current.Windows.Cast<Window>().FirstOrDefault(x => x.Name == "PreferencesViewWindow");
+                if (preferencesWindow != null)
+                {
+                    preferencesWindow.Activate();
+                }
+                else
+                {
+                    OpenPreferences();
+                }
+            };
+
             trayIcon.MouseClick += NotifyIconClick;
             trayIcon.Visible = true;
         }
 
-        public event Action OpenPreferences = () => { }; 
+        public event Action OpenPreferences = () => { };
 
         void NotifyIconClick(object sender, MouseEventArgs mouseEventArgs)
         {
