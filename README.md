@@ -54,7 +54,7 @@ If you are learning Rx and want to be shown through Carnac's codebase then this 
 
 ### Install Carnac with ClickOnce (Auto-update)
 
-- https://doggy8088.github.io/carnac/publish/setup.exe
+- https://github.com/doggy8088/carnac/releases
 
 ### Publish a new version using ClickOnce
 
@@ -63,7 +63,9 @@ Steps to setup dev environment:
 1. `cd /D G:\Projects`
 2. `git clone https://github.com/doggy8088/carnac.git carnac -b dev`
 3. `git clone https://github.com/doggy8088/carnac.git carnac-publish -b gh-pages`
-4. `cd carnac\src`
+4. `cd carnac-publish`
+5. `git config --local core.autocrlf false` (Important!!)
+6. `cd ..\carnac\src`
 5. Open `Carnac.sln` in Visual Studio 2017
 
 Steps to publish a new version
