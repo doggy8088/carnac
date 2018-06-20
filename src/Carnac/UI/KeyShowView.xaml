@@ -257,6 +257,10 @@
                                             <Setter TargetName="KeyCapBorder" Property="Control.Visibility" Value="Visible" />
                                             <Setter TargetName="regular" Property="Control.Visibility" Value="Collapsed" />
                                         </DataTrigger>
+                                        <DataTrigger Value="Tab" Binding="{Binding .}">
+                                            <Setter TargetName="KeyCapBorder" Property="Control.Visibility" Value="Visible" />
+                                            <Setter TargetName="regular" Property="Control.Visibility" Value="Collapsed" />
+                                        </DataTrigger>
                                     </DataTemplate.Triggers>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
