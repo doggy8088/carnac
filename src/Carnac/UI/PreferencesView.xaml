@@ -141,16 +141,16 @@
                               ItemTemplate="{StaticResource ColourPickerTemplate}" />
                         </ui:PreferencesField>
                         <ui:PreferencesField Header="Shortcuts Only">
-                            <CheckBox IsChecked="{Binding Settings.DetectShortcutsOnly}" Content="Only show keys that are listed in keymaps folder" />
+                            <CheckBox IsChecked="{Binding Settings.DetectShortcutsOnly}" Content="Only show keys that are listed in the Keymaps folder" />
                         </ui:PreferencesField>
                         <ui:PreferencesField Header="Only keys with Modifiers">
-                            <CheckBox IsChecked="{Binding Settings.ShowOnlyModifiers}" Content="Only show keys that have ctrl, shift, alt or windows" />
+                            <CheckBox IsChecked="{Binding Settings.ShowOnlyModifiers}" Content="Only show keys that have Ctrl, Shift, Alt or Windows" />
                         </ui:PreferencesField>
                         <ui:PreferencesField Header="Show Space as ␣">
                             <CheckBox IsChecked="{Binding Settings.ShowSpaceAsUnicode}" Content="Show Space as Unicode character '␣'" />
                         </ui:PreferencesField>
                         <ui:PreferencesField Header="Show Application Icon">
-                            <CheckBox IsChecked="{Binding Settings.ShowApplicationIcon}" Content="Display the icon of the active application" />
+                            <CheckBox IsChecked="{Binding Settings.ShowApplicationIcon}" Content="Display the active application's icon" />
                         </ui:PreferencesField>
                         <ui:PreferencesField Header="Process Filter">
                             <StackPanel Orientation="Vertical">

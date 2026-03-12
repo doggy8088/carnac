@@ -21,7 +21,9 @@ namespace Carnac.Logic
         readonly IPasswordModeService passwordModeService;
         readonly IDesktopLockEventService desktopLockEventService;
         readonly PopupSettings settings;
+        readonly object filterSync = new object();
         string currentFilter = null;
+        Regex currentFilterRegex;
 
         private readonly IList<Keys> modifierKeys =
             new List<Keys>
@@ -57,29 +59,32 @@ namespace Carnac.Logic
 
         private bool ShouldFilterProcess(out Regex filterRegex)
         {
-            filterRegex = null;
-            if (settings?.ProcessFilterExpression != currentFilter)
+            lock (filterSync)
             {
-                currentFilter = settings?.ProcessFilterExpression;
+                if (settings?.ProcessFilterExpression != currentFilter)
+                {
+                    currentFilter = settings?.ProcessFilterExpression;
 
-                if (!string.IsNullOrEmpty(currentFilter))
-                {
-                    try
+                    if (!string.IsNullOrEmpty(currentFilter))
                     {
-                        filterRegex = new Regex(currentFilter, RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+                        try
+                        {
+                            currentFilterRegex = new Regex(currentFilter, RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
+                        }
+                        catch
+                        {
+                            currentFilterRegex = null;
+                        }
                     }
-                    catch
+                    else
                     {
-                        filterRegex = null;
+                        currentFilterRegex = null;
                     }
                 }
-                else
-                {
-                    filterRegex = null;
-                }
+
+                filterRegex = currentFilterRegex;
+                return (filterRegex != null);
             }
-
-            return (filterRegex != null);
         }
 
         public IObservable<KeyPress> GetKeyStream()

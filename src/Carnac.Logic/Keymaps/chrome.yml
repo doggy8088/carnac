@@ -144,7 +144,7 @@ shortcuts:
     keys:
       - Alt+Shift+i
 
-  # Adress bar shortcuts
+  # Address bar shortcuts
   - name: Jump to the address bar
     keys:
       - Ctrl+l

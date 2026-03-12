@@ -36,7 +36,7 @@ namespace Carnac
             trayIcon.Visible = true;
         }
 
-        public event Action OpenPreferences = () => { }; 
+        public event Action OpenPreferences = () => { };
 
         void NotifyIconClick(object sender, MouseEventArgs mouseEventArgs)
         {

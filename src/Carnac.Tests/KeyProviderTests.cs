@@ -141,5 +141,26 @@ namespace Carnac.Tests
             // assert
             Assert.Equal(0, processedKeys.Count);
         }
+
+        [Fact]
+        public async Task no_output_with_no_match_filter_for_multiple_keypresses()
+        {
+            // arrange
+            settingsProvider.GetSettings<PopupSettings>().Returns(new PopupSettings() { ProcessFilterExpression = "notepad" });
+            var player = new KeyPlayer
+                         {
+                             new InterceptKeyEventArgs(Keys.L, KeyDirection.Down, false, false, false),
+                             new InterceptKeyEventArgs(Keys.L, KeyDirection.Up, false, false, false),
+                             new InterceptKeyEventArgs(Keys.U, KeyDirection.Down, false, false, false),
+                             new InterceptKeyEventArgs(Keys.U, KeyDirection.Up, false, false, false),
+                         };
+            var provider = new KeyProvider(player, passwordModeService, desktopLockEventService, settingsProvider);
+
+            // act
+            var processedKeys = await provider.GetKeyStream().ToList();
+
+            // assert
+            Assert.Equal(0, processedKeys.Count);
+        }
     }
 }
