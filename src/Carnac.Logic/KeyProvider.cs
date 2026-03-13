@@ -61,7 +61,7 @@ namespace Carnac.Logic
         {
             lock (filterSync)
             {
-                var processFilterExpression = settings != null ? settings.ProcessFilterExpression : null;
+                var processFilterExpression = settings == null ? null : settings.ProcessFilterExpression;
 
                 if (processFilterExpression != currentFilter)
                 {
@@ -158,7 +158,7 @@ namespace Carnac.Logic
             }
             catch (Exception)
             {
-                return new KeyPress(new ProcessInfo(process.ProcessName), interceptKeyEventArgs, winKeyPressed, inputs); ;
+                return new KeyPress(new ProcessInfo(process.ProcessName), interceptKeyEventArgs, winKeyPressed, inputs);
             }
         }
 

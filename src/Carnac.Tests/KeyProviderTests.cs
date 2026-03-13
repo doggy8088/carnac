@@ -30,17 +30,9 @@ namespace Carnac.Tests
         [Fact]
         public void constructor_requires_settings_provider()
         {
-            ArgumentNullException exception = null;
-            try
-            {
-                new KeyProvider(KeyStreams.LetterL(), passwordModeService, desktopLockEventService, null);
-            }
-            catch (ArgumentNullException ex)
-            {
-                exception = ex;
-            }
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new KeyProvider(KeyStreams.LetterL(), passwordModeService, desktopLockEventService, null));
 
-            Assert.NotNull(exception);
             Assert.Equal("settingsProvider", exception.ParamName);
         }
 
