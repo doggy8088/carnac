@@ -47,7 +47,7 @@ namespace Carnac.Logic
         {
             if (settingsProvider == null)
             {
-                throw new ArgumentNullException(nameof(settingsProvider));
+                throw new ArgumentNullException("settingsProvider");
             }
 
             this.interceptKeysSource = interceptKeysSource;
@@ -61,9 +61,11 @@ namespace Carnac.Logic
         {
             lock (filterSync)
             {
-                if (settings?.ProcessFilterExpression != currentFilter)
+                var processFilterExpression = settings != null ? settings.ProcessFilterExpression : null;
+
+                if (processFilterExpression != currentFilter)
                 {
-                    currentFilter = settings?.ProcessFilterExpression;
+                    currentFilter = processFilterExpression;
 
                     if (!string.IsNullOrEmpty(currentFilter))
                     {
