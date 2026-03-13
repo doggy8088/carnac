@@ -24,3 +24,5 @@ src/Carnac.sln.ide/
 tools/**
 !tools/packages.config
 .vs/
+
+.nuget/
