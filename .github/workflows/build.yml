@@ -1,0 +1,29 @@
+name: Build
+
+on:
+  push:
+    branches-ignore:
+      - gh-pages
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build and run unit tests
+        shell: powershell
+        run: .\build.ps1 -Target Run-Unit-Tests -Configuration Release -Experimental
