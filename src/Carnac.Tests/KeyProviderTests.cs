@@ -1,7 +1,9 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Carnac.Logic;
 using Carnac.Logic.KeyMonitor;
 using Carnac.Logic.Models;
@@ -24,6 +26,15 @@ namespace Carnac.Tests
             desktopLockEventService = Substitute.For<IDesktopLockEventService>();
             desktopLockEventService.GetSessionSwitchStream().Returns(Observable.Never<SessionSwitchEventArgs>());
             settingsProvider = Substitute.For<ISettingsProvider>();
+        }
+
+        [Fact]
+        public void constructor_requires_settings_provider()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+                new KeyProvider(KeyStreams.LetterL(), passwordModeService, desktopLockEventService, null));
+
+            Assert.Equal("settingsProvider", exception.ParamName);
         }
 
         [Fact]
