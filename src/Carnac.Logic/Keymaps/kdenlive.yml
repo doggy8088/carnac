@@ -1,0 +1,125 @@
+group:          kdenlive
+process:        kdenlive
+
+# Reference: https://userbase.kde.org/Kdenlive/Manual/Useful_Information/Shortcuts
+
+shortcuts:
+  - name: Cut Clip
+    keys:
+      - Shift+R
+  - name: Play/Pause
+    keys:
+      - Space
+  - name: Play zone
+    keys:
+      - Ctrl+Space
+  - name: Render/Export
+    keys:
+      - Ctrl+Enter
+  - name: Switch Monitor
+    keys:
+      - T
+  - name: Forward
+    keys:
+      - L
+  - name: Rewind
+    keys:
+      - J
+  - name: Forward 1 frame
+    keys:
+      - Right
+  - name: Rewind 1 frame
+    keys:
+      - Left
+  - name: Forward 1 second
+    keys:
+      - Shift+Right
+  - name: Rewind 1 second
+    keys:
+      - Shift+Left
+  - name: Toggle Full Screen Mode
+    keys:
+      - Ctrl+Shift+F
+  - name: Go to Clip End
+    keys:
+      - End
+  - name: Go to Clip Start
+    keys:
+      - Home
+  - name: Go to Next Snap Point
+    keys:
+      - Alt+Right
+  - name: Go to Previous Snap Point
+    keys:
+      - Alt+Left
+  - name: Go to Project End
+    keys:
+      - Ctrl+End
+  - name: Go to Project Start
+    keys:
+      - Ctrl+Home
+  - name: Go to Zone End
+    keys:
+      - Shift+O
+  - name: Go to Zone Start
+    keys:
+      - Shift+I
+  - name: Group Clips
+    keys:
+      - Ctrl+G
+  - name: Ungroup Clips
+    keys:
+      - Ctrl+Shift+G
+  - name: Set Zone In
+    keys:
+      - I
+  - name: Set Zone Out
+    keys:
+      - O
+  - name: Ripple Delete
+    keys:
+      - Ctrl+X
+  - name: Open Project Settings
+    keys:
+      - Ctrl+N
+  - name: Spacer Tool
+    keys:
+      - M
+  - name: Selection Tool
+    keys:
+      - S
+  - name: Razor Tool
+    keys:
+      - X
+  - name: Insert Clip
+    keys:
+      - V
+  - name: Overwrite Clip
+    keys:
+      - B
+  - name: Lift
+    keys:
+      - Z
+  - name: Extract/Ripple Delete
+    keys:
+      - Shift+X
+  - name: Add subtitle
+    keys:
+      - Shift+S
+  - name: Align playhead to mouse position
+    keys:
+      - P
+  - name: Zoom In
+    keys:
+      - Ctrl+Oemplus
+      - Ctrl+Shift+Oemplus
+  - name: Zoom Out
+    keys:
+      - Ctrl+OemMinus
+      - Ctrl+Subtract
+  - name: Save
+    keys:
+      - Ctrl+S
+  - name: Save As
+    keys:
+      - Ctrl+Shift+S
