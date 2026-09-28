@@ -256,6 +256,20 @@ namespace Carnac.Tests
             Assert.Equal("l x 2 ", TextOf(result));
         }
 
+        [Fact]
+        public void a_run_does_not_mix_typed_characters_with_the_same_text_pressed_with_a_modifier()
+        {
+            var typed = new KeyPress(fakeProcess, new InterceptKeyEventArgs(Keys.L, KeyDirection.Down, false, false, false), false, new[] { "l" });
+            var withControl = new KeyPress(fakeProcess, new InterceptKeyEventArgs(Keys.L, KeyDirection.Down, false, true, false), false, new[] { "l" });
+
+            var typedFirst = new Message(typed).Merge(new Message(typed)).Merge(new Message(typed)).Merge(new Message(withControl));
+            var controlFirst = new Message(withControl).Merge(new Message(typed)).Merge(new Message(typed)).Merge(new Message(typed));
+
+            // the Ctrl press is a group of its own, so it neither joins nor changes how the typed run is shown
+            Assert.Equal("llll", TextOf(typedFirst));
+            Assert.Equal("l, lll", TextOf(controlFirst));
+        }
+
         // The key is irrelevant to the display text here, only the text of the input matters.
         Message Typed(params string[] texts)
         {
