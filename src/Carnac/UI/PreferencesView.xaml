@@ -7,7 +7,7 @@
                       xmlns:utilities="clr-namespace:Carnac.Utilities"
                       xmlns:carnac="clr-namespace:Carnac"
                       x:Class="Carnac.UI.PreferencesView"
-                      Width="610" Height="430" Icon="../icon.ico"
+                      Width="610" Height="460" Icon="../icon.ico"
                       Foreground="{DynamicResource BlackBrush}"
                       d:DataContext="{d:DesignInstance ui:PreferencesViewModel}" mc:Ignorable="d"
                       ShowTitleBar="False" ShowMinButton="False" ShowMaxRestoreButton="False"
@@ -151,6 +151,9 @@
                         </ui:PreferencesField>
                         <ui:PreferencesField Header="Show Application Icon">
                             <CheckBox IsChecked="{Binding Settings.ShowApplicationIcon}" Content="Display the active application's icon" />
+                        </ui:PreferencesField>
+                        <ui:PreferencesField Header="Shortcut Descriptions">
+                            <CheckBox IsChecked="{Binding Settings.ShowShortcutDescription}" Content="Show shortcut descriptions from keymaps" />
                         </ui:PreferencesField>
                         <ui:PreferencesField Header="Process Filter">
                             <StackPanel Orientation="Vertical">
