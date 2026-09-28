@@ -93,3 +93,23 @@ Steps to publish a new version
     3. `git add .`
     4. `git commit -m "Carnac_1_0_0_X"`
     5. `git push`
+
+### Publish a new version to WinGet
+
+The `doggy8088.Carnac` WinGet package installs the per-user Inno Setup installer from `installer/Carnac.iss`, which the [Release workflow](.github/workflows/release.yml) builds and publishes to GitHub Releases.
+
+1. Tag the release on `dev` and push the tag:
+
+    ```powershell
+    git tag v2.4.1
+    git push origin v2.4.1
+    ```
+
+    The workflow builds and tests Carnac, compiles the installer and publishes `Carnac-2.4.1-Setup.exe` with its SHA256 checksum.
+2. Submit the new version to [winget-pkgs](https://github.com/microsoft/winget-pkgs) with [wingetcreate](https://github.com/microsoft/winget-create):
+
+    ```powershell
+    wingetcreate update doggy8088.Carnac --version 2.4.1 --urls https://github.com/doggy8088/carnac/releases/download/v2.4.1/Carnac-2.4.1-Setup.exe --submit
+    ```
+
+To build the installer locally, build `src\Carnac.sln` in Release with the MSBuild flags from the workflow's Build step, then run `iscc /DAppVersion=2.4.1 installer\Carnac.iss`.
