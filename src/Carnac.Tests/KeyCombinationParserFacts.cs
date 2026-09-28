@@ -232,6 +232,29 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void a_comma_after_the_plus_key_separates_the_next_combination()
+        {
+            // "Ctrl++" is already complete (Ctrl and the plus key), so the comma after it separates two combinations.
+            Assert.Equal(
+                new[] { new KeyPressDefinition(Keys.Oemplus, controlPressed: true), new KeyPressDefinition(Keys.A) },
+                ParseSequence("Ctrl++,A").ToArray());
+            Assert.Equal(
+                new[] { new KeyPressDefinition(Keys.Oemplus), new KeyPressDefinition(Keys.A) },
+                ParseSequence("+,A").ToArray());
+            Assert.Equal(
+                new[] { new KeyPressDefinition(Keys.Oemplus, controlPressed: true), new KeyPressDefinition(Keys.Oemcomma, controlPressed: true) },
+                ParseSequence("Ctrl++, Ctrl+,").ToArray());
+            // comma key, then the separating comma, then Ctrl and the plus key
+            Assert.Equal(
+                new[]
+                {
+                    new KeyPressDefinition(Keys.Oemcomma, controlPressed: true, shiftPressed: true),
+                    new KeyPressDefinition(Keys.Oemplus, controlPressed: true)
+                },
+                ParseSequence("Ctrl+Shift+,,Ctrl++").ToArray());
+        }
+
+        [Fact]
         public void a_lone_comma_key_is_written_as_a_name()
         {
             Assert.Equal(new KeyPressDefinition(Keys.Oemcomma), Parse("Oemcomma"));
