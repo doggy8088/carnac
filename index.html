@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Carnac: keystroke overlay for Windows presentations and screencasts</title>
+  <meta name="description" content="Carnac is a free, open-source keystroke overlay for Windows. It shows the keys and shortcuts you press, so your audience can follow along with talks, demos and screencasts.">
+  <link rel="canonical" href="https://carnac.gh.miniasp.com/">
+  <meta name="theme-color" content="#0a0810">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Carnac">
+  <meta property="og:title" content="Carnac: every keystroke, on screen">
+  <meta property="og:description" content="A free, open-source keystroke overlay for Windows presentations, screencasts and learning shortcuts.">
+  <meta property="og:url" content="https://carnac.gh.miniasp.com/">
+  <meta property="og:image" content="https://carnac.gh.miniasp.com/assets/img/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+  <link rel="preload" as="image" href="assets/img/hero-1920.webp" imagesrcset="assets/img/hero-1024.webp 1024w, assets/img/hero-1920.webp 1920w" imagesizes="100vw">
+  <link rel="stylesheet" href="assets/site.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Carnac",
+    "description": "A keystroke overlay for Windows presentations, screencasts and learning shortcuts.",
+    "operatingSystem": "Windows",
+    "applicationCategory": "UtilitiesApplication",
+    "license": "https://opensource.org/licenses/MS-PL",
+    "url": "https://carnac.gh.miniasp.com/",
+    "codeRepository": "https://github.com/doggy8088/carnac",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-github" viewBox="0 0 16 16"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+      <symbol id="i-keyboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2.5"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7.5 14h9"/></symbol>
+      <symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.2V4a1 1 0 0 1 1-1h7.2L21 12.8 12.8 21z"/><circle cx="7.5" cy="7.5" r="1.4"/></symbol>
+      <symbol id="i-monitor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M14 13.5h5"/></symbol>
+      <symbol id="i-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.6-.8 1.6-1.6 0-.9-.6-1.3-.6-2.2 0-.9.7-1.6 1.6-1.6H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/></symbol>
+      <symbol id="i-filter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></symbol>
+      <symbol id="i-app" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M6.5 6.5h.01M9.5 6.5h.01M8 14l2 2-2 2M12.5 18H16"/></symbol>
+      <symbol id="i-eyeoff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A9.8 9.8 0 0 1 12 5c5 0 9 5 10 7a13.6 13.6 0 0 1-3.2 4M6.3 6.3C4.1 7.8 2.6 10 2 12c1 2 5 7 10 7 1.8 0 3.4-.6 4.8-1.4"/></symbol>
+      <symbol id="i-space" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.6"/><path d="M4 15v4h16v-4"/></symbol>
+      <symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="nav">
+    <div class="container">
+      <a class="brand" href="#top" aria-label="Carnac home"><img src="icon.png" alt="" width="30" height="30">Carnac</a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#keymaps">Keymaps</a>
+        <a href="#install">Install</a>
+        <a href="#whats-new">What's new</a>
+        <a class="nav-gh" href="https://github.com/doggy8088/carnac"><svg aria-hidden="true"><use href="#i-github"/></svg>GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-art" aria-hidden="true">
+        <img src="assets/img/hero-1920.webp" srcset="assets/img/hero-1024.webp 1024w, assets/img/hero-1920.webp 1920w" sizes="100vw" alt="" width="1920" height="1080" fetchpriority="high">
+      </div>
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <a class="eyebrow" href="#whats-new"><span class="pill-new">New</span>Kdenlive keymap and a multi-monitor fix</a>
+          <h1>Every keystroke, <span class="grad">on screen.</span></h1>
+          <p class="lead">Carnac is a keystroke overlay for Windows. It shows the keys and shortcuts you press, so the people watching your talk, demo or screencast can follow along. It's also a handy way to learn your own shortcuts.</p>
+          <div class="cta">
+            <div class="cmd">
+              <span class="prompt" aria-hidden="true">&gt;</span>
+              <code id="cmd-hero">winget install --id code52.Carnac</code>
+              <button class="copy" type="button" data-copy="cmd-hero" aria-label="Copy to clipboard">
+                <svg class="cp" aria-hidden="true"><use href="#i-copy"/></svg><svg class="ok" aria-hidden="true"><use href="#i-check"/></svg>
+              </button>
+            </div>
+            <a class="btn btn-primary" href="#install">All install options<svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          </div>
+          <p class="hero-meta"><span>Free and open source (MS-PL)</span><span>Windows</span><span>.NET Framework 4.5.2+</span></p>
+        </div>
+
+        <div class="try" role="group" aria-label="Try the overlay">
+          <div class="try-msg">
+            <span class="try-ico" aria-hidden="true"><svg><use href="#i-keyboard"/></svg></span>
+            <div>
+              <span class="kb-only">Press any key. This page runs a Carnac-style overlay.<small id="try-hint">Try Ctrl + Shift + K, Alt + ↑ or Ctrl + /, or just type.</small></span>
+              <span class="touch-only">Watch the overlay in the corner.<small>On a PC with a keyboard, press any key on this page to try it.</small></span>
+            </div>
+          </div>
+          <div class="kb-only">
+            <span class="seg-label">Keymap</span>
+            <div class="seg">
+              <button type="button" data-keymap="vscode">VS Code</button>
+              <button type="button" data-keymap="vs">Visual Studio</button>
+              <button type="button" data-keymap="kdenlive">Kdenlive</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="uses-title">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">Who it's for</p>
+          <h2 id="uses-title">Built for people who show their work</h2>
+          <p>When you move fast on the keyboard, your audience loses track. Carnac shows each key press on screen and fades it out a few seconds later.</p>
+        </div>
+        <div class="cases">
+          <article class="case">
+            <img src="assets/img/usecase-presentations.webp" alt="A presenter on stage in front of a large screen showing code, with keystroke popups in the corner" width="960" height="640" loading="lazy">
+            <div class="case-body">
+              <h3>Presentations and live demos</h3>
+              <p>People at the back of the room can see every shortcut you press, so nobody gets lost when you speed up.</p>
+            </div>
+          </article>
+          <article class="case">
+            <img src="assets/img/usecase-screencast.webp" alt="A home studio desk with a microphone, ring light and a monitor showing keystroke popups" width="960" height="640" loading="lazy">
+            <div class="case-body">
+              <h3>Screencasts and tutorials</h3>
+              <p>The overlay is on screen, so your recording captures it. Viewers can pause and copy the exact keys instead of guessing.</p>
+            </div>
+          </article>
+          <article class="case">
+            <img src="assets/img/usecase-learn.webp" alt="A keyboard with three glowing keys and three floating keycaps joined by plus signs" width="960" height="640" loading="lazy">
+            <div class="case-body">
+              <h3>Learning shortcuts</h3>
+              <p>Watch your own keystrokes. Seeing each shortcut labelled as you use it helps new combinations stick.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="features" aria-labelledby="features-title">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">Features</p>
+          <h2 id="features-title">Everything you need, nothing in the way</h2>
+          <p>Carnac lives in the system tray. Open Preferences from the tray icon to set any of the options below.</p>
+        </div>
+        <div class="features">
+          <div class="feature">
+            <div class="ico" aria-hidden="true"><svg><use href="#i-tag"/></svg></div>
+            <h3>Names your shortcuts</h3>
+            <p>Recognises shortcuts from the bundled keymaps and labels them. In VS Code, <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>K</kbd> appears as [Delete Line].</p>
+          </div>
+          <div class="feature">
+            <div class="ico" aria-hidden="true"><svg><use href="#i-monitor"/></svg></div>
+            <h3>Any screen, any corner</h3>
+            <p>Pick the display and the corner, then nudge the overlay with top, bottom, left and right offsets.</p>
+          </div>
+          <div class="feature">
+            <div class="ico" aria-hidden="true"><svg><use href="#i-palette"/></svg></div>
+            <h3>Styled your way</h3>
+            <p>Set the font size and color, background color, opacity, popup width and how long each popup stays on screen.</p>
+          </div>
+          <div class="feature">
+            <div class="ico" aria-hidden="true"><svg><use href="#i-filter"/></svg></div>
+            <h3>Cut the noise</h3>
+            <p>Show only shortcuts listed in your keymaps, only key presses that use <kbd>Ctrl</kbd>, <kbd>Alt</kbd> or <kbd>Win</kbd>, or both.</p>
+          </div>
+          <div class="feature">
+            <div class="ico" aria-hidden="true"><svg><use href="#i-app"/></svg></div>
+            <h3>Per-app filter</h3>
+            <p>Enter a process filter, a regular expression such as <code>Code|devenv</code>, and Carnac only shows keys typed in matching apps.</p>
+          </div>
+          <div class="feature">
+            <div class="ico" aria-hidden="true"><svg><use href="#i-eyeoff"/></svg></div>
+            <h3>Silent mode</h3>
+            <p>Press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>P</kbd> before you type a password and Carnac stops showing keys. Press it again to resume.</p>
+          </div>
+          <div class="feature">
+            <div class="ico" aria-hidden="true"><svg><use href="#i-space"/></svg></div>
+            <h3>See which app</h3>
+            <p>Optionally show the active app's icon next to each popup, and draw spaces as <kbd>␣</kbd> so they're easy to spot.</p>
+          </div>
+          <div class="feature">
+            <div class="ico" aria-hidden="true"><svg><use href="#i-layers"/></svg></div>
+            <h3>Never in the way</h3>
+            <p>The overlay stays on top of every window, but it never takes focus or blocks your clicks.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="screens-title">
+      <div class="container spot">
+        <div class="spot-art">
+          <img src="assets/img/multimonitor.webp" alt="A desk with two monitors side by side and a third mounted above them, with keystroke popups on the top screen" width="1280" height="853" loading="lazy">
+        </div>
+        <div>
+          <p class="kicker">Multi-monitor</p>
+          <h2 id="screens-title">Right screen. Right corner.</h2>
+          <p>Choose any connected display in Preferences and Carnac keeps its overlay there, even when your monitors aren't lined up side by side.</p>
+          <ul class="checks">
+            <li>Any connected display, shown to scale in Preferences</li>
+            <li>Top-left, top-right, bottom-left or bottom-right</li>
+            <li>Top, bottom, left and right offsets in pixels</li>
+            <li>Works with stacked and offset monitors<span class="pill-new">New</span></li>
+          </ul>
+          <div class="placer">
+            <div class="placer-screen" role="group" aria-label="Move this page's overlay">
+              <button type="button" data-place="top-left" aria-label="Top left"></button>
+              <button type="button" data-place="top-right" aria-label="Top right"></button>
+              <button type="button" data-place="bottom-left" aria-label="Bottom left"></button>
+              <button type="button" data-place="bottom-right" aria-label="Bottom right"></button>
+            </div>
+            <div class="placer-text">
+              <strong>Try it on this page</strong>
+              <span>Pick a corner to move the overlay, then press some keys.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="keymaps" aria-labelledby="keymaps-title">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">Keymaps</p>
+          <h2 id="keymaps-title">Knows your shortcuts by name</h2>
+          <p>Each keymap targets one app, so a shortcut is only labelled in the app it belongs to. These ship with Carnac:</p>
+        </div>
+        <div class="keymaps">
+          <div class="km"><div class="n">230</div><div class="t">Visual Studio</div><div class="p">devenv</div></div>
+          <div class="km"><div class="n">150</div><div class="t">VS Code</div><div class="p">Code</div></div>
+          <div class="km"><div class="n">80</div><div class="t">ReSharper</div><div class="p">devenv</div></div>
+          <div class="km"><div class="n">68</div><div class="t">Google Chrome</div><div class="p">chrome</div></div>
+          <div class="km"><span class="pill-new">New</span><div class="n">39</div><div class="t">Kdenlive</div><div class="p">kdenlive</div></div>
+          <div class="km"><div class="n">17</div><div class="t">NCrunch</div><div class="p">devenv</div></div>
+          <div class="km km-secret"><div class="n">1</div><div class="t">Secret</div><div class="p">Works in every app. Try it here:<span class="seq" aria-label="up up down down left right left right B A">↑ ↑ ↓ ↓ ← → ← → B A</span></div></div>
+          <div class="km"><div class="n">+</div><div class="t">Your own</div><div class="p">any process</div></div>
+        </div>
+
+        <div class="custom">
+          <div>
+            <h3>Add a keymap for any app</h3>
+            <p>Keymaps are small YAML files in the <code>Keymaps</code> folder next to <code>Carnac.exe</code>. Copy one, change it, and restart Carnac to load it.</p>
+            <ul>
+              <li><code>process</code> is the app's process name without <code>.exe</code>, such as <code>Code</code> or <code>devenv</code>. Leave it empty to match every app.</li>
+              <li>Each shortcut has a <code>name</code> and one or more <code>keys</code>.</li>
+              <li>Chords use commas, as in <code>Ctrl+K,Ctrl+C</code>.</li>
+            </ul>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span>Keymaps\my-app.yml</span>
+              <button class="copy" type="button" data-copy="yaml-sample" aria-label="Copy to clipboard">
+                <svg class="cp" aria-hidden="true"><use href="#i-copy"/></svg><svg class="ok" aria-hidden="true"><use href="#i-check"/></svg>
+              </button>
+            </div>
+<pre id="yaml-sample"><span class="tok-k">group</span>:   <span class="tok-s">My App</span>
+<span class="tok-k">process</span>: <span class="tok-s">myapp</span>
+
+<span class="tok-k">shortcuts</span>:
+  - <span class="tok-k">name</span>: <span class="tok-s">Command Palette</span>
+    <span class="tok-k">keys</span>:
+      - <span class="tok-s">Ctrl+Shift+P</span>
+  - <span class="tok-k">name</span>: <span class="tok-s">Comment Selection</span>
+    <span class="tok-k">keys</span>:
+      - <span class="tok-s">Ctrl+K,Ctrl+C</span></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="install" aria-labelledby="install-title">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">Install</p>
+          <h2 id="install-title">Up and running in a minute</h2>
+          <p>Pick whichever installer you already use. Carnac starts in the system tray.</p>
+        </div>
+        <div class="installs">
+          <div class="inst inst-rec">
+            <div class="inst-head"><h3>WinGet</h3><span class="tag">Recommended</span></div>
+            <p>The Windows Package Manager is the quickest option on Windows 10 and 11.</p>
+            <div class="cmd">
+              <span class="prompt" aria-hidden="true">&gt;</span>
+              <code id="cmd-winget">winget install --id code52.Carnac</code>
+              <button class="copy" type="button" data-copy="cmd-winget" aria-label="Copy to clipboard">
+                <svg class="cp" aria-hidden="true"><use href="#i-copy"/></svg><svg class="ok" aria-hidden="true"><use href="#i-check"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="inst">
+            <div class="inst-head"><h3>Chocolatey</h3></div>
+            <p>Install the <a href="https://community.chocolatey.org/packages/carnac">carnac package</a> from the Chocolatey community repository.</p>
+            <div class="cmd">
+              <span class="prompt" aria-hidden="true">&gt;</span>
+              <code id="cmd-choco">choco install carnac</code>
+              <button class="copy" type="button" data-copy="cmd-choco" aria-label="Copy to clipboard">
+                <svg class="cp" aria-hidden="true"><use href="#i-copy"/></svg><svg class="ok" aria-hidden="true"><use href="#i-check"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="inst">
+            <div class="inst-head"><h3>ClickOnce</h3><span class="tag">Auto-updates</span></div>
+            <p>Installs the build published on this site. Each time Carnac starts, it checks here for a newer version and offers to update.</p>
+            <div class="row">
+              <a class="btn btn-primary" href="publish/setup.exe"><svg aria-hidden="true"><use href="#i-download"/></svg>Download setup.exe</a>
+              <a class="btn" href="publish/Carnac.application">Carnac.application</a>
+            </div>
+          </div>
+          <div class="inst">
+            <div class="inst-head"><h3>Release zip</h3></div>
+            <p>Download the latest release from GitHub, unzip it and run <code>Setup.exe</code>.</p>
+            <div class="row">
+              <a class="btn" href="https://github.com/Code52/carnac/releases/latest"><svg aria-hidden="true"><use href="#i-github"/></svg>Latest release</a>
+            </div>
+          </div>
+        </div>
+        <div class="note">
+          <svg aria-hidden="true"><use href="#i-info"/></svg>
+          <div>Carnac needs .NET Framework 4.5.2 or later, which Windows 10 and 11 already include. On older systems, <a href="https://www.microsoft.com/en-au/download/details.aspx?id=42643">download it from Microsoft</a>. WinGet, Chocolatey and the release zip install the upstream Code52 release. ClickOnce installs this fork's build.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="whats-new" aria-labelledby="new-title">
+      <div class="container">
+        <div class="section-head">
+          <p class="kicker">What's new</p>
+          <h2 id="new-title">Recent changes</h2>
+          <p>This fork keeps Carnac up to date with upstream Code52 and adds its own fixes on top.</p>
+        </div>
+        <div class="timeline">
+          <article class="release release-latest">
+            <div class="release-head"><h3>Latest on the dev branch</h3><span class="when">2026</span></div>
+            <ul>
+              <li><span class="dot"></span><div><strong>Kdenlive keymap</strong><span>39 shortcuts for the Kdenlive video editor, from Play/Pause to the Razor tool.</span></div></li>
+              <li><span class="dot"></span><div><strong>Multi-monitor placement fix</strong><span>Carnac now saves the top edge of the chosen display as well as the left edge, so the overlay lands on the right screen when monitors are stacked or offset. Settings from older versions are corrected when Carnac starts.</span></div></li>
+              <li><span class="dot"></span><div><strong>Install with WinGet</strong><span><code>winget install --id code52.Carnac</code> is now documented alongside Chocolatey.</span></div></li>
+              <li><span class="dot"></span><div><strong>Up to date with upstream</strong><span>Rebased onto Code52's master branch. A GitHub Actions build compiles Carnac and runs the unit tests on every push and pull request.</span></div></li>
+            </ul>
+            <p class="foot">These changes aren't in a published build yet. To try them now, clone the repo and run <code>.\build.ps1</code>.</p>
+          </article>
+          <article class="release">
+            <div class="release-head"><h3>ClickOnce 1.0.0.8</h3><span class="when">June 2018</span></div>
+            <ul>
+              <li><span class="dot"></span><div><strong>Tab shown as a key</strong><span>Tab is drawn as a keycap, like Ctrl, Shift and the function keys.</span></div></li>
+              <li><span class="dot"></span><div><strong>Preferences in the tray menu</strong><span>Right-click the tray icon to open Preferences.</span></div></li>
+              <li><span class="dot"></span><div><strong>PageDown fix</strong><span>PageDown is labelled PageDown instead of Next (<a href="https://github.com/Code52/carnac/issues/190">Code52/carnac#190</a>).</span></div></li>
+            </ul>
+            <p class="foot">This is the build that <a href="#install">ClickOnce</a> installs today.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="final" aria-labelledby="final-title">
+      <div class="container">
+        <h2 id="final-title">Show them what you're pressing.</h2>
+        <p>Carnac is free and open source. Install it in one line, or read the code on GitHub.</p>
+        <div class="cta">
+          <div class="cmd">
+            <span class="prompt" aria-hidden="true">&gt;</span>
+            <code id="cmd-final">winget install --id code52.Carnac</code>
+            <button class="copy" type="button" data-copy="cmd-final" aria-label="Copy to clipboard">
+              <svg class="cp" aria-hidden="true"><use href="#i-copy"/></svg><svg class="ok" aria-hidden="true"><use href="#i-check"/></svg>
+            </button>
+          </div>
+          <a class="btn" href="https://github.com/doggy8088/carnac"><svg aria-hidden="true"><use href="#i-github"/></svg>View on GitHub</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container foot-grid">
+      <div class="foot-brand">
+        <a class="brand" href="#top"><img src="icon.png" alt="" width="30" height="30">Carnac</a>
+        <p>The Magnificent Keyboard Utility. A Code52 project, maintained in the doggy8088 fork.</p>
+      </div>
+      <div class="foot-cols">
+        <div>
+          <h4>Project</h4>
+          <ul>
+            <li><a href="https://github.com/doggy8088/carnac">Source code</a></li>
+            <li><a href="https://github.com/doggy8088/carnac/issues">Report an issue</a></li>
+            <li><a href="https://github.com/Code52/carnac">Upstream (Code52)</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Community</h4>
+          <ul>
+            <li><a href="https://github.com/doggy8088/carnac/blob/dev/CODE_OF_CONDUCT.md">Code of conduct</a></li>
+            <li><a href="https://github.com/doggy8088/carnac/blob/dev/LICENSE.md">License (MS-PL)</a></li>
+            <li><a href="http://jake.ginnivan.net/blog/carnac-improvements/part-1/">Learning Rx with Carnac</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <div class="overlay" id="overlay" data-place="bottom-right" aria-hidden="true"></div>
+
+  <script src="assets/keymaps.js" defer></script>
+  <script src="assets/site.js" defer></script>
+</body>
+</html>
