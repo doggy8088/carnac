@@ -1,17 +1,39 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
-using System.Timers;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Threading;
 using Carnac.Logic;
+using Carnac.Logic.Models;
+using Carnac.Logic.Native;
+using Carnac.Logic.Overlay;
 
 namespace Carnac.UI
 {
     public partial class KeyShowView
     {
-        public KeyShowView(KeyShowViewModel keyShowViewModel)
+        // How often the overlay is put back on top of other topmost windows.
+        static readonly TimeSpan TopmostRefreshInterval = TimeSpan.FromSeconds(1);
+
+        readonly IScreenManager screenManager;
+        readonly PopupSettings settings;
+        IntPtr hwnd;
+        DispatcherTimer topmostTimer;
+        IList<DetailedScreen> screens;
+
+        public KeyShowView(KeyShowViewModel keyShowViewModel, IScreenManager screenManager)
         {
+            if (keyShowViewModel == null) throw new ArgumentNullException("keyShowViewModel");
+            if (screenManager == null) throw new ArgumentNullException("screenManager");
+
+            this.screenManager = screenManager;
+            settings = keyShowViewModel.Settings;
             DataContext = keyShowViewModel;
+            ShowActivated = false;
             InitializeComponent();
         }
 
@@ -19,88 +41,75 @@ namespace Carnac.UI
         {
             base.OnSourceInitialized(e);
 
-            var hwnd = new WindowInteropHelper(this).Handle;
-            Win32Methods.SetWindowExTransparentAndNotInWindowList(hwnd);
-            var timer = new Timer(100);
-            timer.Elapsed +=
-                (s, x) =>
-                {
-                    SetWindowPos(hwnd,
-                                 HWND.TOPMOST,
-                                 0, 0, 0, 0,
-                                 (uint)(SWP.NOMOVE | SWP.NOSIZE | SWP.SHOWWINDOW));
-                };
+            hwnd = new WindowInteropHelper(this).Handle;
+            Win32Methods.ApplyOverlayWindowStyles(hwnd);
 
-            timer.Start();
+            topmostTimer = new DispatcherTimer { Interval = TopmostRefreshInterval };
+            topmostTimer.Tick += TopmostTimerTick;
+            topmostTimer.Start();
 
-            var vm = ((KeyShowViewModel)DataContext);
-            Left = vm.Settings.Left;
-            vm.Settings.LeftChanged += SettingsLeftChanged;
-            Top = vm.Settings.Top;
-            vm.Settings.TopChanged += SettingsTopChanged;
-            WindowState = WindowState.Maximized;
+            settings.PropertyChanged += SettingsPropertyChanged;
+            ApplyPlacement();
         }
 
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int W, int H, uint uFlags);
-
-
-        /// <summary>
-        /// HWND values for hWndInsertAfter
-        /// </summary>
-        public static class HWND
+        protected override void OnClosed(EventArgs e)
         {
-            public static readonly IntPtr
-            NOTOPMOST = new IntPtr(-2),
-            BROADCAST = new IntPtr(0xffff),
-            TOPMOST = new IntPtr(-1),
-            TOP = new IntPtr(0),
-            BOTTOM = new IntPtr(1);
-        }
+            settings.PropertyChanged -= SettingsPropertyChanged;
+            if (topmostTimer != null)
+            {
+                topmostTimer.Stop();
+                topmostTimer.Tick -= TopmostTimerTick;
+                topmostTimer = null;
+            }
+            hwnd = IntPtr.Zero;
 
-
-        /// <summary>
-        /// SetWindowPos Flags
-        /// </summary>
-        public static class SWP
-        {
-            public static readonly int
-            NOSIZE = 0x0001,
-            NOMOVE = 0x0002,
-            NOZORDER = 0x0004,
-            NOREDRAW = 0x0008,
-            NOACTIVATE = 0x0010,
-            DRAWFRAME = 0x0020,
-            FRAMECHANGED = 0x0020,
-            SHOWWINDOW = 0x0040,
-            HIDEWINDOW = 0x0080,
-            NOCOPYBITS = 0x0100,
-            NOOWNERZORDER = 0x0200,
-            NOREPOSITION = 0x0200,
-            NOSENDCHANGING = 0x0400,
-            DEFERERASE = 0x2000,
-            ASYNCWINDOWPOS = 0x4000;
+            base.OnClosed(e);
         }
 
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
-
+            // WPF may size the window from its own Left/Top/Width/Height once it is shown, so place it again.
+            ApplyPlacement();
         }
 
-        void SettingsLeftChanged(object sender, EventArgs e)
+        void TopmostTimerTick(object sender, EventArgs e)
         {
-            WindowState = WindowState.Normal;
-            var vm = ((KeyShowViewModel)DataContext);
-            Left = vm.Settings.Left;
-            WindowState = WindowState.Maximized;
+            if (hwnd != IntPtr.Zero)
+                Win32Methods.BringToTopmost(hwnd);
         }
 
-        void SettingsTopChanged(object sender, EventArgs e)
+        void SettingsPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            WindowState = WindowState.Normal;
-            var vm = ((KeyShowViewModel)DataContext);
-            Top = vm.Settings.Top;
-            WindowState = WindowState.Maximized;
+            if (!OverlayPlacement.AffectsPlacement(e.PropertyName))
+                return;
+
+            // The screens are only enumerated again when another screen is selected, not on every slider tick.
+            if (string.IsNullOrEmpty(e.PropertyName) || string.Equals(e.PropertyName, "Screen", StringComparison.Ordinal))
+                screens = null;
+
+            ApplyPlacement();
+        }
+
+        void ApplyPlacement()
+        {
+            if (hwnd == IntPtr.Zero)
+                return;
+
+            if (screens == null)
+                screens = screenManager.GetScreens().ToList();
+
+            var rect = OverlayPlacement.Resolve(screens, settings, GetDpiScale());
+            if (rect.HasValue && !Win32Methods.SetWindowRect(hwnd, rect.Value))
+                Trace.TraceWarning("Carnac: could not place the overlay window at {0} (Win32 error {1})", rect.Value, Marshal.GetLastWin32Error());
+        }
+
+        double GetDpiScale()
+        {
+            // WPF lays out in DIPs of the system DPI, so this is the pixels-per-DIP factor of the window's content.
+            var source = PresentationSource.FromVisual(this);
+            return source != null && source.CompositionTarget != null
+                ? source.CompositionTarget.TransformToDevice.M11
+                : 1.0;
         }
     }
 }
