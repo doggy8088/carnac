@@ -11,6 +11,7 @@ using Microsoft.Win32;
 using NSubstitute;
 using SettingsProviderNet;
 using Xunit;
+using Message = Carnac.Logic.Models.Message;
 
 namespace Carnac.Tests
 {
@@ -172,6 +173,48 @@ namespace Carnac.Tests
 
             // assert
             Assert.Equal(0, processedKeys.Count);
+        }
+
+        [Fact]
+        public async Task typed_digits_and_operators_are_shown_as_typed_when_repeated()
+        {
+            // arrange
+            var player = new KeyPlayer();
+            foreach (var key in new[] { Keys.D1, Keys.D0, Keys.D0, Keys.D0, Keys.D0, Keys.Add, Keys.Add, Keys.NumPad5, Keys.NumPad5 })
+            {
+                player.Add(new InterceptKeyEventArgs(key, KeyDirection.Down, false, false, false));
+                player.Add(new InterceptKeyEventArgs(key, KeyDirection.Up, false, false, false));
+            }
+            var provider = new KeyProvider(player, passwordModeService, desktopLockEventService, settingsProvider);
+
+            // act
+            var processedKeys = await provider.GetKeyStream().ToList();
+            var message = processedKeys.Select(k => new Message(k)).Aggregate((merged, next) => merged.Merge(next));
+
+            // assert
+            Assert.Equal("10000 +  + 55", string.Join(string.Empty, message.Text));
+        }
+
+        [Fact]
+        public async Task shifted_symbols_are_shown_as_typed_when_repeated_and_summarised_from_four()
+        {
+            // arrange
+            var player = new KeyPlayer();
+            for (var i = 0; i < 5; i++)
+            {
+                player.Add(new InterceptKeyEventArgs(Keys.D1, KeyDirection.Down, false, false, true));
+                player.Add(new InterceptKeyEventArgs(Keys.D1, KeyDirection.Up, false, false, true));
+            }
+            var provider = new KeyProvider(player, passwordModeService, desktopLockEventService, settingsProvider);
+
+            // act
+            var processedKeys = await provider.GetKeyStream().ToList();
+            var first3 = processedKeys.Take(3).Select(k => new Message(k)).Aggregate((merged, next) => merged.Merge(next));
+            var all = processedKeys.Select(k => new Message(k)).Aggregate((merged, next) => merged.Merge(next));
+
+            // assert
+            Assert.Equal("!!!", string.Join(string.Empty, first3.Text));
+            Assert.Equal("! x 5 ", string.Join(string.Empty, all.Text));
         }
     }
 }

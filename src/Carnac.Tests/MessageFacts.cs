@@ -150,11 +150,19 @@ namespace Carnac.Tests
         }
 
         [Fact]
-        public void typed_digits_and_full_stops_follow_the_same_rule()
+        public void typed_full_stops_follow_the_same_rule()
         {
-            Assert.Equal("1000", TextOf(Typed("1", "0", "0", "0")));
             Assert.Equal("...", TextOf(Typed(".", ".", ".")));
             Assert.Equal(". x 4 ", TextOf(Typed(".", ".", ".", ".")));
+        }
+
+        [Fact]
+        public void typed_digits_are_only_summarised_from_ten_in_a_row()
+        {
+            Assert.Equal("1000", TextOf(Typed("1", "0", "0", "0")));
+            Assert.Equal("1000000", TextOf(Typed("1", "0", "0", "0", "0", "0", "0")));
+            Assert.Equal("1000000000", TextOf(Typed("1", "0", "0", "0", "0", "0", "0", "0", "0", "0")));
+            Assert.Equal("0 x 10 ", TextOf(Typed("0", "0", "0", "0", "0", "0", "0", "0", "0", "0")));
         }
 
         [Fact]
@@ -196,9 +204,25 @@ namespace Carnac.Tests
         }
 
         [Fact]
-        public void repeated_spaces_are_still_summarised()
+        public void typed_spaces_follow_the_same_rule()
         {
-            Assert.Equal("  x 2 ", TextOf(Typed(" ", " ")));
+            Assert.Equal("end.  Next", TextOf(Typed("e", "n", "d", ".", " ", " ", "N", "e", "x", "t")));
+            Assert.Equal("   ", TextOf(Typed(" ", " ", " ")));
+            Assert.Equal("  x 4 ", TextOf(Typed(" ", " ", " ", " ")));
+        }
+
+        [Fact]
+        public void typed_numpad_operators_follow_the_same_rule()
+        {
+            // the numpad operators are padded with spaces to read well in a sentence
+            Assert.Equal(" +  + ", TextOf(Typed(" + ", " + ")));
+            Assert.Equal(" + " + " x 4 ", TextOf(Typed(" + ", " + ", " + ", " + ")));
+        }
+
+        [Fact]
+        public void a_short_run_before_a_long_run_of_the_same_character_is_counted_separately()
+        {
+            Assert.Equal("aaba x 4 ", TextOf(Typed("a", "a", "b", "a", "a", "a", "a")));
         }
 
         [Fact]

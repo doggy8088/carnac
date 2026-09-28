@@ -163,65 +163,62 @@ namespace Carnac.Logic.Models
 
         private sealed class RepeatedKeyPress
         {
-            // Repeated typed characters ("ll" in "hello", "((", "www", "1000") read naturally as typed,
-            // so they are only summarised as "x N" once the repeat is clearly deliberate.
+            // Repeated typed characters ("ll" in "hello", "((", "www") read naturally as typed, so they are
+            // only summarised as "x N" once the repeat is clearly deliberate. Digits wait longer, because
+            // "1000000" would otherwise read as "10 x 6".
             const int MinimumTypedCharacterRepeatToSummarise = 4;
+            const int MinimumTypedDigitRepeatToSummarise = 10;
 
+            readonly KeyPress keyPress;
             readonly bool requiresPrefix;
             readonly bool nextRequiresSeperator;
-            readonly bool isTypedCharacter;
             readonly string[] textParts;
             int repeatCount;
 
             public RepeatedKeyPress(KeyPress keyPress, bool requiresPrefix = false)
             {
+                this.keyPress = keyPress;
                 nextRequiresSeperator = keyPress.HasModifierPressed;
                 textParts = keyPress.GetTextParts().ToArray();
-                isTypedCharacter = IsTypedCharacter(keyPress);
                 this.requiresPrefix = requiresPrefix;
                 repeatCount = 1;
             }
 
-            // A single visible character, pressed on its own. Named keys ("Back", "Left"), spaces and
-            // anything pressed with a modifier are not typed characters, so they keep collapsing at two.
-            static bool IsTypedCharacter(KeyPress keyPress)
+            // How many presses in a row it takes before "x N" is shown. Named keys ("Back", "Left"),
+            // and anything pressed with a modifier, always collapse from two.
+            int MinimumRepeatToSummarise()
+            {
+                var typedCharacter = GetTypedCharacter(keyPress);
+                if (typedCharacter == null)
+                    return 2;
+
+                return char.IsDigit(typedCharacter, 0)
+                    ? MinimumTypedDigitRepeatToSummarise
+                    : MinimumTypedCharacterRepeatToSummarise;
+            }
+
+            // The single visible character (or a space) this key press types, otherwise null. The raw input
+            // is used rather than the formatted text: "Left" is drawn as an arrow glyph, which is not typing.
+            static string GetTypedCharacter(KeyPress keyPress)
             {
                 if (keyPress.HasModifierPressed)
-                    return false;
+                    return null;
 
                 var input = keyPress.Input.ToArray();
                 if (input.Length != 1 || string.IsNullOrEmpty(input[0]))
-                    return false;
+                    return null;
 
-                var text = input[0];
-                if (new StringInfo(text).LengthInTextElements != 1)
-                    return false;
+                // the numpad operators are padded with spaces (" + ") to read well in a sentence
+                var text = input[0] == " " ? input[0] : input[0].Trim();
+                if (text.Length == 0 || new StringInfo(text).LengthInTextElements != 1)
+                    return null;
 
-                switch (CharUnicodeInfo.GetUnicodeCategory(text, 0))
-                {
-                    case UnicodeCategory.UppercaseLetter:
-                    case UnicodeCategory.LowercaseLetter:
-                    case UnicodeCategory.TitlecaseLetter:
-                    case UnicodeCategory.ModifierLetter:
-                    case UnicodeCategory.OtherLetter:
-                    case UnicodeCategory.DecimalDigitNumber:
-                    case UnicodeCategory.LetterNumber:
-                    case UnicodeCategory.OtherNumber:
-                    case UnicodeCategory.ConnectorPunctuation:
-                    case UnicodeCategory.DashPunctuation:
-                    case UnicodeCategory.OpenPunctuation:
-                    case UnicodeCategory.ClosePunctuation:
-                    case UnicodeCategory.InitialQuotePunctuation:
-                    case UnicodeCategory.FinalQuotePunctuation:
-                    case UnicodeCategory.OtherPunctuation:
-                    case UnicodeCategory.MathSymbol:
-                    case UnicodeCategory.CurrencySymbol:
-                    case UnicodeCategory.ModifierSymbol:
-                    case UnicodeCategory.OtherSymbol:
-                        return true;
-                    default:
-                        return false;
-                }
+                var isTypedCharacter = text == " "
+                    || char.IsLetter(text, 0)
+                    || char.IsNumber(text, 0)
+                    || char.IsPunctuation(text, 0)
+                    || char.IsSymbol(text, 0);
+                return isTypedCharacter ? text : null;
             }
 
             public bool NextRequiresSeperator { get { return nextRequiresSeperator; } }
@@ -241,8 +238,7 @@ namespace Carnac.Logic.Models
                 if (requiresPrefix)
                     yield return ", ";
 
-                var summarise = repeatCount > 1
-                    && (!isTypedCharacter || repeatCount >= MinimumTypedCharacterRepeatToSummarise);
+                var summarise = repeatCount > 1 && repeatCount >= MinimumRepeatToSummarise();
                 var copies = summarise ? 1 : repeatCount;
                 for (var copy = 0; copy < copies; copy++)
                 {
