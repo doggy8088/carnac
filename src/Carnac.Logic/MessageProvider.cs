@@ -36,7 +36,7 @@ namespace Carnac.Logic
                 .Scan(new ShortcutAccumulator(), (acc, key) => acc.ProcessKey(shortcutProvider, key))
                 .Where(c => c.HasCompletedValue)
                 .SelectMany(c => c.GetMessages())
-                .Scan(new Message(), (acc, key) => Message.MergeIfNeeded(acc, key))
+                .Scan(new Message(), (acc, key) => Message.MergeIfNeeded(acc, key, GetRepeatedKeyPolicy()))
                 .Where(m =>
                 {
                     if (settings.DetectShortcutsOnly && settings.ShowOnlyModifiers)
@@ -53,6 +53,12 @@ namespace Carnac.Logic
                     }
                     return true;
                 });
+        }
+
+        // read for every key press, so a change in the preferences applies to the very next key
+        RepeatedKeyPolicy GetRepeatedKeyPolicy()
+        {
+            return RepeatedKeyPolicy.Create(settings.RepeatedKeyGrouping, settings.RepeatedKeyThreshold);
         }
     }
 }

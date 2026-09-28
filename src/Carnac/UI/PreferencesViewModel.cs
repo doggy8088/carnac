@@ -43,6 +43,12 @@ namespace Carnac.UI
                 AvailableColors.Add(availableColor);
             }
 
+            RepeatedKeyGroupingOptions = new[]
+            {
+                new KeyValuePair<RepeatedKeyGrouping, string>(RepeatedKeyGrouping.Threshold, "Group repeated typed characters"),
+                new KeyValuePair<RepeatedKeyGrouping, string>(RepeatedKeyGrouping.Never, "Never group typed characters")
+            };
+
             SaveCommand = new DelegateCommand(SaveSettings);
             ResetToDefaultsCommand = new DelegateCommand(() => settingsProvider.ResetToDefaults<PopupSettings>());
             VisitCommand = new DelegateCommand(Visit);
@@ -55,6 +61,8 @@ namespace Carnac.UI
         public ICommand SaveCommand { get; private set; }
 
         public ObservableCollection<AvailableColor> AvailableColors { get; private set; }
+
+        public IEnumerable<KeyValuePair<RepeatedKeyGrouping, string>> RepeatedKeyGroupingOptions { get; private set; }
 
         public ObservableCollection<DetailedScreen> Screens { get; set; }
 

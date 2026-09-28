@@ -149,6 +149,20 @@
                         <ui:PreferencesField Header="Show Space as ␣">
                             <CheckBox IsChecked="{Binding Settings.ShowSpaceAsUnicode}" Content="Show Space as Unicode character '␣'" />
                         </ui:PreferencesField>
+                        <ui:PreferencesField Header="Repeated Keys">
+                            <ComboBox ItemsSource="{Binding RepeatedKeyGroupingOptions}"
+                                      DisplayMemberPath="Value" SelectedValuePath="Key"
+                                      SelectedValue="{Binding Settings.RepeatedKeyGrouping}"
+                                      ToolTip="Named keys, arrows and shortcuts are always shown as 'x N' when repeated" />
+                        </ui:PreferencesField>
+                        <ui:PreferencesField Header="Group Repeats From">
+                            <Slider Value="{Binding Settings.RepeatedKeyThreshold}" IsSnapToTickEnabled="True"
+                            LargeChange="1" Maximum="10" Minimum="2" SmallChange="1" TickFrequency="1"
+                            ToolTip="Number of presses in a row from which a typed character is shown as 'x N'" />
+                            <ui:PreferencesField.SecondaryControl>
+                                <TextBox Foreground="White" Text="{Binding Settings.RepeatedKeyThreshold}" />
+                            </ui:PreferencesField.SecondaryControl>
+                        </ui:PreferencesField>
                         <ui:PreferencesField Header="Show Application Icon">
                             <CheckBox IsChecked="{Binding Settings.ShowApplicationIcon}" Content="Display the active application's icon" />
                         </ui:PreferencesField>
