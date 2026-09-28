@@ -19,10 +19,12 @@ namespace Carnac.Logic.Models
         readonly bool isDeleting;
         readonly DateTime lastMessage;
         readonly Message previous;
+        readonly RepeatedKeyPolicy repeatPolicy;
 
         public Message()
         {
             lastMessage = DateTime.Now;
+            repeatPolicy = RepeatedKeyPolicy.Default;
         }
 
         public Message(KeyPress key)
@@ -34,12 +36,18 @@ namespace Carnac.Logic.Models
             isModifier = key.HasModifierPressed;
 
             keys = new ReadOnlyCollection<KeyPress>(new[] { key });
-            textCollection = new ReadOnlyCollection<string>(CreateTextSequence(key).ToArray());
+            textCollection = new ReadOnlyCollection<string>(CreateTextSequence(key, repeatPolicy).ToArray());
         }
 
         public Message(IEnumerable<KeyPress> keys, KeyShortcut shortcut, Boolean isShortcut = false)
+            : this(keys, shortcut, isShortcut, RepeatedKeyPolicy.Default)
+        {
+        }
+
+        private Message(IEnumerable<KeyPress> keys, KeyShortcut shortcut, Boolean isShortcut, RepeatedKeyPolicy repeatPolicy)
             : this()
         {
+            this.repeatPolicy = repeatPolicy;
             var allKeys = keys.ToArray();
             var distinctProcessName = allKeys.Select(k => k.Process.ProcessName)
                 .Distinct()
@@ -56,21 +64,29 @@ namespace Carnac.Logic.Models
 
             this.keys = new ReadOnlyCollection<KeyPress>(allKeys);
 
-            var textSeq = CreateTextSequence(allKeys).ToList();
+            var textSeq = CreateTextSequence(allKeys, repeatPolicy).ToList();
             if (!string.IsNullOrEmpty(shortcutName))
-                textSeq.Add(string.Format(" [{0}]", shortcutName));
+            {
+                // a summarised run ends with a space already ("Ctrl + Down x 3 ")
+                var endsWithSpace = textSeq.Count > 0 && textSeq[textSeq.Count - 1].EndsWith(" ", StringComparison.Ordinal);
+                textSeq.Add(string.Format(endsWithSpace ? "[{0}]" : " [{0}]", shortcutName));
+            }
             textCollection = new ReadOnlyCollection<string>(textSeq);
         }
 
-        private Message(Message initial, Message appended)
-            : this(initial.keys.Concat(appended.keys), new KeyShortcut(initial.ShortcutName))
+        private Message(Message initial, Message appended, RepeatedKeyPolicy repeatPolicy)
+            : this(initial.keys.Concat(appended.keys), new KeyShortcut(initial.ShortcutName), initial.isShortcut && appended.isShortcut, repeatPolicy)
         {
             previous = initial;
-            canBeMerged = true;
+
+            // Two shortcut messages only merge when they are the same shortcut pressed again. That message
+            // stays closed to typed text, exactly like the single shortcut it started from. Any other merge
+            // (typed text) is open for more, as it always was.
+            canBeMerged = initial.canBeMerged || appended.canBeMerged;
         }
 
         private Message(Message initial, bool isDeleting)
-            : this(initial.keys, new KeyShortcut(initial.ShortcutName))
+            : this(initial.keys, new KeyShortcut(initial.ShortcutName), false, initial.repeatPolicy)
         {
             this.isDeleting = isDeleting;
             previous = initial;
@@ -99,24 +115,52 @@ namespace Carnac.Logic.Models
 
         public Message Merge(Message other)
         {
-            return new Message(this, other);
+            return new Message(this, other, repeatPolicy);
         }
 
         static readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
 
-        public static Message MergeIfNeeded(Message previousMessage, Message newMessage)
+        /// <summary>
+        /// Appends <paramref name="newMessage"/> to <paramref name="previousMessage"/> when they belong together
+        /// (typed text, or the same shortcut pressed again), otherwise returns <paramref name="newMessage"/>.
+        /// The merged message is written with <paramref name="repeatPolicy"/>, and keeps it for later.
+        /// </summary>
+        public static Message MergeIfNeeded(Message previousMessage, Message newMessage, RepeatedKeyPolicy repeatPolicy)
         {
+            if (previousMessage == null) throw new ArgumentNullException("previousMessage");
+            if (newMessage == null) throw new ArgumentNullException("newMessage");
+            if (repeatPolicy == null) throw new ArgumentNullException("repeatPolicy");
+
             return ShouldCreateNewMessage(previousMessage, newMessage)
                 ? newMessage
-                : previousMessage.Merge(newMessage);
+                : new Message(previousMessage, newMessage, repeatPolicy);
         }
 
         static bool ShouldCreateNewMessage(Message previous, Message current)
         {
-            return previous.ProcessName != current.ProcessName ||
-                   current.LastMessage.Subtract(previous.LastMessage) > OneSecond ||
-                   !previous.CanBeMerged ||
-                   !current.CanBeMerged;
+            if (previous.ProcessName != current.ProcessName ||
+                current.LastMessage.Subtract(previous.LastMessage) > OneSecond)
+                return true;
+
+            if (previous.CanBeMerged && current.CanBeMerged)
+                return false;
+
+            return !IsSameShortcutPressedAgain(previous, current);
+        }
+
+        // "Ctrl + Down" pressed three times is one message ("Ctrl + Down x 3") instead of three. Only a single
+        // press that repeats the message's own key press counts: different shortcuts, and shortcuts made of
+        // several key presses (chords), each keep their own message.
+        static bool IsSameShortcutPressedAgain(Message previous, Message current)
+        {
+            return previous.keys != null
+                && current.keys != null
+                && current.keys.Count == 1
+                && !previous.CanBeMerged
+                && !current.CanBeMerged
+                && previous.isShortcut == current.isShortcut
+                && string.Equals(previous.shortcutName, current.shortcutName, StringComparison.Ordinal)
+                && previous.keys.All(key => RepeatedKeyPress.IsSamePress(key, current.keys[0]));
         }
 
         public Message FadeOut()
@@ -124,12 +168,12 @@ namespace Carnac.Logic.Models
             return new Message(this, true);
         }
 
-        static IEnumerable<string> CreateTextSequence(KeyPress key)
+        static IEnumerable<string> CreateTextSequence(KeyPress key, RepeatedKeyPolicy repeatPolicy)
         {
-            return CreateTextSequence(new[] {key});
+            return CreateTextSequence(new[] {key}, repeatPolicy);
         }
 
-        static IEnumerable<string> CreateTextSequence(IEnumerable<KeyPress> keys)
+        static IEnumerable<string> CreateTextSequence(IEnumerable<KeyPress> keys, RepeatedKeyPolicy repeatPolicy)
         {
             return keys.Aggregate(new List<RepeatedKeyPress>(),
               (acc, curr) =>
@@ -143,12 +187,12 @@ namespace Carnac.Logic.Models
                       }
                       else
                       {
-                          acc.Add(new RepeatedKeyPress(curr, last.NextRequiresSeperator));
+                          acc.Add(new RepeatedKeyPress(curr, repeatPolicy, last.NextRequiresSeperator));
                       }
                   }
                   else
                   {
-                      acc.Add(new RepeatedKeyPress(curr));
+                      acc.Add(new RepeatedKeyPress(curr, repeatPolicy));
                   }
                   return acc;
               })
@@ -162,38 +206,34 @@ namespace Carnac.Logic.Models
 
         private sealed class RepeatedKeyPress
         {
-            // Repeated typed characters ("ll" in "hello", "((", "www") read naturally as typed, so they are
-            // only summarised as "x N" once the repeat is clearly deliberate. Digits wait longer, because
-            // "1000000" would otherwise read as "10 x 6".
-            const int MinimumTypedCharacterRepeatToSummarise = 4;
-            const int MinimumTypedDigitRepeatToSummarise = 10;
-
             readonly KeyPress keyPress;
+            readonly RepeatedKeyPolicy repeatPolicy;
             readonly bool requiresPrefix;
             readonly bool nextRequiresSeperator;
             readonly string[] textParts;
             int repeatCount;
             int? minimumRepeatToSummarise;
 
-            public RepeatedKeyPress(KeyPress keyPress, bool requiresPrefix = false)
+            public RepeatedKeyPress(KeyPress keyPress, RepeatedKeyPolicy repeatPolicy, bool requiresPrefix = false)
             {
                 this.keyPress = keyPress;
+                this.repeatPolicy = repeatPolicy;
                 nextRequiresSeperator = keyPress.HasModifierPressed;
                 textParts = keyPress.GetTextParts().ToArray();
                 this.requiresPrefix = requiresPrefix;
                 repeatCount = 1;
             }
 
-            // How many presses in a row it takes before "x N" is shown. Named keys ("Back", "Left") and shortcuts
-            // ("Ctrl", "L") always collapse from two.
+            // How many presses in a row it takes before "x N" is shown. The policy decides for typed
+            // characters; named keys ("Back", "Left") and anything pressed with a modifier collapse from two.
             int MinimumRepeatToSummarise()
             {
                 if (!minimumRepeatToSummarise.HasValue)
                 {
                     var typedCharacter = GetTypedCharacter(keyPress);
-                    minimumRepeatToSummarise = typedCharacter == null ? 2
-                        : char.IsDigit(typedCharacter, 0) ? MinimumTypedDigitRepeatToSummarise
-                        : MinimumTypedCharacterRepeatToSummarise;
+                    minimumRepeatToSummarise = typedCharacter == null
+                        ? repeatPolicy.MinimumNamedKeyRepeat
+                        : repeatPolicy.GetMinimumTypedCharacterRepeat(char.IsDigit(typedCharacter, 0));
                 }
 
                 return minimumRepeatToSummarise.Value;
@@ -232,9 +272,14 @@ namespace Carnac.Logic.Models
 
             public bool IsRepeatedBy(KeyPress nextKeyPress)
             {
+                return IsSamePress(keyPress, nextKeyPress);
+            }
+
+            public static bool IsSamePress(KeyPress first, KeyPress second)
+            {
                 // the modifier state decides how a run is summarised, so a run must not mix the two
-                return keyPress.HasModifierPressed == nextKeyPress.HasModifierPressed
-                    && textParts.SequenceEqual(nextKeyPress.GetTextParts());
+                return first.HasModifierPressed == second.HasModifierPressed
+                    && first.GetTextParts().SequenceEqual(second.GetTextParts());
             }
 
             public IEnumerable<string> GetTextParts()

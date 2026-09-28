@@ -7,6 +7,12 @@ namespace Carnac.Logic.Models
 {
     public class PopupSettings : NotifyPropertyChanged
     {
+        public PopupSettings()
+        {
+            // not the type's default of 0, which is outside the supported range
+            RepeatedKeyThreshold = RepeatedKeyPolicy.DefaultTypedCharacterThreshold;
+        }
+
         [DefaultValue(350)]
         public int ItemMaxWidth { get; set; }
 
@@ -112,5 +118,11 @@ namespace Carnac.Logic.Models
         public bool SettingsConfigured { get; set; }
         public bool ShowOnlyModifiers { get; set; }
         public bool ShowSpaceAsUnicode { get; set; }
+
+        [DefaultValue(RepeatedKeyGrouping.Threshold)]
+        public RepeatedKeyGrouping RepeatedKeyGrouping { get; set; }
+
+        [DefaultValue(RepeatedKeyPolicy.DefaultTypedCharacterThreshold)]
+        public int RepeatedKeyThreshold { get; set; }
     }
 }

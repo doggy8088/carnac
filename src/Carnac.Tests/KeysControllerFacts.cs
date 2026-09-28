@@ -121,6 +121,37 @@ namespace Carnac.Tests
             messages.Single().ShouldBe(expected);
         }
 
+        [Fact]
+        public void MultiMergeOfARepeatedShortcutKeepsASinglePopup()
+        {
+            var message1 = new Message(CtrlDown);
+            var message2 = Message.MergeIfNeeded(message1, new Message(CtrlDown), RepeatedKeyPolicy.Default);
+            var message3 = Message.MergeIfNeeded(message2, new Message(CtrlDown), RepeatedKeyPolicy.Default);
+            var messageSequence = testScheduler.CreateColdObservable(
+                ReactiveTest.OnNext(0.1.Seconds(), message1),
+                ReactiveTest.OnNext(0.2.Seconds(), message2),
+                ReactiveTest.OnNext(0.3.Seconds(), message3)
+                );
+
+            var sut = CreateKeysController(messageSequence);
+
+            sut.Start();
+            testScheduler.AdvanceBy(1.Seconds());
+
+            messages.Single().IsDeleting.ShouldBe(false);
+            messages.Single().ShouldBe(message3);
+            Assert.Equal("Ctrl + ↓ x 3 ", string.Join(string.Empty, messages.Single().Text));
+        }
+
+        static KeyPress CtrlDown
+        {
+            get
+            {
+                return new KeyPress(new ProcessInfo("foo"),
+                    new InterceptKeyEventArgs(Keys.Down, KeyDirection.Down, false, true, false), false, new[] { "Ctrl", "Down" });
+            }
+        }
+
         static KeyPress A
         {
             get
