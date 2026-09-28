@@ -78,12 +78,24 @@ jobs:
           "$hash  $setup" | Set-Content deploy\sha256sums.txt
           Get-Content deploy\sha256sums.txt
 
+      # The portable zip holds exactly the files installer\Carnac.iss installs (the script reads its
+      # [Files] section) and its hash goes into the same sha256sums.txt as the installer's.
+      - name: Build portable zip
+        shell: pwsh
+        run: |
+          ./installer/New-PortableZip.ps1 -Version $env:VERSION
+          ./installer/Test-PortableZip.ps1 -BuildDir src/Carnac/bin/Release
+          if ($LASTEXITCODE -ne 0) { throw 'Portable zip checks failed' }
+          Get-Content deploy\sha256sums.txt
+
       - name: Publish GitHub release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: >
           gh release create $env:REF_NAME
-          "deploy\Carnac-$env:VERSION-Setup.exe" deploy\sha256sums.txt
+          "deploy\Carnac-$env:VERSION-Setup.exe"
+          "deploy\Carnac-$env:VERSION-portable.zip"
+          deploy\sha256sums.txt
           --title "Carnac $env:VERSION"
           --generate-notes
