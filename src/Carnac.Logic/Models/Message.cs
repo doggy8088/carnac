@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Linq;
 using System.Windows.Media;
 
@@ -174,6 +173,7 @@ namespace Carnac.Logic.Models
             readonly bool nextRequiresSeperator;
             readonly string[] textParts;
             int repeatCount;
+            int? minimumRepeatToSummarise;
 
             public RepeatedKeyPress(KeyPress keyPress, bool requiresPrefix = false)
             {
@@ -184,33 +184,35 @@ namespace Carnac.Logic.Models
                 repeatCount = 1;
             }
 
-            // How many presses in a row it takes before "x N" is shown. Named keys ("Back", "Left"),
-            // and anything pressed with a modifier, always collapse from two.
+            // How many presses in a row it takes before "x N" is shown. Named keys ("Back", "Left") and shortcuts
+            // ("Ctrl", "L") always collapse from two.
             int MinimumRepeatToSummarise()
             {
-                var typedCharacter = GetTypedCharacter(keyPress);
-                if (typedCharacter == null)
-                    return 2;
+                if (!minimumRepeatToSummarise.HasValue)
+                {
+                    var typedCharacter = GetTypedCharacter(keyPress);
+                    minimumRepeatToSummarise = typedCharacter == null ? 2
+                        : char.IsDigit(typedCharacter, 0) ? MinimumTypedDigitRepeatToSummarise
+                        : MinimumTypedCharacterRepeatToSummarise;
+                }
 
-                return char.IsDigit(typedCharacter, 0)
-                    ? MinimumTypedDigitRepeatToSummarise
-                    : MinimumTypedCharacterRepeatToSummarise;
+                return minimumRepeatToSummarise.Value;
             }
 
-            // The single visible character (or a space) this key press types, otherwise null. The raw input
-            // is used rather than the formatted text: "Left" is drawn as an arrow glyph, which is not typing.
+            // The single visible character (or a space) this key press types, otherwise null. The raw input is
+            // used rather than the formatted text ("Left" is drawn as an arrow glyph, which is not typing), and
+            // not the modifier flags: a shortcut has its modifiers in the input ("Ctrl", "L"), while a character
+            // typed with AltGr, which Windows reports as Ctrl+Alt, is a single character.
             static string GetTypedCharacter(KeyPress keyPress)
             {
-                if (keyPress.HasModifierPressed)
-                    return null;
-
                 var input = keyPress.Input.ToArray();
                 if (input.Length != 1 || string.IsNullOrEmpty(input[0]))
                     return null;
 
                 // the numpad operators are padded with spaces (" + ") to read well in a sentence
                 var text = input[0] == " " ? input[0] : input[0].Trim();
-                if (text.Length == 0 || (text.Length > 1 && new StringInfo(text).LengthInTextElements != 1))
+                var isSingleCharacter = text.Length == 1 || (text.Length == 2 && char.IsSurrogatePair(text, 0));
+                if (!isSingleCharacter)
                     return null;
 
                 var isTypedCharacter = text == " "

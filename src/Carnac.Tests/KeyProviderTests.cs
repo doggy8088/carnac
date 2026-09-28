@@ -222,6 +222,9 @@ namespace Carnac.Tests
         // whatever has the focus while the tests run.
         static Message MergeIntoOneMessage(IEnumerable<KeyPress> keyPresses)
         {
+            // no key press at all means there is no foreground window to take the process from
+            Assert.NotEmpty(keyPresses);
+
             var process = new ProcessInfo("FakeProcess");
             return keyPresses
                 .Select(k => new Message(new KeyPress(process, k.InterceptKeyEventArgs, false, k.Input)))
