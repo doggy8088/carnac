@@ -54,6 +54,8 @@ Name: "startup"; Description: "Start Carnac when I sign in to Windows"; GroupDes
 
 [Files]
 ; Costura embeds all dependencies into Carnac.exe, so this is the whole app.
+; installer\New-PortableZip.ps1 packs the portable zip from these lines: keep them to plain
+; Source/DestDir/Flags entries below {app}, or teach that script (and Test-PortableZip.ps1) first.
 Source: "{#BuildDir}\Carnac.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BuildDir}\Carnac.exe.config"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BuildDir}\Keymaps\*.yml"; DestDir: "{app}\Keymaps"; Flags: ignoreversion
