@@ -132,7 +132,7 @@
 						</RadioButton>
 					</Grid>
 					<TextBlock HorizontalAlignment="Left" FontSize="18.667" FontWeight="SemiBold"
-					           Text="{Binding FriendlyName}" TextWrapping="Wrap" />
+					           Text="{Binding FriendlyName}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" MaxWidth="{Binding RelativeWidth}" ToolTip="{Binding FriendlyName}" />
 					<TextBlock HorizontalAlignment="Left" FontSize="14" TextWrapping="Wrap">
 						<Run Text="{Binding Width}" />
 						x<Run Text="{Binding Height}" />
