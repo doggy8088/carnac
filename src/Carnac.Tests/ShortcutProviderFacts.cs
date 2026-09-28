@@ -255,6 +255,20 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void files_with_a_longer_extension_than_yml_are_not_keymaps()
+        {
+            // on .NET Framework the "*.yml" search pattern also returns names like custom.ymlx
+            var folder = CreateKeymapFolder(
+                "custom.ymlx", "this is: [not valid yaml",
+                "real.yml", "group: Real\nprocess:\nshortcuts:\n  - name: Save\n    keys:\n      - Ctrl+S\n");
+
+            var provider = new ShortcutProvider(folder, warnings.Add);
+
+            Assert.Empty(warnings);
+            Assert.Equal("Real", provider.Keymaps.Single().Group);
+        }
+
+        [Fact]
         public void keymap_without_group_or_process_applies_to_every_process()
         {
             var folder = CreateKeymapFolder("bare.yml", "shortcuts:\n  - name: Save\n    keys:\n      - Ctrl+S\n");

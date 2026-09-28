@@ -168,6 +168,26 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void characters_typed_with_shift_mean_the_shifted_key()
+        {
+            // Ctrl+! is pressed as Ctrl+Shift+1, Ctrl+? as Ctrl+Shift+/, and so on: the real key event carries the Shift flag.
+            Assert.Equal(new KeyPressDefinition(Keys.D1, controlPressed: true, shiftPressed: true), Parse("Ctrl+!"));
+            Assert.Equal(new KeyPressDefinition(Keys.OemQuestion, controlPressed: true, shiftPressed: true), Parse("Ctrl+?"));
+            Assert.Equal(new KeyPressDefinition(Keys.OemMinus, altPressed: true, shiftPressed: true), Parse("Alt+_"));
+            // the unshifted keys and explicit names stay unshifted
+            Assert.Equal(new KeyPressDefinition(Keys.Oemplus, controlPressed: true), Parse("Ctrl+="));
+            Assert.Equal(new KeyPressDefinition(Keys.OemQuestion, controlPressed: true), Parse("Ctrl+/"));
+            Assert.Equal(new KeyPressDefinition(Keys.Oemplus, controlPressed: true), Parse("Ctrl+Oemplus"));
+        }
+
+        [Fact]
+        public void the_ins_and_del_aliases_do_not_imply_shift()
+        {
+            Assert.Equal(new KeyPressDefinition(Keys.Insert, controlPressed: true), Parse("Ctrl+ins"));
+            Assert.Equal(new KeyPressDefinition(Keys.Delete, controlPressed: true), Parse("Ctrl+del"));
+        }
+
+        [Fact]
         public void a_single_combination_cannot_contain_a_comma_separated_list_of_key_names()
         {
             // Enum.TryParse would OR "A,B" into the key C; the single-combination API has to reject it.
@@ -204,9 +224,10 @@ namespace Carnac.Tests
         [Fact]
         public void the_plus_key_is_written_as_a_trailing_double_plus()
         {
-            Assert.Equal(new KeyPressDefinition(Keys.Oemplus, controlPressed: true), Parse("Ctrl++"));
+            // the plus character is typed with Shift, so it means the shifted key
+            Assert.Equal(new KeyPressDefinition(Keys.Oemplus, controlPressed: true, shiftPressed: true), Parse("Ctrl++"));
             Assert.Equal(new KeyPressDefinition(Keys.Oemplus, controlPressed: true, shiftPressed: true), Parse("Ctrl+Shift++"));
-            Assert.Equal(new KeyPressDefinition(Keys.Oemplus), Parse("+"));
+            Assert.Equal(new KeyPressDefinition(Keys.Oemplus, shiftPressed: true), Parse("+"));
             Assert.Equal(new KeyPressDefinition(Keys.Oemplus, controlPressed: true), Parse("Ctrl+Oemplus"));
             Assert.Equal(new KeyPressDefinition(Keys.Add, controlPressed: true), Parse("Ctrl+Add"));
         }
@@ -260,20 +281,20 @@ namespace Carnac.Tests
         {
             // "Ctrl++" is already complete (Ctrl and the plus key), so the comma after it separates two combinations.
             Assert.Equal(
-                new[] { new KeyPressDefinition(Keys.Oemplus, controlPressed: true), new KeyPressDefinition(Keys.A) },
+                new[] { new KeyPressDefinition(Keys.Oemplus, controlPressed: true, shiftPressed: true), new KeyPressDefinition(Keys.A) },
                 ParseSequence("Ctrl++,A").ToArray());
             Assert.Equal(
-                new[] { new KeyPressDefinition(Keys.Oemplus), new KeyPressDefinition(Keys.A) },
+                new[] { new KeyPressDefinition(Keys.Oemplus, shiftPressed: true), new KeyPressDefinition(Keys.A) },
                 ParseSequence("+,A").ToArray());
             Assert.Equal(
-                new[] { new KeyPressDefinition(Keys.Oemplus, controlPressed: true), new KeyPressDefinition(Keys.Oemcomma, controlPressed: true) },
+                new[] { new KeyPressDefinition(Keys.Oemplus, controlPressed: true, shiftPressed: true), new KeyPressDefinition(Keys.Oemcomma, controlPressed: true) },
                 ParseSequence("Ctrl++, Ctrl+,").ToArray());
             // comma key, then the separating comma, then Ctrl and the plus key
             Assert.Equal(
                 new[]
                 {
                     new KeyPressDefinition(Keys.Oemcomma, controlPressed: true, shiftPressed: true),
-                    new KeyPressDefinition(Keys.Oemplus, controlPressed: true)
+                    new KeyPressDefinition(Keys.Oemplus, controlPressed: true, shiftPressed: true)
                 },
                 ParseSequence("Ctrl+Shift+,,Ctrl++").ToArray());
         }
