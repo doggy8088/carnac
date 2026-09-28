@@ -53,6 +53,7 @@
                         <RowDefinition />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="10,0,0,0" Orientation="Vertical">
                         <carnac:PositionOnMonitorSelector />
                         <ui:PreferencesField Header="Top Offset">
@@ -85,10 +86,33 @@
                             </ui:PreferencesField.SecondaryControl>
                         </ui:PreferencesField>
                         <Separator Height="10" Margin="0"/>
+                        <ui:PreferencesField Header="Silent Mode Hotkey">
+                            <TextBox Foreground="White" IsReadOnly="True" Text="{Binding SilentModeHotkey, Mode=OneWay}"
+                                     InputMethod.IsInputMethodEnabled="False" PreviewKeyDown="SilentModeHotkey_PreviewKeyDown"
+                                     AutomationProperties.Name="Silent mode hotkey"
+                                     ToolTip="Click here and press the key combination to use. Backspace clears it." />
+                            <ui:PreferencesField.SecondaryControl>
+                                <Button Content="Clear" Command="{Binding ClearSilentModeHotkeyCommand}"
+                                        AutomationProperties.Name="Clear silent mode hotkey" />
+                            </ui:PreferencesField.SecondaryControl>
+                        </ui:PreferencesField>
+                        <ui:PreferencesField Header="Pause Hotkey">
+                            <TextBox Foreground="White" IsReadOnly="True" Text="{Binding PauseHotkey, Mode=OneWay}"
+                                     InputMethod.IsInputMethodEnabled="False" PreviewKeyDown="PauseHotkey_PreviewKeyDown"
+                                     AutomationProperties.Name="Pause hotkey"
+                                     ToolTip="Click here and press the key combination to use. Backspace clears it." />
+                            <ui:PreferencesField.SecondaryControl>
+                                <Button Content="Clear" Command="{Binding ClearPauseHotkeyCommand}"
+                                        AutomationProperties.Name="Clear pause hotkey" />
+                            </ui:PreferencesField.SecondaryControl>
+                        </ui:PreferencesField>
+                        <TextBlock Margin="10,0,10,0" Foreground="OrangeRed" TextWrapping="Wrap" Text="{Binding HotkeyMessage}" />
+                        <Separator Height="10" Margin="0"/>
                          <ui:PreferencesField Header="Auto Update">
                              <CheckBox IsChecked="{Binding Settings.AutoUpdate}" Content="auto check updates from GitHub (need to restart this program)" />
                          </ui:PreferencesField>
                     </StackPanel>
+                    </ScrollViewer>
                     <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Grid.Row="1" Margin="5">
                         <Button Width="150" Margin="0 0 5 0" Content="Reset to Defaults" Command="{Binding ResetToDefaultsCommand}" />
                         <Button Width="50" Content="Save" Command="{Binding SaveCommand}" />

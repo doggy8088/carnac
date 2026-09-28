@@ -1,6 +1,8 @@
 using System;
+using System.ComponentModel;
 using System.Windows.Forms;
 using Carnac.Logic;
+using Carnac.Logic.Models;
 
 namespace Carnac
 {
@@ -8,13 +10,15 @@ namespace Carnac
     /// The tray icon's context menu and status text. The menu items mirror the shared pause / silent-mode
     /// state (<see cref="IKeyDisplayState"/>): clicking an item changes that state and every change, whichever
     /// way it was made (menu, hotkey), is reflected in the item captions, check marks and <see cref="StatusText"/>.
-    /// It has no dependency on the notification area itself, which keeps <see cref="CarnacTrayIcon"/> thin.
+    /// The configured hotkeys are shown next to the items. It has no dependency on the notification area itself,
+    /// which keeps <see cref="CarnacTrayIcon"/> thin.
     /// </summary>
     public class TrayMenu : IDisposable
     {
         public const string AppName = "Carnac";
 
         readonly IKeyDisplayState displayState;
+        readonly PopupSettings settings;
         readonly Action<Action> invokeOnUiThread;
         readonly ContextMenu contextMenu;
         readonly MenuItem settingsItem;
@@ -24,16 +28,19 @@ namespace Carnac
         bool disposed;
 
         /// <param name="displayState">The shared pause / silent-mode state.</param>
+        /// <param name="settings">Source of the hotkeys that are shown next to the pause and silent mode items.</param>
         /// <param name="openSettings">Invoked by the "Settings..." item.</param>
         /// <param name="exit">Invoked by the "Exit" item.</param>
         /// <param name="invokeOnUiThread">
         /// Runs an action on the UI thread. The state can change on the keyboard hook's thread (hotkeys),
         /// menu items may only be touched from the UI thread.
         /// </param>
-        public TrayMenu(IKeyDisplayState displayState, Action openSettings, Action exit, Action<Action> invokeOnUiThread)
+        public TrayMenu(IKeyDisplayState displayState, PopupSettings settings, Action openSettings, Action exit, Action<Action> invokeOnUiThread)
         {
             if (displayState == null)
                 throw new ArgumentNullException("displayState");
+            if (settings == null)
+                throw new ArgumentNullException("settings");
             if (openSettings == null)
                 throw new ArgumentNullException("openSettings");
             if (exit == null)
@@ -42,6 +49,7 @@ namespace Carnac
                 throw new ArgumentNullException("invokeOnUiThread");
 
             this.displayState = displayState;
+            this.settings = settings;
             this.invokeOnUiThread = invokeOnUiThread;
 
             settingsItem = new MenuItem(Properties.Resources.TrayMenu_Settings, (sender, args) => openSettings())
@@ -56,6 +64,7 @@ namespace Carnac
 
             Refresh();
             displayState.Changed += DisplayStateChanged;
+            settings.PropertyChanged += SettingsChanged;
         }
 
         public ContextMenu ContextMenu
@@ -70,6 +79,18 @@ namespace Carnac
         public event EventHandler StatusChanged;
 
         void DisplayStateChanged(object sender, EventArgs e)
+        {
+            RefreshOnUiThread();
+        }
+
+        void SettingsChanged(object sender, PropertyChangedEventArgs e)
+        {
+            // an empty name means "everything changed"
+            if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == "SilentModeHotkey" || e.PropertyName == "PauseHotkey")
+                RefreshOnUiThread();
+        }
+
+        void RefreshOnUiThread()
         {
             invokeOnUiThread(() =>
             {
@@ -88,12 +109,21 @@ namespace Carnac
             var paused = displayState.IsPaused;
             var silent = displayState.IsSilent;
 
-            pauseItem.Text = paused ? Properties.Resources.TrayMenu_Resume : Properties.Resources.TrayMenu_Pause;
+            pauseItem.Text = WithHotkey(paused ? Properties.Resources.TrayMenu_Resume : Properties.Resources.TrayMenu_Pause,
+                ConfiguredHotkeys.ResolvePause(settings.PauseHotkey));
             pauseItem.Checked = paused;
+            silentItem.Text = WithHotkey(Properties.Resources.TrayMenu_SilentMode,
+                ConfiguredHotkeys.ResolveSilentMode(settings.SilentModeHotkey));
             silentItem.Checked = silent;
 
             StatusText = TrayStatusText.Compose(AppName, paused, silent,
                 Properties.Resources.TrayStatus_Paused, Properties.Resources.TrayStatus_Silent);
+        }
+
+        static string WithHotkey(string caption, KeyPressDefinition hotkey)
+        {
+            // Windows shows the text after a tab right-aligned, like the shortcut of a normal menu item
+            return hotkey == null ? caption : caption + "\t" + HotkeyParser.Format(hotkey);
         }
 
         public void Dispose()
@@ -103,6 +133,7 @@ namespace Carnac
 
             disposed = true;
             displayState.Changed -= DisplayStateChanged;
+            settings.PropertyChanged -= SettingsChanged;
             contextMenu.Dispose();
         }
     }

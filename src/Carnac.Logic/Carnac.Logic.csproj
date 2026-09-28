@@ -76,11 +76,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfiguredHotkeys.cs" />
     <Compile Include="Enums\NotificationPlacement.cs" />
     <Compile Include="IConcurrencyService.cs" />
     <Compile Include="IKeyDisplayState.cs" />
     <Compile Include="IMessageProvider.cs" />
-    <Compile Include="Internal\FixedQueue.cs" />
+    <Compile Include="HotkeyParser.cs" />
     <Compile Include="IKeyProvider.cs" />
     <Compile Include="IPasswordModeService.cs" />
     <Compile Include="IScreenManager.cs" />

@@ -87,6 +87,14 @@ namespace Carnac.Logic.Models
         [DefaultValue("")]
         public string ProcessFilterExpression { get; set;  }
 
+        /// <summary>Hotkey that switches silent mode on and off, for example "Ctrl+Alt+P". Empty means no hotkey.</summary>
+        [DefaultValue(ConfiguredHotkeys.DefaultSilentMode)]
+        public string SilentModeHotkey { get; set; }
+
+        /// <summary>Hotkey that pauses and resumes Carnac, for example "Ctrl+Alt+O". Empty means no hotkey.</summary>
+        [DefaultValue("")]
+        public string PauseHotkey { get; set; }
+
         public double ScaleTransform
         {
             get { return Placement == NotificationPlacement.TopLeft || Placement == NotificationPlacement.TopRight ? 1 : -1; }

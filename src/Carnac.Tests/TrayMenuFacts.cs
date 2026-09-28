@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Carnac.Logic;
+using Carnac.Logic.Models;
 using Xunit;
 
 namespace Carnac.Tests
@@ -13,12 +14,13 @@ namespace Carnac.Tests
         static readonly string SettingsCaption = "Settings" + (char)0x2026;
 
         readonly KeyDisplayState displayState = new KeyDisplayState();
+        readonly PopupSettings settings = new PopupSettings { SilentModeHotkey = "Ctrl+Alt+P", PauseHotkey = string.Empty };
         int settingsRequested;
         int exitRequested;
 
         TrayMenu CreateMenu(Action<Action> invokeOnUiThread = null)
         {
-            return new TrayMenu(displayState, () => settingsRequested++, () => exitRequested++, invokeOnUiThread ?? (action => action()));
+            return new TrayMenu(displayState, settings, () => settingsRequested++, () => exitRequested++, invokeOnUiThread ?? (action => action()));
         }
 
         static MenuItem[] ItemsOf(TrayMenu menu)
@@ -33,7 +35,7 @@ namespace Carnac.Tests
             {
                 var texts = ItemsOf(sut).Select(item => item.Text).ToArray();
 
-                Assert.Equal(new[] { SettingsCaption, "Pause", "Silent mode", "-", "Exit" }, texts);
+                Assert.Equal(new[] { SettingsCaption, "Pause", "Silent mode\tCtrl+Alt+P", "-", "Exit" }, texts);
             }
         }
 
@@ -222,6 +224,7 @@ namespace Carnac.Tests
 
             sut.Dispose();
             displayState.SetPaused(true);
+            settings.PauseHotkey = "Ctrl+Alt+O";
 
             Assert.Equal(0, invocations);
         }
@@ -229,10 +232,107 @@ namespace Carnac.Tests
         [Fact]
         public void constructor_validates_its_arguments()
         {
-            Assert.Throws<ArgumentNullException>(() => new TrayMenu(null, () => { }, () => { }, action => action()));
-            Assert.Throws<ArgumentNullException>(() => new TrayMenu(displayState, null, () => { }, action => action()));
-            Assert.Throws<ArgumentNullException>(() => new TrayMenu(displayState, () => { }, null, action => action()));
-            Assert.Throws<ArgumentNullException>(() => new TrayMenu(displayState, () => { }, () => { }, null));
+            Assert.Throws<ArgumentNullException>(() => new TrayMenu(null, settings, () => { }, () => { }, action => action()));
+            Assert.Throws<ArgumentNullException>(() => new TrayMenu(displayState, null, () => { }, () => { }, action => action()));
+            Assert.Throws<ArgumentNullException>(() => new TrayMenu(displayState, settings, null, () => { }, action => action()));
+            Assert.Throws<ArgumentNullException>(() => new TrayMenu(displayState, settings, () => { }, null, action => action()));
+            Assert.Throws<ArgumentNullException>(() => new TrayMenu(displayState, settings, () => { }, () => { }, null));
+        }
+
+        // ---- hotkeys next to the items ----
+
+        [Fact]
+        public void shows_the_silent_mode_hotkey_next_to_its_item()
+        {
+            settings.SilentModeHotkey = "Ctrl+Shift+F9";
+            using (var sut = CreateMenu())
+            {
+                Assert.Equal("Silent mode\tCtrl+Shift+F9", ItemsOf(sut)[2].Text);
+            }
+        }
+
+        [Fact]
+        public void shows_the_default_silent_mode_hotkey_for_settings_that_were_never_written()
+        {
+            using (var sut = new TrayMenu(displayState, new PopupSettings(), () => { }, () => { }, action => action()))
+            {
+                Assert.Equal("Silent mode\tCtrl+Alt+P", ItemsOf(sut)[2].Text);
+            }
+        }
+
+        [Fact]
+        public void shows_no_hotkey_when_it_is_switched_off()
+        {
+            settings.SilentModeHotkey = string.Empty;
+            using (var sut = CreateMenu())
+            {
+                Assert.Equal("Silent mode", ItemsOf(sut)[2].Text);
+                Assert.Equal("Pause", ItemsOf(sut)[1].Text);
+            }
+        }
+
+        [Fact]
+        public void shows_the_pause_hotkey_next_to_pause_and_resume()
+        {
+            settings.PauseHotkey = "Ctrl+Alt+O";
+            using (var sut = CreateMenu())
+            {
+                var pause = ItemsOf(sut)[1];
+                Assert.Equal("Pause\tCtrl+Alt+O", pause.Text);
+
+                displayState.SetPaused(true);
+
+                Assert.Equal("Resume\tCtrl+Alt+O", pause.Text);
+            }
+        }
+
+        [Fact]
+        public void follows_hotkeys_that_change_while_carnac_is_running()
+        {
+            using (var sut = CreateMenu())
+            {
+                var items = ItemsOf(sut);
+
+                settings.SilentModeHotkey = "Ctrl+Alt+Q";
+                settings.PauseHotkey = "Ctrl+Alt+O";
+
+                Assert.Equal("Silent mode\tCtrl+Alt+Q", items[2].Text);
+                Assert.Equal("Pause\tCtrl+Alt+O", items[1].Text);
+
+                settings.PauseHotkey = string.Empty;
+
+                Assert.Equal("Pause", items[1].Text);
+            }
+        }
+
+        [Fact]
+        public void hotkey_changes_are_applied_through_the_ui_thread_invoker()
+        {
+            var pending = new List<Action>();
+            using (var sut = CreateMenu(pending.Add))
+            {
+                settings.SilentModeHotkey = "Ctrl+Alt+Q";
+
+                Assert.Equal(1, pending.Count);
+                Assert.Equal("Silent mode\tCtrl+Alt+P", ItemsOf(sut)[2].Text);
+
+                pending[0]();
+
+                Assert.Equal("Silent mode\tCtrl+Alt+Q", ItemsOf(sut)[2].Text);
+            }
+        }
+
+        [Fact]
+        public void other_settings_do_not_refresh_the_menu()
+        {
+            var invocations = 0;
+            using (var sut = CreateMenu(action => { invocations++; action(); }))
+            {
+                settings.FontSize = 20;
+                settings.ItemOpacity = 0.7;
+
+                Assert.Equal(0, invocations);
+            }
         }
     }
 }
