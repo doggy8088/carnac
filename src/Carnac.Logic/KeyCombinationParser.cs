@@ -37,6 +37,17 @@ namespace Carnac.Logic
             {"Break", "Pause"}
         };
 
+        // The physical modifier keys. Carnac reports Ctrl, Alt, Shift and Win through the modifiers of the key that is
+        // pressed with them and never as a key press of their own (KeyProvider filters these events), so an entry
+        // ending in one of them could never match.
+        static readonly HashSet<Keys> ModifierKeys = new HashSet<Keys>
+        {
+            Keys.ControlKey, Keys.LControlKey, Keys.RControlKey,
+            Keys.ShiftKey, Keys.LShiftKey, Keys.RShiftKey,
+            Keys.Menu, Keys.LMenu, Keys.RMenu,
+            Keys.LWin, Keys.RWin
+        };
+
         readonly Action<string> warn;
 
         public KeyCombinationParser() : this(null)
@@ -295,7 +306,7 @@ namespace Carnac.Logic
             }
 
             key = resolved.Value;
-            if (key == Keys.None || (key & Keys.Modifiers) != Keys.None)
+            if (key == Keys.None || (key & Keys.Modifiers) != Keys.None || ModifierKeys.Contains(key))
             {
                 error = "'" + keyText + "' is a modifier, not a key; add the key after it (for example 'Ctrl+S')";
                 return false;
