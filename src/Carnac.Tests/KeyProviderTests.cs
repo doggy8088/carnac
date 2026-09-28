@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Carnac.Logic;
@@ -151,6 +152,60 @@ namespace Carnac.Tests
 
             // assert
             Assert.Equal(0, processedKeys.Count);
+        }
+
+        async Task<int> KeysShownWithFilter(string processFilterExpression)
+        {
+            settingsProvider.GetSettings<PopupSettings>().Returns(new PopupSettings() { ProcessFilterExpression = processFilterExpression });
+            var provider = new KeyProvider(KeyStreams.LetterL(), passwordModeService, desktopLockEventService, settingsProvider);
+
+            var processedKeys = await provider.GetKeyStream().ToList();
+
+            return processedKeys.Count;
+        }
+
+        static string CurrentProcessName()
+        {
+            return AssociatedProcessUtilities.GetAssociatedProcess().ProcessName;
+        }
+
+        [Fact]
+        public async Task filter_is_matched_case_insensitively()
+        {
+            Assert.Equal(1, await KeysShownWithFilter(Regex.Escape(CurrentProcessName().ToUpperInvariant())));
+            Assert.Equal(1, await KeysShownWithFilter(Regex.Escape(CurrentProcessName().ToLowerInvariant())));
+        }
+
+        [Fact]
+        public async Task filter_with_alternatives_shows_only_the_listed_processes()
+        {
+            // "notepad|calc": only these applications
+            Assert.Equal(0, await KeysShownWithFilter("notepad|calc"));
+            Assert.Equal(1, await KeysShownWithFilter("notepad|calc|" + Regex.Escape(CurrentProcessName())));
+        }
+
+        [Fact]
+        public async Task exclusion_filter_hides_the_excluded_process()
+        {
+            // "^(?!ZoomIt64$)": everything except ZoomIt64, here with the process the test runs in
+            var excludeCurrentProcess = "^(?!" + Regex.Escape(CurrentProcessName()) + "$)";
+
+            Assert.Equal(0, await KeysShownWithFilter(excludeCurrentProcess));
+        }
+
+        [Fact]
+        public async Task exclusion_filter_shows_other_processes()
+        {
+            Assert.Equal(1, await KeysShownWithFilter("^(?!ZoomIt64$)"));
+        }
+
+        [Fact]
+        public async Task exclusion_filter_with_exe_suffix_excludes_nothing()
+        {
+            // Process names have no ".exe", so the negative look-ahead of "^(?!<name>\.exe$)" always succeeds.
+            var withExe = "^(?!" + Regex.Escape(CurrentProcessName()) + @"\.exe$)";
+
+            Assert.Equal(1, await KeysShownWithFilter(withExe));
         }
 
         [Fact]
