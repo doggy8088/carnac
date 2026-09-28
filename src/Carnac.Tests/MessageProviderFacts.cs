@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Carnac.Logic;
 using Carnac.Logic.KeyMonitor;
 using Carnac.Logic.Models;
+using Message = Carnac.Logic.Models.Message;
 using Microsoft.Reactive.Testing;
 using Microsoft.Win32;
 using NSubstitute;
@@ -28,7 +29,7 @@ namespace Carnac.Tests
             
         }
 
-        MessageProvider CreateMessageProvider(IObservable<InterceptKeyEventArgs> keysStreamSource)
+        MessageProvider CreateMessageProvider(IObservable<InterceptKeyEventArgs> keysStreamSource, PopupSettings popupSettings = null)
         {
             var source = Substitute.For<IInterceptKeys>();
             source.GetKeyStream().Returns(keysStreamSource);
@@ -39,7 +40,65 @@ namespace Carnac.Tests
             var concurrencyService = Substitute.For<IConcurrencyService>();
             concurrencyService.MainThreadScheduler.Returns(testScheduler);
             concurrencyService.Default.Returns(testScheduler);
-            return new MessageProvider(shortcutProvider, keyProvider, new PopupSettings(), concurrencyService);
+            return new MessageProvider(shortcutProvider, keyProvider, popupSettings ?? new PopupSettings(), concurrencyService);
+        }
+
+        async Task<IList<Message>> MessagesFor(KeyPlayer keys, PopupSettings popupSettings)
+        {
+            return await CreateMessageProvider(keys.ToObservable(), popupSettings).GetMessageStream().ToList();
+        }
+
+        [Fact]
+        public async Task only_modifiers_filter_shows_shift_enter()
+        {
+            var messages = await MessagesFor(KeyStreams.Combination(Keys.Enter, shift: true), new PopupSettings { ShowOnlyModifiers = true });
+
+            var text = string.Join("", messages.Single().Text);
+            Assert.True(text.StartsWith("Shift + ", StringComparison.Ordinal), text);
+        }
+
+        [Fact]
+        public async Task only_modifiers_filter_shows_shift_with_tab_function_and_arrow_keys()
+        {
+            foreach (var key in new[] { Keys.Tab, Keys.F5, Keys.Up, Keys.PageDown })
+            {
+                var messages = await MessagesFor(KeyStreams.Combination(key, shift: true), new PopupSettings { ShowOnlyModifiers = true });
+
+                Assert.True(messages.Count == 1, "Shift+" + key + " should pass the modifier filter");
+            }
+        }
+
+        [Fact]
+        public async Task only_modifiers_filter_hides_plain_letters_and_typed_capitals()
+        {
+            var settings = new PopupSettings { ShowOnlyModifiers = true };
+
+            Assert.Empty(await MessagesFor(KeyStreams.LetterL(), settings));
+            Assert.Empty(await MessagesFor(KeyStreams.ShiftL(), settings));
+            Assert.Empty(await MessagesFor(KeyStreams.ExclaimationMark(), settings));
+            Assert.Empty(await MessagesFor(KeyStreams.Combination(Keys.Enter), settings));
+        }
+
+        [Fact]
+        public async Task only_modifiers_filter_still_shows_ctrl_alt_and_windows_combinations()
+        {
+            var settings = new PopupSettings { ShowOnlyModifiers = true };
+
+            Assert.Equal(1, (await MessagesFor(KeyStreams.CtrlU(), settings)).Count);
+            Assert.Equal(1, (await MessagesFor(KeyStreams.Combination(Keys.Left, alt: true), settings)).Count);
+            Assert.Equal(1, (await MessagesFor(KeyStreams.Combination(Keys.F, win: true, shift: true), settings)).Count);
+        }
+
+        [Fact]
+        public async Task shift_enter_shortcut_passes_shortcuts_only_together_with_the_modifier_filter()
+        {
+            shortcutProvider.GetShortcutsStartingWith(Arg.Any<KeyPress>())
+                .Returns(new List<KeyShortcut> { new KeyShortcut("New line", new KeyPressDefinition(Keys.Enter, shiftPressed: true)) });
+
+            var messages = await MessagesFor(KeyStreams.Combination(Keys.Enter, shift: true),
+                new PopupSettings { ShowOnlyModifiers = true, DetectShortcutsOnly = true });
+
+            Assert.Equal("New line", messages.Single().ShortcutName);
         }
 
         [Fact]

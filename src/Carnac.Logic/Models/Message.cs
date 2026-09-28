@@ -30,8 +30,8 @@ namespace Carnac.Logic.Models
         {
             processName = key.Process.ProcessName;
             processIcon = key.Process.ProcessIcon;
-            canBeMerged = !key.HasModifierPressed;
-            isModifier = key.HasModifierPressed;
+            canBeMerged = !key.IsShortcutLike;
+            isModifier = key.IsShortcutLike;
 
             keys = new ReadOnlyCollection<KeyPress>(new[] { key });
             textCollection = new ReadOnlyCollection<string>(CreateTextSequence(key).ToArray());
@@ -51,7 +51,7 @@ namespace Carnac.Logic.Models
             processIcon = allKeys.First().Process.ProcessIcon;
             shortcutName = shortcut.Name;
             this.isShortcut = isShortcut;
-            this.isModifier = allKeys.Any(k => k.HasModifierPressed);
+            this.isModifier = allKeys.Any(k => k.IsShortcutLike);
             canBeMerged = false;
 
             this.keys = new ReadOnlyCollection<KeyPress>(allKeys);
@@ -169,7 +169,7 @@ namespace Carnac.Logic.Models
 
             public RepeatedKeyPress(KeyPress keyPress, bool requiresPrefix = false)
             {
-                nextRequiresSeperator = keyPress.HasModifierPressed;
+                nextRequiresSeperator = keyPress.IsShortcutLike;
                 textParts = keyPress.GetTextParts().ToArray();
                 this.requiresPrefix = requiresPrefix;
                 repeatCount = 1;

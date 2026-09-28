@@ -120,7 +120,62 @@ namespace Carnac.Tests
             var processedKeys = await provider.GetKeyStream().ToList();
 
             // assert
-            Assert.Equal(new[] { "Win", "e" }, processedKeys.Single().Input);
+            Assert.Equal(new[] { "Win", "E" }, processedKeys.Single().Input);
+        }
+
+        async Task<string[]> InputOf(KeyPlayer player)
+        {
+            var provider = new KeyProvider(player, passwordModeService, desktopLockEventService, settingsProvider);
+
+            var processedKeys = await provider.GetKeyStream().ToList();
+
+            return processedKeys.Single().Input.ToArray();
+        }
+
+        [Fact]
+        public async Task windows_key_with_a_letter_is_shown_as_a_shortcut_with_a_capital_letter()
+        {
+            Assert.Equal(new[] { "Win", "Q" }, await InputOf(KeyStreams.Combination(Keys.Q, win: true)));
+        }
+
+        [Fact]
+        public async Task windows_key_with_shift_and_a_letter_keeps_the_shift()
+        {
+            // Win+Shift+F used to be shown as Win + F
+            Assert.Equal(new[] { "Win", "Shift", "F" }, await InputOf(KeyStreams.Combination(Keys.F, win: true, shift: true)));
+        }
+
+        [Fact]
+        public async Task windows_key_with_shift_and_a_digit_shows_the_key_not_the_symbol()
+        {
+            Assert.Equal(new[] { "Win", "Shift", "1" }, await InputOf(KeyStreams.Combination(Keys.D1, win: true, shift: true)));
+        }
+
+        [Fact]
+        public async Task windows_key_with_space_is_a_shortcut()
+        {
+            // the space is shown as "Space" when the message text is built because a modifier is held
+            Assert.Equal(new[] { "Win", " " }, await InputOf(KeyStreams.Combination(Keys.Space, win: true)));
+        }
+
+        [Fact]
+        public async Task control_shift_and_windows_are_listed_in_the_same_order_as_before()
+        {
+            Assert.Equal(new[] { "Ctrl", "Alt", "Win", "Shift", "F" },
+                await InputOf(KeyStreams.Combination(Keys.F, control: true, alt: true, win: true, shift: true)));
+        }
+
+        [Fact]
+        public async Task shift_with_a_letter_is_still_a_typed_capital()
+        {
+            Assert.Equal(new[] { "F" }, await InputOf(KeyStreams.Combination(Keys.F, shift: true)));
+        }
+
+        [Fact]
+        public async Task shift_with_a_key_that_types_nothing_shows_the_shift()
+        {
+            Assert.Equal(new[] { "Shift", "Tab" }, await InputOf(KeyStreams.Combination(Keys.Tab, shift: true)));
+            Assert.Equal(new[] { "Shift", "F5" }, await InputOf(KeyStreams.Combination(Keys.F5, shift: true)));
         }
 
         [Fact]

@@ -144,7 +144,10 @@
                             <CheckBox IsChecked="{Binding Settings.DetectShortcutsOnly}" Content="Only show keys that are listed in the Keymaps folder" />
                         </ui:PreferencesField>
                         <ui:PreferencesField Header="Only keys with Modifiers">
-                            <CheckBox IsChecked="{Binding Settings.ShowOnlyModifiers}" Content="Only show keys that have Ctrl, Shift, Alt or Windows" />
+                            <CheckBox IsChecked="{Binding Settings.ShowOnlyModifiers}"
+                                      ToolTip="Shift only counts for keys that do not type a character: Shift+Enter, Shift+Tab, Shift+F5 and Shift+arrows are shown, Shift+A (a capital A) is not.">
+                                <TextBlock TextWrapping="Wrap" Text="Only show keys pressed with Ctrl, Alt or Windows, or with Shift when the key does not type a character (Enter, Tab, arrows, F-keys)" />
+                            </CheckBox>
                         </ui:PreferencesField>
                         <ui:PreferencesField Header="Show Space as ␣">
                             <CheckBox IsChecked="{Binding Settings.ShowSpaceAsUnicode}" Content="Show Space as Unicode character '␣'" />
