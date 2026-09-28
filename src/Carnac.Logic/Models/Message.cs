@@ -162,17 +162,66 @@ namespace Carnac.Logic.Models
 
         private sealed class RepeatedKeyPress
         {
+            // Repeated typed characters ("ll" in "hello", "((", "www") read naturally as typed, so they are
+            // only summarised as "x N" once the repeat is clearly deliberate. Digits wait longer, because
+            // "1000000" would otherwise read as "10 x 6".
+            const int MinimumTypedCharacterRepeatToSummarise = 4;
+            const int MinimumTypedDigitRepeatToSummarise = 10;
+
+            readonly KeyPress keyPress;
             readonly bool requiresPrefix;
             readonly bool nextRequiresSeperator;
             readonly string[] textParts;
             int repeatCount;
+            int? minimumRepeatToSummarise;
 
             public RepeatedKeyPress(KeyPress keyPress, bool requiresPrefix = false)
             {
+                this.keyPress = keyPress;
                 nextRequiresSeperator = keyPress.HasModifierPressed;
                 textParts = keyPress.GetTextParts().ToArray();
                 this.requiresPrefix = requiresPrefix;
                 repeatCount = 1;
+            }
+
+            // How many presses in a row it takes before "x N" is shown. Named keys ("Back", "Left") and shortcuts
+            // ("Ctrl", "L") always collapse from two.
+            int MinimumRepeatToSummarise()
+            {
+                if (!minimumRepeatToSummarise.HasValue)
+                {
+                    var typedCharacter = GetTypedCharacter(keyPress);
+                    minimumRepeatToSummarise = typedCharacter == null ? 2
+                        : char.IsDigit(typedCharacter, 0) ? MinimumTypedDigitRepeatToSummarise
+                        : MinimumTypedCharacterRepeatToSummarise;
+                }
+
+                return minimumRepeatToSummarise.Value;
+            }
+
+            // The single visible character (or a space) this key press types, otherwise null. The raw input is
+            // used rather than the formatted text ("Left" is drawn as an arrow glyph, which is not typing), and
+            // not the modifier flags: a shortcut has its modifiers in the input ("Ctrl", "L"), while a character
+            // that is typed with AltGr (which Windows reports as Ctrl+Alt) is given as a single character once
+            // the keys are named after the keyboard layout. With the US names it is still "Ctrl", "Alt", "7".
+            static string GetTypedCharacter(KeyPress keyPress)
+            {
+                var input = keyPress.Input.ToArray();
+                if (input.Length != 1 || string.IsNullOrEmpty(input[0]))
+                    return null;
+
+                // the numpad operators are padded with spaces (" + ") to read well in a sentence
+                var text = input[0] == " " ? input[0] : input[0].Trim();
+                var isSingleCharacter = text.Length == 1 || (text.Length == 2 && char.IsSurrogatePair(text, 0));
+                if (!isSingleCharacter)
+                    return null;
+
+                var isTypedCharacter = text == " "
+                    || char.IsLetter(text, 0)
+                    || char.IsNumber(text, 0)
+                    || char.IsPunctuation(text, 0)
+                    || char.IsSymbol(text, 0);
+                return isTypedCharacter ? text : null;
             }
 
             public bool NextRequiresSeperator { get { return nextRequiresSeperator; } }
@@ -184,18 +233,26 @@ namespace Carnac.Logic.Models
 
             public bool IsRepeatedBy(KeyPress nextKeyPress)
             {
-                return textParts.SequenceEqual(nextKeyPress.GetTextParts());
+                // the modifier state decides how a run is summarised, so a run must not mix the two
+                return keyPress.HasModifierPressed == nextKeyPress.HasModifierPressed
+                    && textParts.SequenceEqual(nextKeyPress.GetTextParts());
             }
 
             public IEnumerable<string> GetTextParts()
             {
                 if (requiresPrefix)
                     yield return ", ";
-                foreach (var textPart in textParts)
+
+                var summarise = repeatCount > 1 && repeatCount >= MinimumRepeatToSummarise();
+                var copies = summarise ? 1 : repeatCount;
+                for (var copy = 0; copy < copies; copy++)
                 {
-                    yield return textPart;
+                    foreach (var textPart in textParts)
+                    {
+                        yield return textPart;
+                    }
                 }
-                if (repeatCount > 1)
+                if (summarise)
                     yield return string.Format(" x {0} ", repeatCount);
             }
         }
