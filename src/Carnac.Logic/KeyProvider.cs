@@ -119,8 +119,9 @@ namespace Carnac.Logic
                     .Where(k => !IsModifierKeyPress(k) && k.KeyDirection == KeyDirection.Down)
                     .Select(ToCarnacKeyPress)
                     .Where(keypress => keypress != null)
-                    .Select(NameByKeyboardLayout)
                     .Where(k => !passwordModeService.CheckPasswordMode(k.InterceptKeyEventArgs))
+                    .Select(NameByKeyboardLayout)
+                    .Where(keypress => keypress != null)
                     .Subscribe(observer);
 
                 return new CompositeDisposable(sessionSwitchStreamSubscription, keyStreamSubsription);
@@ -186,11 +187,9 @@ namespace Carnac.Logic
             if (isWinKeyPressed)
                 yield return "Win";
 
-            // Win + a punctuation key, or a digit with Shift (its symbol): named as the key is on the layout, like the
-            // ones with Ctrl or Alt. Win + a letter or digit is named as in the lists of shortcuts ("Win+E", "Win+1").
-            var isDigit = interceptKeyEventArgs.Key >= Keys.D0 && interceptKeyEventArgs.Key <= Keys.D9;
-            if (isWinKeyPressed && !controlPressed && !altPressed
-                && (!IsNamedLikeItsLatinLetter(interceptKeyEventArgs.Key) || (isDigit && shiftPressed)))
+            // Win + a punctuation key: named as the key is on the layout, like the ones with Ctrl or Alt. Win + a letter
+            // or digit is named as it always was ("Win+E", "Win+1"), the layout has no say in what Shift makes of it.
+            if (isWinKeyPressed && !controlPressed && !altPressed && !IsNamedLikeItsLatinLetter(interceptKeyEventArgs.Key))
             {
                 var winText = GetLayoutText(interceptKeyEventArgs.Key, shiftPressed, false);
                 if (winText != null)
@@ -227,18 +226,24 @@ namespace Carnac.Logic
 
         // A key that types a character on the keyboard layout of the window that has the focus is shown as that
         // character, with AltGr too. It is text like the rest, so without the Ctrl and Alt Windows reports for AltGr:
-        // it merges with the text around it and is not taken for a shortcut.
+        // it merges with the text around it and is not taken for a shortcut. A key that types nothing that can be
+        // seen (a dead key: the accent comes with the key after it) is not shown at all.
+        // This is done after the password mode has had its look at the key as it was pressed, which is what the
+        // Ctrl+Alt+P that switches it on looks like.
         KeyPress NameByKeyboardLayout(KeyPress keyPress)
         {
             var eventArgs = keyPress.InterceptKeyEventArgs;
 
             // Ctrl or Alt alone, or the Windows key, make a shortcut; Ctrl and Alt together may be AltGr
-            if (keyboardLayoutTranslator == null || keyPress.WinkeyPressed || eventArgs.ControlPressed != eventArgs.AltPressed)
+            if (keyPress.WinkeyPressed || eventArgs.ControlPressed != eventArgs.AltPressed)
                 return keyPress;
 
             var text = GetLayoutText(eventArgs.Key, eventArgs.ShiftPressed, eventArgs.ControlPressed);
             if (text == null)
                 return keyPress;
+
+            if (text.Length == 0)
+                return null;
 
             return new KeyPress(
                 keyPress.Process,
@@ -249,7 +254,10 @@ namespace Carnac.Logic
 
         string GetLayoutText(Keys key, bool shift, bool controlAlt)
         {
-            return keyboardLayoutTranslator == null ? null : keyboardLayoutTranslator.GetText(key, shift, controlAlt);
+            if (keyboardLayoutTranslator == null || (settings != null && !settings.UseKeyboardLayoutNames))
+                return null;
+
+            return keyboardLayoutTranslator.GetText(key, shift, controlAlt);
         }
 
         // Shortcuts are written with the name of the letter or digit ("Ctrl+C", "Ctrl+1") whatever the layout, the

@@ -102,6 +102,10 @@ namespace Carnac.Logic.Models
             get { return new Thickness(LeftOffset, TopOffset, RightOffset, BottomOffset); }
         }
 
+        /// <summary>Name the keys as they are on the keyboard layout that is in use instead of as on a US keyboard.</summary>
+        [DefaultValue(true)]
+        public bool UseKeyboardLayoutNames { get; set; }
+
         public string SortDescription
         {
             get { return Placement == NotificationPlacement.TopLeft || Placement == NotificationPlacement.TopRight ? "Ascending" : "Descending"; }

@@ -46,7 +46,7 @@ namespace Carnac.Tests
 
             foreach (var layoutId in new[] { Us, German, French, Russian, Turkish, PortugueseBrazil })
             {
-                using (var layout = LoadedLayout.Load(layoutId))
+                var layout = LoadedLayout.Load(layoutId);
                 {
                     Assert.True(layout != null, "the keyboard layout " + layoutId + " cannot be loaded, so the tests that use it would test nothing");
                 }
@@ -56,7 +56,7 @@ namespace Carnac.Tests
         [Fact]
         public void the_us_layout_names_keys_exactly_as_the_us_tables_do()
         {
-            using (var layout = LoadedLayout.Load(Us))
+            var layout = LoadedLayout.Load(Us);
             {
                 if (layout == null) return;
 
@@ -80,13 +80,13 @@ namespace Carnac.Tests
         [Fact]
         public void keys_that_do_not_type_a_character_are_not_translated()
         {
-            using (var layout = LoadedLayout.Load(Us))
+            var layout = LoadedLayout.Load(Us);
             {
                 if (layout == null) return;
 
                 var keys = new[]
                 {
-                    Keys.Space, Keys.Tab, Keys.Return, Keys.Back, Keys.Escape, Keys.F5, Keys.Left, Keys.Delete,
+                    Keys.Tab, Keys.Return, Keys.Back, Keys.Escape, Keys.F5, Keys.Left, Keys.Delete,
                     Keys.NumPad1, Keys.Add, Keys.Divide, Keys.LShiftKey, Keys.LControlKey, Keys.LWin
                 };
 
@@ -99,15 +99,26 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void a_space_is_a_space_unless_an_accent_is_pending()
+        {
+            var layout = LoadedLayout.Load(German);
+            if (layout == null) return;
+
+            // the name it already has: no answer
+            Assert.Null(Translate(Keys.Space, false, false, layout));
+            Assert.Null(Translate(Keys.Space, true, false, layout));
+        }
+
+        [Fact]
         public void the_german_layout_names_its_own_punctuation_and_altgr_characters()
         {
-            using (var layout = LoadedLayout.Load(German))
+            var layout = LoadedLayout.Load(German);
             {
                 if (layout == null) return;
 
-                Assert.Equal("ü", Translate(Keys.Oem1, false, false, layout));
-                Assert.Equal("Ü", Translate(Keys.Oem1, true, false, layout));
-                Assert.Equal("ß", Translate(Keys.OemOpenBrackets, false, false, layout));
+                Assert.Equal("\u00fc", Translate(Keys.Oem1, false, false, layout));
+                Assert.Equal("\u00dc", Translate(Keys.Oem1, true, false, layout));
+                Assert.Equal("\u00df", Translate(Keys.OemOpenBrackets, false, false, layout));
                 Assert.Equal("/", Translate(Keys.D7, true, false, layout));
                 Assert.Equal("=", Translate(Keys.D0, true, false, layout));
                 Assert.Equal("@", Translate(Keys.Q, false, true, layout));
@@ -121,13 +132,13 @@ namespace Carnac.Tests
         [Fact]
         public void the_french_layout_needs_shift_for_digits()
         {
-            using (var layout = LoadedLayout.Load(French))
+            var layout = LoadedLayout.Load(French);
             {
                 if (layout == null) return;
 
                 Assert.Equal("&", Translate(Keys.D1, false, false, layout));
                 Assert.Equal("1", Translate(Keys.D1, true, false, layout));
-                Assert.Equal("é", Translate(Keys.D2, false, false, layout));
+                Assert.Equal("\u00e9", Translate(Keys.D2, false, false, layout));
                 Assert.Equal("2", Translate(Keys.D2, true, false, layout));
             }
         }
@@ -135,18 +146,18 @@ namespace Carnac.Tests
         [Fact]
         public void non_latin_and_dotless_letters_follow_the_layout()
         {
-            using (var russian = LoadedLayout.Load(Russian))
-            using (var turkish = LoadedLayout.Load(Turkish))
+            var russian = LoadedLayout.Load(Russian);
+            var turkish = LoadedLayout.Load(Turkish);
             {
                 if (russian != null)
                 {
-                    Assert.Equal("й", Translate(Keys.Q, false, false, russian));
-                    Assert.Equal("Й", Translate(Keys.Q, true, false, russian));
+                    Assert.Equal("\u0439", Translate(Keys.Q, false, false, russian));
+                    Assert.Equal("\u0419", Translate(Keys.Q, true, false, russian));
                 }
 
                 if (turkish != null)
                 {
-                    Assert.Equal("ı", Translate(Keys.I, false, false, turkish));
+                    Assert.Equal("\u0131", Translate(Keys.I, false, false, turkish));
                     Assert.Equal("I", Translate(Keys.I, true, false, turkish));
                 }
             }
@@ -160,7 +171,7 @@ namespace Carnac.Tests
             Assert.True(KeyboardLayoutTranslator.IsCharacterKey(abntC1));
             Assert.True(KeyboardLayoutTranslator.IsCharacterKey(abntC2));
 
-            using (var layout = LoadedLayout.Load(PortugueseBrazil))
+            var layout = LoadedLayout.Load(PortugueseBrazil);
             {
                 if (layout == null) return;
 
@@ -171,44 +182,76 @@ namespace Carnac.Tests
         }
 
         [Fact]
-        public void characters_nobody_can_see_are_not_names_of_keys()
+        public void characters_nobody_can_see_are_not_shown_and_keys_that_type_only_those_are_not_shown_at_all()
         {
-            // Persian types a zero width non-joiner on Shift+B, Sinhala a no-break space on Shift+the backslash key
-            using (var persian = LoadedLayout.Load(PersianStandard))
-            using (var sinhala = LoadedLayout.Load(Sinhala))
-            {
-                if (persian != null)
-                    Assert.Null(Translate(Keys.B, true, false, persian));
+            // Persian types a zero width non-joiner on Shift+B, Sinhala a no-break space on Shift+the backslash key and
+            // a sequence with a zero width joiner on Shift+H
+            var persian = LoadedLayout.Load(PersianStandard);
+            var sinhala = LoadedLayout.Load(Sinhala);
 
-                if (sinhala != null)
-                    Assert.Null(Translate(Keys.Oem5, true, false, sinhala));
+            if (persian != null)
+                Assert.Equal(string.Empty, Translate(Keys.B, true, false, persian));
+
+            if (sinhala != null)
+            {
+                Assert.Equal(string.Empty, Translate(Keys.Oem5, true, false, sinhala));
+
+                var letters = Translate(Keys.H, true, false, sinhala);
+                Assert.True(letters.Length > 0);
+                // ordinal: a culture-sensitive search treats a zero width joiner as nothing and finds it everywhere
+                Assert.True(letters.IndexOf('\u200d') < 0);
             }
         }
 
         [Fact]
-        public void a_dead_key_is_named_by_its_accent_and_does_not_change_the_keyboard_state()
+        public void caps_lock_changes_the_digit_row_of_the_french_layout_but_not_the_letters_carnac_shows()
         {
-            using (var layout = LoadedLayout.Load(German))
+            var french = LoadedLayout.Load(French);
+            var german = LoadedLayout.Load(German);
+            var us = LoadedLayout.Load(Us);
+
+            if (french != null)
             {
-                if (layout == null) return;
-
-                // Oem6 is the acute accent dead key on the German layout. If translating it were to change the
-                // keyboard state, as ToUnicodeEx does without its "do not change" flag, the accent would be combined
-                // with the next key and Carnac would eat the dead key the user is typing in another application.
-                var accent = Translate(Keys.Oem6, false, false, layout);
-                var letterAfterwards = Translate(Keys.A, false, false, layout);
-                var accentAgain = Translate(Keys.Oem6, false, false, layout);
-
-                Assert.Equal("´", accent);
-                Assert.Equal("a", letterAfterwards);
-                Assert.Equal(accent, accentAgain);
+                Assert.Equal("&", KeyboardLayoutTranslator.Translate(Keys.D1, false, false, french.Handle));
+                Assert.Equal("1", KeyboardLayoutTranslator.Translate(Keys.D1, false, false, french.Handle, capsLock: true));
             }
+
+            if (german != null)
+            {
+                // Carnac has always shown letters without the capitals of Caps Lock
+                Assert.Equal("q", KeyboardLayoutTranslator.Translate(Keys.Q, false, false, german.Handle, capsLock: true));
+            }
+
+            if (us != null)
+            {
+                Assert.Equal("1", KeyboardLayoutTranslator.Translate(Keys.D1, false, false, us.Handle, capsLock: true));
+                Assert.Equal(";", KeyboardLayoutTranslator.Translate(Keys.Oem1, false, false, us.Handle, capsLock: true));
+            }
+        }
+
+        [Fact]
+        public void a_dead_key_types_nothing_by_itself_and_does_not_change_the_keyboard_state()
+        {
+            var layout = LoadedLayout.Load(German);
+            if (layout == null) return;
+
+            // Oem6 is the acute accent dead key on the German layout. If translating it were to change the
+            // keyboard state, as ToUnicodeEx does without its "do not change" flag, the accent would be combined
+            // with the next key and Carnac would eat the dead key the user is typing in another application.
+            var deadKey = Translate(Keys.Oem6, false, false, layout);
+            var letterAfterwards = Translate(Keys.A, false, false, layout);
+            var deadKeyAgain = Translate(Keys.Oem6, false, false, layout);
+
+            // the accent comes with the key after it: nothing to show for the dead key itself
+            Assert.Equal(string.Empty, deadKey);
+            Assert.Equal("a", letterAfterwards);
+            Assert.Equal(deadKey, deadKeyAgain);
         }
 
         [Fact]
         public void a_dead_key_typed_in_the_application_is_combined_but_not_used_up()
         {
-            using (var layout = LoadedLayout.Load(German))
+            var layout = LoadedLayout.Load(German);
             {
                 if (layout == null) return;
 
@@ -220,9 +263,12 @@ namespace Carnac.Tests
                     var first = Translate(Keys.A, false, false, layout);
                     var second = Translate(Keys.A, false, false, layout);
 
-                    Assert.Equal("á", first);
+                    Assert.Equal("\u00e1", first);
                     // Carnac looked, the accent is still there for the application to combine
                     Assert.Equal(first, second);
+
+                    // and a space types the accent itself
+                    Assert.Equal("\u00b4", Translate(Keys.Space, false, false, layout));
                 }
                 finally
                 {
@@ -234,15 +280,15 @@ namespace Carnac.Tests
         [Fact]
         public void the_translator_uses_the_layout_it_is_given_for_every_call()
         {
-            using (var german = LoadedLayout.Load(German))
-            using (var french = LoadedLayout.Load(French))
+            var german = LoadedLayout.Load(German);
+            var french = LoadedLayout.Load(French);
             {
                 if (german == null || french == null) return;
 
                 var current = german.Handle;
                 var translator = new KeyboardLayoutTranslator(() => current);
 
-                Assert.Equal("ü", translator.GetText(Keys.Oem1, false, false));
+                Assert.Equal("\u00fc", translator.GetText(Keys.Oem1, false, false));
                 current = french.Handle;
                 Assert.Equal("$", translator.GetText(Keys.Oem1, false, false));
             }
@@ -251,7 +297,7 @@ namespace Carnac.Tests
         [Fact]
         public void ctrl_and_alt_are_altgr_only_when_the_right_alt_key_is_down()
         {
-            using (var layout = LoadedLayout.Load(German))
+            var layout = LoadedLayout.Load(German);
             {
                 if (layout == null) return;
 
@@ -293,12 +339,9 @@ namespace Carnac.Tests
         {
             var translator = new KeyboardLayoutTranslator();
 
-            string text = null;
-            var exception = Record.Exception(() => { text = translator.GetText(Keys.A, false, false); KeyboardLayoutTranslator.GetFocusedWindowLayout(); });
+            var exception = Record.Exception(() => { translator.GetText(Keys.A, false, false); KeyboardLayoutTranslator.GetFocusedWindowLayout(); });
 
             Assert.Null(exception);
-            // no focus at all (a locked desktop) is no layout; otherwise it is the letter of the focused layout
-            Assert.True(text == null || text.Length >= 1);
         }
 
         [Fact]
@@ -306,6 +349,7 @@ namespace Carnac.Tests
         {
             Assert.Equal("layoutProvider", Assert.Throws<ArgumentNullException>(() => new KeyboardLayoutTranslator(null)).ParamName);
             Assert.Equal("isRightAltDown", Assert.Throws<ArgumentNullException>(() => new KeyboardLayoutTranslator(() => IntPtr.Zero, null)).ParamName);
+            Assert.Equal("isCapsLockOn", Assert.Throws<ArgumentNullException>(() => new KeyboardLayoutTranslator(() => IntPtr.Zero, () => false, null)).ParamName);
         }
 
         static string Translate(Keys key, bool shift, bool altGr, LoadedLayout layout)
@@ -313,7 +357,7 @@ namespace Carnac.Tests
             return KeyboardLayoutTranslator.Translate(key, shift, altGr, layout.Handle);
         }
 
-        sealed class LoadedLayout : IDisposable
+        sealed class LoadedLayout
         {
             const uint DoNotTellShell = 0x80;
             const uint SpaceKey = 0x20;
@@ -331,7 +375,7 @@ namespace Carnac.Tests
                 if (!KeyboardLayoutTranslator.IsSupported)
                     return null;
 
-                // Not unloaded afterwards: the list of layouts is shared with the other programs of the session, and the
+                // Never unloaded: the list of layouts is shared with the other programs of the session, and the
                 // layout goes away by itself when the last program that uses it ends.
                 var handle = LoadKeyboardLayout(layoutId, DoNotTellShell);
                 return handle == IntPtr.Zero ? null : new LoadedLayout(handle);
@@ -349,10 +393,6 @@ namespace Carnac.Tests
             {
                 var text = new char[8];
                 ToUnicodeEx(SpaceKey, MapVirtualKeyEx(SpaceKey, 0, layout), new byte[256], text, text.Length, 0, layout);
-            }
-
-            public void Dispose()
-            {
             }
 
             [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -382,11 +422,11 @@ namespace Carnac.Tests
         [Fact]
         public async Task a_typed_key_is_named_by_the_layout()
         {
-            layout.Set(Keys.Oem1, false, false, "ü");
-            layout.Set(Keys.Oem1, true, false, "Ü");
+            layout.Set(Keys.Oem1, false, false, "\u00fc");
+            layout.Set(Keys.Oem1, true, false, "\u00dc");
 
-            Assert.Equal(new[] { "ü" }, await Input(Press(Keys.Oem1)));
-            Assert.Equal(new[] { "Ü" }, await Input(Press(Keys.Oem1, shift: true)));
+            Assert.Equal(new[] { "\u00fc" }, await Input(Press(Keys.Oem1)));
+            Assert.Equal(new[] { "\u00dc" }, await Input(Press(Keys.Oem1, shift: true)));
         }
 
         [Fact]
@@ -409,7 +449,7 @@ namespace Carnac.Tests
         [Fact]
         public async Task without_a_translator_keys_are_named_as_on_a_us_keyboard()
         {
-            layout.Set(Keys.Oem1, false, false, "ü");
+            layout.Set(Keys.Oem1, false, false, "\u00fc");
 
             var withoutTranslator = new KeyProvider(Press(Keys.Oem1), passwordModeService, desktopLockEventService, settingsProvider);
 
@@ -420,12 +460,12 @@ namespace Carnac.Tests
         [Fact]
         public async Task shortcuts_name_punctuation_by_the_layout_but_letters_and_digits_by_their_latin_name()
         {
-            layout.Set(Keys.Oem1, false, false, "ü");
-            layout.Set(Keys.L, false, false, "д");
+            layout.Set(Keys.Oem1, false, false, "\u00fc");
+            layout.Set(Keys.L, false, false, "\u0434");
             layout.Set(Keys.D1, false, false, "&");
 
-            Assert.Equal(new[] { "Ctrl", "ü" }, await Input(Press(Keys.Oem1, control: true)));
-            Assert.Equal(new[] { "Ctrl", "Shift", "ü" }, await Input(Press(Keys.Oem1, control: true, shift: true)));
+            Assert.Equal(new[] { "Ctrl", "\u00fc" }, await Input(Press(Keys.Oem1, control: true)));
+            Assert.Equal(new[] { "Ctrl", "Shift", "\u00fc" }, await Input(Press(Keys.Oem1, control: true, shift: true)));
             Assert.Equal(new[] { "Alt", "L" }, await Input(Press(Keys.L, alt: true)));
             Assert.Equal(new[] { "Ctrl", "1" }, await Input(Press(Keys.D1, control: true)));
         }
@@ -468,16 +508,59 @@ namespace Carnac.Tests
         [Fact]
         public async Task win_and_a_punctuation_key_are_named_by_the_layout()
         {
-            layout.Set(Keys.Oem1, false, false, "ü");
+            layout.Set(Keys.Oem1, false, false, "\u00fc");
             layout.Set(Keys.D7, true, false, "/");
             layout.Set(Keys.D1, false, false, "&");
             layout.Set(Keys.E, false, false, "x");
 
-            Assert.Equal(new[] { "Win", "ü" }, await Input(WinPress(Keys.Oem1)));
-            Assert.Equal(new[] { "Win", "/" }, await Input(WinPress(Keys.D7, shift: true)));
-            // the digit and the letter are named as in the shortcut lists
+            Assert.Equal(new[] { "Win", "\u00fc" }, await Input(WinPress(Keys.Oem1)));
+            // the digit and the letter are named as they always were; what Shift makes of a digit is not for the layout
             Assert.Equal(new[] { "Win", "1" }, await Input(WinPress(Keys.D1)));
+            Assert.Equal(new[] { "Win", "&" }, await Input(WinPress(Keys.D7, shift: true)));
             Assert.Equal(new[] { "Win", "e" }, await Input(WinPress(Keys.E)));
+        }
+
+        [Fact]
+        public async Task a_dead_key_is_not_shown_and_the_key_after_it_is_named_as_the_application_gets_it()
+        {
+            layout.Set(Keys.Oem6, false, false, string.Empty);
+            layout.Set(Keys.A, false, false, "\u00e1");
+            var keys = new KeyPlayer();
+            keys.AddRange(Press(Keys.Oem6));
+            keys.AddRange(Press(Keys.A));
+
+            var keyPresses = await new KeyProvider(keys, passwordModeService, desktopLockEventService, settingsProvider, layout).GetKeyStream().ToList();
+
+            Assert.Equal(new[] { new[] { "\u00e1" } }, keyPresses.Select(k => k.Input.ToArray()).ToArray());
+        }
+
+        [Fact]
+        public async Task password_mode_sees_the_key_as_it_was_pressed_not_as_the_layout_names_it()
+        {
+            // on some layouts AltGr+P types a character, but Ctrl+Alt+P has to switch password mode on all the same
+            layout.Set(Keys.P, false, true, "\u00f6");
+            var keys = new KeyPlayer();
+            keys.AddRange(Press(Keys.P, control: true, alt: true));
+            keys.AddRange(Press(Keys.A));
+
+            var keyPresses = await new KeyProvider(keys, passwordModeService, desktopLockEventService, settingsProvider, layout).GetKeyStream().ToList();
+
+            Assert.Empty(keyPresses);
+        }
+
+        [Fact]
+        public async Task the_layout_can_be_switched_off_in_the_settings()
+        {
+            layout.Set(Keys.Oem1, false, false, "\u00fc");
+            layout.Set(Keys.Oem1, false, false, "\u00fc");
+            var settings = new PopupSettings { UseKeyboardLayoutNames = false };
+            settingsProvider.GetSettings<PopupSettings>().Returns(settings);
+
+            Assert.Equal(new[] { ";" }, await Input(Press(Keys.Oem1)));
+            Assert.Equal(new[] { "Win", ";" }, await Input(WinPress(Keys.Oem1)));
+
+            settings.UseKeyboardLayoutNames = true;
+            Assert.Equal(new[] { "\u00fc" }, await Input(Press(Keys.Oem1)));
         }
 
         [Fact]

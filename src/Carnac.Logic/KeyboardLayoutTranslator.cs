@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 
 namespace Carnac.Logic
@@ -16,6 +17,7 @@ namespace Carnac.Logic
     /// Windows 10 version 1607; on older systems nothing is translated and the US names are used.
     /// The flag stops Carnac from changing the state, not from seeing it: when a dead key was typed in the
     /// application just before, the translation of the next key includes the accent, as it does for the application.
+    /// So the dead key itself is shown as nothing (empty text) and the key after it as what the application gets.
     /// </remarks>
     public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
     {
@@ -26,6 +28,7 @@ namespace Carnac.Logic
         const int VkShift = 0x10;
         const int VkControl = 0x11;
         const int VkMenu = 0x12;
+        const int VkCapital = 0x14;
         const int VkLShift = 0xA0;
         const int VkLControl = 0xA2;
         const int VkRMenu = 0xA5;
@@ -42,6 +45,7 @@ namespace Carnac.Logic
 
         readonly Func<IntPtr> layoutProvider;
         readonly Func<bool> isRightAltDown;
+        readonly Func<bool> isCapsLockOn;
 
         /// <summary>Translates with the layout of the window that has the focus.</summary>
         public KeyboardLayoutTranslator()
@@ -54,9 +58,15 @@ namespace Carnac.Logic
         {
         }
 
+        public KeyboardLayoutTranslator(Func<IntPtr> layoutProvider, Func<bool> isRightAltDown)
+            : this(layoutProvider, isRightAltDown, IsCapsLockSwitchedOn)
+        {
+        }
+
         /// <param name="layoutProvider">The layout to translate with, or <see cref="IntPtr.Zero"/> when it is not known.</param>
         /// <param name="isRightAltDown">Whether the right Alt key is down, which is what makes Ctrl+Alt AltGr.</param>
-        public KeyboardLayoutTranslator(Func<IntPtr> layoutProvider, Func<bool> isRightAltDown)
+        /// <param name="isCapsLockOn">Whether Caps Lock is on, which changes what the digit row and punctuation types on some layouts.</param>
+        public KeyboardLayoutTranslator(Func<IntPtr> layoutProvider, Func<bool> isRightAltDown, Func<bool> isCapsLockOn)
         {
             if (layoutProvider == null)
             {
@@ -66,9 +76,14 @@ namespace Carnac.Logic
             {
                 throw new ArgumentNullException("isRightAltDown");
             }
+            if (isCapsLockOn == null)
+            {
+                throw new ArgumentNullException("isCapsLockOn");
+            }
 
             this.layoutProvider = layoutProvider;
             this.isRightAltDown = isRightAltDown;
+            this.isCapsLockOn = isCapsLockOn;
         }
 
         public static bool IsSupported
@@ -76,7 +91,10 @@ namespace Carnac.Logic
             get { return isSupported; }
         }
 
-        /// <summary>The keys whose text depends on the layout: letters, the digit row and the punctuation keys.</summary>
+        /// <summary>
+        /// The keys whose text depends on the layout: letters, the digit row and the punctuation keys. Space is one too:
+        /// it types the accent that is pending after a dead key.
+        /// </summary>
         public static bool IsCharacterKey(Keys key)
         {
             var code = (int)key;
@@ -86,13 +104,15 @@ namespace Carnac.Logic
                 || (code >= 219 && code <= 223)     // VK_OEM_4 .. VK_OEM_8: [ \ ] '  (on a US layout)
                 || code == 226                      // VK_OEM_102
                 || code == 193 || code == 194       // VK_ABNT_C1, VK_ABNT_C2: the extra keys of Brazilian keyboards
-                || key == Keys.Decimal;
+                || key == Keys.Decimal
+                || key == Keys.Space;
         }
 
         /// <param name="controlAlt">
         /// Ctrl and Alt are both down. That is how Windows reports AltGr, and also what a Ctrl+Alt shortcut is, so it
         /// counts as AltGr when the right Alt key is down.
         /// </param>
+        /// <returns>The text; empty when the key types nothing that can be seen (a dead key, a joiner); null when there is no answer.</returns>
         public string GetText(Keys key, bool shift, bool controlAlt)
         {
             if (!isSupported || !IsCharacterKey(key))
@@ -108,7 +128,7 @@ namespace Carnac.Logic
                 }
 
                 var layout = layoutProvider();
-                return layout == IntPtr.Zero ? null : Translate(key, shift, controlAlt, layout);
+                return layout == IntPtr.Zero ? null : Translate(key, shift, controlAlt, layout, isCapsLockOn());
             }
             catch (Exception)
             {
@@ -118,7 +138,11 @@ namespace Carnac.Logic
         }
 
         /// <summary>Translates with an explicit layout.</summary>
-        public static string Translate(Keys key, bool shift, bool altGr, IntPtr layout)
+        /// <param name="capsLock">
+        /// Caps Lock is on. It only counts for the keys that are not letters: Carnac shows letters without the capitals
+        /// of Caps Lock, but on some layouts (French, Belgian) the digit row types digits with it.
+        /// </param>
+        public static string Translate(Keys key, bool shift, bool altGr, IntPtr layout, bool capsLock = false)
         {
             if (!isSupported || !IsCharacterKey(key))
             {
@@ -137,6 +161,10 @@ namespace Carnac.Logic
                 keyState[VkShift] = KeyDown;
                 keyState[VkLShift] = KeyDown;
             }
+            if (capsLock && !(key >= Keys.A && key <= Keys.Z))
+            {
+                keyState[VkCapital] = 0x01;
+            }
             if (altGr)
             {
                 keyState[VkControl] = KeyDown;
@@ -148,34 +176,51 @@ namespace Carnac.Logic
             var buffer = textBuffer ?? (textBuffer = new char[8]);
             var count = ToUnicodeEx(virtualKey, scanCode, keyState, buffer, buffer.Length, DoNotChangeKeyboardState, layout);
 
-            // 0: no translation. Negative: a dead key, whose accent is in the buffer.
+            // 0: no translation
             var length = Math.Abs(count);
             if (length == 0 || length > buffer.Length)
             {
                 return null;
             }
 
-            var text = new string(buffer, 0, length);
-            return IsVisible(text) ? text : null;
+            // Negative: a dead key. It types nothing by itself: the accent comes with the key after it (or with Space).
+            if (count < 0)
+            {
+                return string.Empty;
+            }
+
+            var text = GetVisibleText(buffer, length);
+            if (text.Length > 0)
+            {
+                return text;
+            }
+
+            // Space types a space, which is the name it already has; every other key that types nothing visible
+            // (a joiner, a direction mark, a no-break space) is shown as nothing
+            return key == Keys.Space ? null : string.Empty;
         }
 
-        // Some layouts type control characters, joiners, direction marks or a no-break space on a key: nothing to show
-        static bool IsVisible(string text)
+        // Some layouts type control characters, joiners, direction marks or a no-break space with a key: nothing to show
+        static string GetVisibleText(char[] buffer, int length)
         {
-            foreach (var character in text)
+            var visible = new StringBuilder(length);
+            for (var i = 0; i < length; i++)
             {
-                switch (CharUnicodeInfo.GetUnicodeCategory(character))
+                switch (CharUnicodeInfo.GetUnicodeCategory(buffer[i]))
                 {
                     case UnicodeCategory.Control:
                     case UnicodeCategory.Format:
                     case UnicodeCategory.SpaceSeparator:
                     case UnicodeCategory.LineSeparator:
                     case UnicodeCategory.ParagraphSeparator:
-                        return false;
+                        break;
+                    default:
+                        visible.Append(buffer[i]);
+                        break;
                 }
             }
 
-            return true;
+            return visible.ToString();
         }
 
         // The layout belongs to the thread that has the focus, which is not always the thread of the foreground window
@@ -202,6 +247,11 @@ namespace Carnac.Logic
         static bool IsRightAltPhysicallyDown()
         {
             return (GetAsyncKeyState(VkRMenu) & 0x8000) != 0;
+        }
+
+        static bool IsCapsLockSwitchedOn()
+        {
+            return (GetKeyState(VkCapital) & 0x0001) != 0;
         }
 
         static bool IsWindows10Version1607OrLater()
@@ -270,6 +320,9 @@ namespace Carnac.Logic
 
         [DllImport("user32.dll")]
         static extern short GetAsyncKeyState(int virtualKey);
+
+        [DllImport("user32.dll")]
+        static extern short GetKeyState(int virtualKey);
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         static extern int ToUnicodeEx(uint virtualKey, uint scanCode, byte[] keyState, [Out] char[] buffer, int bufferSize, uint flags, IntPtr layout);
