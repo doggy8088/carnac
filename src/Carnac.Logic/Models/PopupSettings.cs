@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Windows;
 using Carnac.Logic.Enums;
@@ -7,6 +7,12 @@ namespace Carnac.Logic.Models
 {
     public class PopupSettings : NotifyPropertyChanged
     {
+        public PopupSettings()
+        {
+            // not the type's default of 0, which is outside the supported range
+            RepeatedKeyThreshold = RepeatedKeyPolicy.DefaultTypedCharacterThreshold;
+        }
+
         [DefaultValue(350)]
         public int ItemMaxWidth { get; set; }
 
@@ -119,5 +125,11 @@ namespace Carnac.Logic.Models
         /// </summary>
         [DefaultValue(true)]
         public bool ShowShortcutDescription { get; set; }
+
+        [DefaultValue(RepeatedKeyGrouping.Threshold)]
+        public RepeatedKeyGrouping RepeatedKeyGrouping { get; set; }
+
+        [DefaultValue(RepeatedKeyPolicy.DefaultTypedCharacterThreshold)]
+        public int RepeatedKeyThreshold { get; set; }
     }
 }

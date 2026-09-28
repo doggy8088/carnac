@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Carnac.Logic;
 using Carnac.Logic.Enums;
 using Carnac.Logic.Models;
@@ -86,6 +88,25 @@ namespace Carnac.Tests.ViewModels
             public void the_settings_file_is_the_existing_instance()
             {
                 Assert.NotNull(Subject.Settings);
+            }
+        }
+
+        public class when_offering_the_repeated_key_grouping_options
+        {
+            [Fact]
+            public void every_grouping_has_exactly_one_named_option()
+            {
+                var settingsService = Substitute.For<ISettingsProvider>();
+                settingsService.GetSettings<PopupSettings>().Returns(new PopupSettings());
+
+                var subject = new PreferencesViewModel(settingsService, Substitute.For<IScreenManager>());
+
+                foreach (RepeatedKeyGrouping grouping in Enum.GetValues(typeof(RepeatedKeyGrouping)))
+                {
+                    var options = subject.RepeatedKeyGroupingOptions.Where(o => o.Key == grouping).ToList();
+                    Assert.Equal(1, options.Count);
+                    Assert.False(string.IsNullOrWhiteSpace(options[0].Value));
+                }
             }
         }
 
