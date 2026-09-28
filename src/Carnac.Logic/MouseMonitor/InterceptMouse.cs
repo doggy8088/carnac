@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -11,13 +10,14 @@ namespace Carnac.Logic.MouseMonitor
 {
     /// <summary>
     /// Listens to the mouse buttons with a low-level mouse hook, the same way <see cref="KeyMonitor.InterceptKeys"/>
-    /// listens to the keyboard. The hook only exists while there is a subscriber and it never consumes an event.
+    /// listens to the keyboard. Every subscription has a hook of its own, which is gone with the subscription, and
+    /// it never consumes an event. (There is nothing to share: a stream shared between subscribers stays broken
+    /// for good when the hook could not be installed once.)
     /// </summary>
     [PermissionSet(SecurityAction.LinkDemand, Name = "FullTrust")]
     [PermissionSet(SecurityAction.InheritanceDemand, Name = "FullTrust")]
     public class InterceptMouse : IInterceptMouse
     {
-        const int WH_MOUSE_LL = 14;
         const int WM_LBUTTONDOWN = 0x0201;
         const int WM_RBUTTONDOWN = 0x0204;
         const int WM_MBUTTONDOWN = 0x0207;
@@ -52,11 +52,7 @@ namespace Carnac.Logic.MouseMonitor
                     return Win32Methods.CallNextHookEx(hookId, nCode, wParam, lParam);
                 };
 
-                hookId = SetHook(callback);
-                if (hookId == IntPtr.Zero)
-                {
-                    throw new Win32Exception(Marshal.GetLastWin32Error());
-                }
+                hookId = Win32Methods.SetHook(Win32Methods.WH_MOUSE_LL, callback);
 
                 return Disposable.Create(() =>
                 {
@@ -64,8 +60,7 @@ namespace Carnac.Logic.MouseMonitor
                     Win32Methods.UnhookWindowsHookEx(hookId);
                     GC.KeepAlive(callback);
                 });
-            })
-            .Publish().RefCount();
+            });
         }
 
         public IObservable<MouseClick> GetClickStream()
@@ -94,15 +89,6 @@ namespace Carnac.Logic.MouseMonitor
 
             var hookData = (MouseHookData)Marshal.PtrToStructure(lParam, typeof(MouseHookData));
             return new MouseClick(hookData.X, hookData.Y, button);
-        }
-
-        static IntPtr SetHook(Win32Methods.LowLevelKeyboardProc callback)
-        {
-            using (var currentProcess = Process.GetCurrentProcess())
-            using (var currentModule = currentProcess.MainModule)
-            {
-                return Win32Methods.SetWindowsHookEx(WH_MOUSE_LL, callback, Win32Methods.GetModuleHandle(currentModule.ModuleName), 0);
-            }
         }
 
         // MSLLHOOKSTRUCT: only the position is used

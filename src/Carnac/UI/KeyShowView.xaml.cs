@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Timers;
 using System.Windows;
@@ -10,30 +12,32 @@ namespace Carnac.UI
 {
     public partial class KeyShowView
     {
-        IDisposable clickHighlights;
-
-        public KeyShowView(KeyShowViewModel keyShowViewModel)
-            : this(keyShowViewModel, new InterceptMouse())
-        {
-        }
+        readonly SingleAssignmentDisposable clickHighlights = new SingleAssignmentDisposable();
 
         public KeyShowView(KeyShowViewModel keyShowViewModel, IInterceptMouse interceptMouse)
         {
             DataContext = keyShowViewModel;
             InitializeComponent();
 
-            var highlighter = new MouseClickHighlighter(interceptMouse, keyShowViewModel.Settings, ToOverlayLocation);
+            var highlighter = new MouseClickHighlighter(interceptMouse, keyShowViewModel.Settings, ToOverlayLocation, new DispatcherScheduler(Dispatcher));
             Loaded += (sender, e) =>
             {
-                if (clickHighlights == null)
-                    clickHighlights = highlighter.GetHighlightStream().Subscribe(highlight => ClickRing.Show(ClickLayer, highlight));
+                if (clickHighlights.Disposable == null)
+                    clickHighlights.Disposable = highlighter.GetHighlightStream().Subscribe(ShowClickRing, exception => { });
             };
-            Closed += (sender, e) =>
+            Closed += (sender, e) => clickHighlights.Dispose();
+        }
+
+        // A ring that cannot be drawn must not end the rings after it
+        void ShowClickRing(ClickHighlight highlight)
+        {
+            try
             {
-                if (clickHighlights != null)
-                    clickHighlights.Dispose();
-                clickHighlights = null;
-            };
+                ClickRing.Show(ClickLayer, highlight);
+            }
+            catch (Exception)
+            {
+            }
         }
 
         // The overlay covers the monitor that was picked in the preferences: clicks elsewhere are not highlighted

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -9,6 +11,10 @@ using System.Windows.Forms;
 using Carnac.Logic;
 using Carnac.Logic.Models;
 using Carnac.Logic.MouseMonitor;
+using Carnac.UI;
+using Microsoft.Reactive.Testing;
+using NSubstitute;
+using SettingsProviderNet;
 using Xunit;
 
 namespace Carnac.Tests
@@ -246,9 +252,84 @@ namespace Carnac.Tests
         [Fact]
         public void the_highlighter_requires_what_it_works_with()
         {
-            Assert.Throws<ArgumentNullException>(() => new MouseClickHighlighter(null, settings, toOverlayLocation));
-            Assert.Throws<ArgumentNullException>(() => new MouseClickHighlighter(mouse, null, toOverlayLocation));
-            Assert.Throws<ArgumentNullException>(() => new MouseClickHighlighter(mouse, settings, null));
+            Assert.Throws<ArgumentNullException>(() => new MouseClickHighlighter(null, settings, toOverlayLocation, Scheduler.Immediate));
+            Assert.Throws<ArgumentNullException>(() => new MouseClickHighlighter(mouse, null, toOverlayLocation, Scheduler.Immediate));
+            Assert.Throws<ArgumentNullException>(() => new MouseClickHighlighter(mouse, settings, null, Scheduler.Immediate));
+            Assert.Throws<ArgumentNullException>(() => new MouseClickHighlighter(mouse, settings, toOverlayLocation, null));
+        }
+
+        [Fact]
+        public void a_click_that_cannot_be_placed_does_not_end_the_highlighting_of_the_ones_after_it()
+        {
+            var calls = 0;
+            toOverlayLocation = click =>
+            {
+                if (calls++ == 0)
+                    throw new InvalidOperationException("the overlay is not in a window (yet)");
+                return new OverlayLocation(click.X, click.Y);
+            };
+
+            using (Subscribe())
+            {
+                mouse.Click(1, 1, MouseButtons.Left);
+                mouse.Click(2, 2, MouseButtons.Left);
+                Assert.Equal(1, mouse.ActiveSubscriptions);
+            }
+
+            Assert.Equal(2, Assert.Single(highlights).Location.X);
+        }
+
+        [Fact]
+        public void the_setting_is_read_when_the_stream_is_subscribed_to_not_when_it_is_made()
+        {
+            settings.ShowMouseClicks = false;
+            var stream = new MouseClickHighlighter(mouse, settings, click => toOverlayLocation(click), Scheduler.Immediate).GetHighlightStream();
+
+            settings.ShowMouseClicks = true;
+            using (stream.Subscribe(highlights.Add))
+            {
+                Assert.Equal(1, mouse.ActiveSubscriptions);
+                mouse.Click(1, 1, MouseButtons.Left);
+            }
+
+            Assert.Equal(1, highlights.Count);
+        }
+
+        [Fact]
+        public void clicks_are_handed_over_to_the_scheduler_before_anything_is_made()
+        {
+            var scheduler = new TestScheduler();
+            var placed = 0;
+            toOverlayLocation = click => { placed++; return new OverlayLocation(click.X, click.Y); };
+
+            using (Subscribe(scheduler: scheduler))
+            {
+                mouse.Click(1, 1, MouseButtons.Left);
+
+                // the hook has what it needs and is free to go on; nothing was placed or made yet
+                Assert.Equal(0, placed);
+                Assert.Empty(highlights);
+
+                scheduler.Start();
+                Assert.Equal(1, placed);
+                Assert.Equal(1, highlights.Count);
+            }
+        }
+
+        [Fact]
+        public void a_mouse_that_could_not_be_hooked_is_hooked_when_the_setting_is_switched_on_again()
+        {
+            mouse.FailToSubscribe = true;
+
+            using (Subscribe())
+            {
+                mouse.FailToSubscribe = false;
+                settings.ShowMouseClicks = false;
+                settings.ShowMouseClicks = true;
+                mouse.Click(1, 1, MouseButtons.Left);
+            }
+
+            Assert.Equal(1, highlights.Count);
         }
 
         static object DefaultOf(string setting)
@@ -257,9 +338,9 @@ namespace Carnac.Tests
             return attribute.Value;
         }
 
-        IDisposable Subscribe(Action<Exception> onError = null)
+        IDisposable Subscribe(Action<Exception> onError = null, IScheduler scheduler = null)
         {
-            var highlighter = new MouseClickHighlighter(mouse, settings, click => toOverlayLocation(click));
+            var highlighter = new MouseClickHighlighter(mouse, settings, click => toOverlayLocation(click), scheduler ?? Scheduler.Immediate);
             return highlighter.GetHighlightStream().Subscribe(highlights.Add, onError ?? (e => { throw e; }));
         }
 
@@ -343,6 +424,68 @@ namespace Carnac.Tests
             {
                 Marshal.FreeHGlobal(hookData);
             }
+        }
+    }
+
+    public class MousePreferencesFacts
+    {
+        readonly PopupSettings settings = new PopupSettings { LeftClickColor = "Red", MiddleClickColor = "Green", RightClickColor = "Blue" };
+
+        [Fact]
+        public void the_colors_are_the_ones_in_the_settings()
+        {
+            var viewModel = CreateViewModel();
+
+            Assert.Equal("Red", viewModel.LeftClickColor.Name);
+            Assert.Equal("Green", viewModel.MiddleClickColor.Name);
+            Assert.Equal("Blue", viewModel.RightClickColor.Name);
+        }
+
+        [Fact]
+        public void picking_a_color_changes_the_settings_at_once()
+        {
+            var viewModel = CreateViewModel();
+
+            viewModel.LeftClickColor = viewModel.AvailableColors.First(color => color.Name == "Purple");
+            viewModel.RightClickColor = null;
+
+            Assert.Equal("Purple", settings.LeftClickColor);
+            Assert.Equal("Blue", settings.RightClickColor);
+        }
+
+        [Fact]
+        public void resetting_the_settings_is_seen_in_the_colors()
+        {
+            var viewModel = CreateViewModel();
+            var changed = new List<string>();
+            viewModel.PropertyChanged += (sender, e) => changed.Add(e.PropertyName);
+
+            // what "Reset to Defaults" does to the settings
+            settings.LeftClickColor = ClickHighlightSettings.DefaultLeftColor;
+
+            Assert.Contains("LeftClickColor", changed);
+            Assert.Equal(ClickHighlightSettings.DefaultLeftColor, viewModel.LeftClickColor.Name);
+        }
+
+        [Fact]
+        public void a_color_saved_in_another_casing_or_that_is_not_known_is_still_shown()
+        {
+            settings.LeftClickColor = "royalblue";
+            settings.MiddleClickColor = "NotAColor";
+            settings.RightClickColor = null;
+
+            var viewModel = CreateViewModel();
+
+            Assert.Equal("RoyalBlue", viewModel.LeftClickColor.Name);
+            Assert.Equal(ClickHighlightSettings.DefaultMiddleColor, viewModel.MiddleClickColor.Name);
+            Assert.Equal(ClickHighlightSettings.DefaultRightColor, viewModel.RightClickColor.Name);
+        }
+
+        PreferencesViewModel CreateViewModel()
+        {
+            var settingsProvider = Substitute.For<ISettingsProvider>();
+            settingsProvider.GetSettings<PopupSettings>().Returns(settings);
+            return new PreferencesViewModel(settingsProvider, Substitute.For<IScreenManager>());
         }
     }
 }

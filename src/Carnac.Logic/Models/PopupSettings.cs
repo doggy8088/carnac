@@ -90,19 +90,19 @@ namespace Carnac.Logic.Models
         [DefaultValue(false)]
         public bool ShowMouseClicks { get; set; }
 
-        [DefaultValue("OrangeRed")]
+        [DefaultValue(ClickHighlightSettings.DefaultLeftColor)]
         public string LeftClickColor { get; set; }
 
-        [DefaultValue("Gold")]
+        [DefaultValue(ClickHighlightSettings.DefaultMiddleColor)]
         public string MiddleClickColor { get; set; }
 
-        [DefaultValue("RoyalBlue")]
+        [DefaultValue(ClickHighlightSettings.DefaultRightColor)]
         public string RightClickColor { get; set; }
 
-        [DefaultValue(60)]
+        [DefaultValue(ClickHighlightSettings.DefaultDiameter)]
         public int ClickCircleSize { get; set; }
 
-        [DefaultValue(600)]
+        [DefaultValue(ClickHighlightSettings.DefaultDurationMilliseconds)]
         public int ClickCircleDuration { get; set; }
 
         public double ScaleTransform

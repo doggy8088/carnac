@@ -39,15 +39,16 @@ namespace Carnac.UI
                     FontColor = availableColor;
                 if (Settings.ItemBackgroundColor == name)
                     ItemBackgroundColor = availableColor;
-                if (Settings.LeftClickColor == name)
-                    LeftClickColor = availableColor;
-                if (Settings.MiddleClickColor == name)
-                    MiddleClickColor = availableColor;
-                if (Settings.RightClickColor == name)
-                    RightClickColor = availableColor;
 
                 AvailableColors.Add(availableColor);
             }
+
+            // the mouse colours are the ones in the settings, also after they were reset to their defaults
+            Settings.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == "LeftClickColor" || e.PropertyName == "MiddleClickColor" || e.PropertyName == "RightClickColor")
+                    OnPropertyChanged(e.PropertyName);
+            };
 
             SaveCommand = new DelegateCommand(SaveSettings);
             ResetToDefaultsCommand = new DelegateCommand(() => settingsProvider.ResetToDefaults<PopupSettings>());
@@ -107,11 +108,30 @@ namespace Carnac.UI
 
         public AvailableColor ItemBackgroundColor { get; set; }
 
-        public AvailableColor LeftClickColor { get; set; }
+        // These change the settings as soon as they are picked, like the checkbox and the sliders of the Mouse tab do
+        public AvailableColor LeftClickColor
+        {
+            get { return FindColor(Settings.LeftClickColor, ClickHighlightSettings.DefaultLeftColor); }
+            set { if (value != null) Settings.LeftClickColor = value.Name; }
+        }
 
-        public AvailableColor MiddleClickColor { get; set; }
+        public AvailableColor MiddleClickColor
+        {
+            get { return FindColor(Settings.MiddleClickColor, ClickHighlightSettings.DefaultMiddleColor); }
+            set { if (value != null) Settings.MiddleClickColor = value.Name; }
+        }
 
-        public AvailableColor RightClickColor { get; set; }
+        public AvailableColor RightClickColor
+        {
+            get { return FindColor(Settings.RightClickColor, ClickHighlightSettings.DefaultRightColor); }
+            set { if (value != null) Settings.RightClickColor = value.Name; }
+        }
+
+        AvailableColor FindColor(string name, string fallback)
+        {
+            var colorName = ClickHighlightSettings.GetColorName(name, fallback);
+            return AvailableColors.FirstOrDefault(color => color.Name == colorName);
+        }
 
         void Visit()
         {
@@ -151,12 +171,6 @@ namespace Carnac.UI
             Settings.SettingsConfigured = true;
             Settings.FontColor = FontColor.Name;
             Settings.ItemBackgroundColor = ItemBackgroundColor.Name;
-            if (LeftClickColor != null)
-                Settings.LeftClickColor = LeftClickColor.Name;
-            if (MiddleClickColor != null)
-                Settings.MiddleClickColor = MiddleClickColor.Name;
-            if (RightClickColor != null)
-                Settings.RightClickColor = RightClickColor.Name;
             settingsProvider.SaveSettings(Settings);
         }
 

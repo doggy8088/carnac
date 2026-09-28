@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Carnac.Logic
@@ -11,6 +13,7 @@ namespace Carnac.Logic
         //
 
         public const int WH_KEYBOARD_LL = 13;
+        public const int WH_MOUSE_LL = 14;
         public const int WM_KEYDOWN = 256;
         public const int WM_KEYUP = 257;
         public const int WM_SYSKEYUP = 261;
@@ -28,6 +31,26 @@ namespace Carnac.Logic
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        /// <summary>Installs a low-level hook for this process, and says why when Windows does not.</summary>
+        public static IntPtr SetHook(int hookType, LowLevelKeyboardProc callback)
+        {
+            string moduleName;
+            using (var currentProcess = Process.GetCurrentProcess())
+            using (var currentModule = currentProcess.MainModule)
+            {
+                moduleName = currentModule.ModuleName;
+            }
+
+            var hookId = SetWindowsHookEx(hookType, callback, GetModuleHandle(moduleName), 0);
+            if (hookId == IntPtr.Zero)
+            {
+                // straight after the call that failed, nothing may run in between
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            return hookId;
+        }
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);

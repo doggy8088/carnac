@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -17,6 +18,9 @@ namespace Carnac.UI
         const double StartOpacity = 0.9;
         const double StrokeThickness = 4;
 
+        // frozen brushes, made once per colour: the UI thread is the only one that draws rings
+        static readonly Dictionary<string, Brush> Brushes = new Dictionary<string, Brush>();
+
         public static void Show(Canvas layer, ClickHighlight highlight)
         {
             while (layer.Children.Count >= MaximumRings)
@@ -29,7 +33,7 @@ namespace Carnac.UI
             {
                 Width = highlight.Diameter,
                 Height = highlight.Diameter,
-                Stroke = new SolidColorBrush(GetColor(highlight.ColorName)),
+                Stroke = GetBrush(highlight.ColorName),
                 StrokeThickness = StrokeThickness,
                 Opacity = StartOpacity,
                 IsHitTestVisible = false,
@@ -53,6 +57,19 @@ namespace Carnac.UI
             scale.BeginAnimation(ScaleTransform.ScaleXProperty, grow);
             scale.BeginAnimation(ScaleTransform.ScaleYProperty, grow);
             ring.BeginAnimation(UIElement.OpacityProperty, fade);
+        }
+
+        static Brush GetBrush(string colorName)
+        {
+            Brush brush;
+            if (!Brushes.TryGetValue(colorName, out brush))
+            {
+                brush = new SolidColorBrush(GetColor(colorName));
+                brush.Freeze();
+                Brushes[colorName] = brush;
+            }
+
+            return brush;
         }
 
         static Color GetColor(string name)

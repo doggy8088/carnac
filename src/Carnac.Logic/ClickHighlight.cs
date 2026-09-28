@@ -42,6 +42,13 @@ namespace Carnac.Logic
     /// <summary>What the click highlight settings mean when they are used; saved settings can be anything.</summary>
     public static class ClickHighlightSettings
     {
+        public const string DefaultLeftColor = "OrangeRed";
+        public const string DefaultMiddleColor = "Gold";
+        public const string DefaultRightColor = "RoyalBlue";
+        public const int DefaultDiameter = 60;
+        public const int DefaultDurationMilliseconds = 600;
+
+        // the sliders on the Mouse tab of the preferences have the same limits
         public const int MinimumDiameter = 20;
         public const int MaximumDiameter = 200;
         public const int MinimumDurationMilliseconds = 100;
