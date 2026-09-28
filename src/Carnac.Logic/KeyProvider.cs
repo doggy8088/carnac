@@ -21,6 +21,7 @@ namespace Carnac.Logic
         readonly IPasswordModeService passwordModeService;
         readonly IDesktopLockEventService desktopLockEventService;
         readonly PopupSettings settings;
+        readonly IKeyboardLayoutTranslator keyboardLayoutTranslator;
         readonly object filterSync = new object();
         string currentFilter = null;
         Regex currentFilterRegex;
@@ -44,6 +45,15 @@ namespace Carnac.Logic
         private bool winKeyPressed;
 
         public KeyProvider(IInterceptKeys interceptKeysSource, IPasswordModeService passwordModeService, IDesktopLockEventService desktopLockEventService, ISettingsProvider settingsProvider)
+            : this(interceptKeysSource, passwordModeService, desktopLockEventService, settingsProvider, null)
+        {
+        }
+
+        /// <param name="keyboardLayoutTranslator">
+        /// Names the keys as they are on the keyboard layout of the window that has the focus. Without one the
+        /// keys are named as on a US keyboard.
+        /// </param>
+        public KeyProvider(IInterceptKeys interceptKeysSource, IPasswordModeService passwordModeService, IDesktopLockEventService desktopLockEventService, ISettingsProvider settingsProvider, IKeyboardLayoutTranslator keyboardLayoutTranslator)
         {
             if (settingsProvider == null)
             {
@@ -53,6 +63,7 @@ namespace Carnac.Logic
             this.interceptKeysSource = interceptKeysSource;
             this.passwordModeService = passwordModeService;
             this.desktopLockEventService = desktopLockEventService;
+            this.keyboardLayoutTranslator = keyboardLayoutTranslator;
 
             settings = settingsProvider.GetSettings<PopupSettings>();
         }
@@ -162,11 +173,24 @@ namespace Carnac.Logic
             }
         }
 
-        static IEnumerable<string> ToInputs(bool isLetter, bool isWinKeyPressed, InterceptKeyEventArgs interceptKeyEventArgs)
+        IEnumerable<string> ToInputs(bool isLetter, bool isWinKeyPressed, InterceptKeyEventArgs interceptKeyEventArgs)
         {
             var controlPressed = interceptKeyEventArgs.ControlPressed;
             var altPressed = interceptKeyEventArgs.AltPressed;
             var shiftPressed = interceptKeyEventArgs.ShiftPressed;
+
+            // What the key types on the layout of the window that has the focus. Windows reports AltGr as Ctrl+Alt,
+            // so on layouts that have one, Ctrl+Alt+key can be a character too.
+            if (!isWinKeyPressed && controlPressed == altPressed)
+            {
+                var typedText = GetLayoutText(interceptKeyEventArgs.Key, shiftPressed, controlPressed && altPressed);
+                if (typedText != null)
+                {
+                    yield return typedText;
+                    yield break;
+                }
+            }
+
             if (controlPressed)
                 yield return "Ctrl";
             if (altPressed)
@@ -180,7 +204,7 @@ namespace Carnac.Logic
                 if (shiftPressed)
                     yield return "Shift";
 
-                yield return interceptKeyEventArgs.Key.Sanitise();
+                yield return GetShortcutKeyName(interceptKeyEventArgs.Key, isLetter);
             }
             else
             {
@@ -197,6 +221,19 @@ namespace Carnac.Logic
                 else
                     yield return interceptKeyEventArgs.Key.Sanitise();
             }
+        }
+
+        string GetLayoutText(Keys key, bool shift, bool altGr)
+        {
+            return keyboardLayoutTranslator == null ? null : keyboardLayoutTranslator.GetText(key, shift, altGr);
+        }
+
+        // Shortcuts are written with the name of the letter ("Ctrl+C") whatever the layout, punctuation keys are
+        // named as they are on the keyboard.
+        string GetShortcutKeyName(Keys key, bool isLetter)
+        {
+            var layoutText = isLetter ? null : GetLayoutText(key, false, false);
+            return layoutText ?? key.Sanitise();
         }
     }
 }
