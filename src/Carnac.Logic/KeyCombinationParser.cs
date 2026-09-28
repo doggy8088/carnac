@@ -97,6 +97,21 @@ namespace Carnac.Logic
             return null;
         }
 
+        /// <summary>
+        /// Parses a list of independent combinations separated by commas or line breaks ("W,A,S,D"). Entries that cannot
+        /// be understood are reported with a warning (prefixed with <paramref name="context"/>) and left out; the valid ones
+        /// are returned. Unlike a sequence, the entries are not a chord: each one stands for itself.
+        /// </summary>
+        public IList<KeyPressDefinition> ParseList(string text, string context)
+        {
+            IList<KeyPressDefinition> combinations;
+            IList<string> errors;
+            TryParseList(text, out combinations, out errors);
+            foreach (var error in errors)
+                warn((string.IsNullOrEmpty(context) ? string.Empty : context + ": ") + error);
+            return combinations;
+        }
+
         void Warn(string context, string text, string error)
         {
             var prefix = string.IsNullOrEmpty(context) ? string.Empty : context + ": ";
@@ -206,6 +221,41 @@ namespace Carnac.Logic
 
             definition = new KeyPressDefinition(key, winkeyPressed: win, shiftPressed: shift || impliesShift, altPressed: alt, controlPressed: ctrl);
             return true;
+        }
+
+        /// <summary>
+        /// Parses a list of independent combinations separated by commas or line breaks, for example <c>W,A,S,D</c> or
+        /// <c>Ctrl+Alt+Delete</c>. Empty entries (a trailing comma, blank lines) are skipped. Returns false when at least
+        /// one entry cannot be understood; <paramref name="combinations"/> then still holds the valid entries and
+        /// <paramref name="errors"/> one message per bad entry.
+        /// </summary>
+        public static bool TryParseList(string text, out IList<KeyPressDefinition> combinations, out IList<string> errors)
+        {
+            var parsed = new List<KeyPressDefinition>();
+            var problems = new List<string>();
+            combinations = parsed;
+            errors = problems;
+
+            if (string.IsNullOrWhiteSpace(text))
+                return true;
+
+            foreach (var line in text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None))
+            {
+                foreach (var entry in SplitSequence(line))
+                {
+                    if (string.IsNullOrWhiteSpace(entry))
+                        continue;
+
+                    KeyPressDefinition definition;
+                    string error;
+                    if (TryParse(entry, out definition, out error))
+                        parsed.Add(definition);
+                    else
+                        problems.Add("cannot use key entry '" + entry.Trim() + "': " + error);
+                }
+            }
+
+            return problems.Count == 0;
         }
 
         /// <summary>Parses a comma separated sequence of combinations such as <c>Ctrl+K,Ctrl+C</c>.</summary>

@@ -9,6 +9,8 @@ namespace Carnac.Logic.Models
     public sealed class Message
     {
         readonly ReadOnlyCollection<string> textCollection;
+        static readonly ReadOnlyCollection<KeyPress> EmptyKeyPresses = new ReadOnlyCollection<KeyPress>(new KeyPress[0]);
+
         readonly ReadOnlyCollection<KeyPress> keys;
         readonly string processName;
         readonly ImageSource processIcon;
@@ -78,6 +80,12 @@ namespace Carnac.Logic.Models
         }
 
         public string ProcessName { get { return processName; } }
+
+        /// <summary>The key presses this message shows; empty for the empty starting message.</summary>
+        public ReadOnlyCollection<KeyPress> KeyPresses
+        {
+            get { return keys ?? EmptyKeyPresses; }
+        }
 
         public ImageSource ProcessIcon { get { return processIcon; } }
 

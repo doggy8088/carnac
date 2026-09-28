@@ -25,6 +25,8 @@ namespace Carnac.UI
 
             Settings = settingsProvider.GetSettings<PopupSettings>();
 
+            KeyCategoryOptions = CreateKeyCategoryOptions(Settings);
+
             PlaceScreen();
 
             AvailableColors = new ObservableCollection<AvailableColor>();
@@ -61,6 +63,24 @@ namespace Carnac.UI
         public DetailedScreen SelectedScreen { get; set; }
 
         public PopupSettings Settings { get; set; }
+
+        /// <summary>The check boxes of the "Keys to show" group, one per key category.</summary>
+        public IList<KeyCategoryOption> KeyCategoryOptions { get; private set; }
+
+        static IList<KeyCategoryOption> CreateKeyCategoryOptions(PopupSettings settings)
+        {
+            return new List<KeyCategoryOption>
+            {
+                new KeyCategoryOption(settings, KeyCategory.Letters, "Letters", "A to Z"),
+                new KeyCategoryOption(settings, KeyCategory.Digits, "Digits", "0 to 9, also on the numeric keypad"),
+                new KeyCategoryOption(settings, KeyCategory.Punctuation, "Punctuation", "Punctuation and symbol keys, and the numeric keypad operators"),
+                new KeyCategoryOption(settings, KeyCategory.Whitespace, "Space, Enter, Tab", "Space, Enter and Tab"),
+                new KeyCategoryOption(settings, KeyCategory.Editing, "Editing keys", "Backspace, Delete, Insert and Escape"),
+                new KeyCategoryOption(settings, KeyCategory.Navigation, "Navigation", "Arrow keys, Home, End, Page Up and Page Down"),
+                new KeyCategoryOption(settings, KeyCategory.Function, "Function keys", "F1 to F24"),
+                new KeyCategoryOption(settings, KeyCategory.Other, "Other keys", "Every other key, for example Caps Lock, Print Screen and the media keys")
+            };
+        }
 
         public string Version
         {
