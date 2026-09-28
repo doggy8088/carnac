@@ -8,6 +8,8 @@ namespace Carnac.Logic
     /// The names are the strings the key stream produces for these keys (see <see cref="ReplaceKey.Sanitise"/>
     /// and <see cref="Models.KeyPress.GetTextParts"/>). The set is not meant to be exhaustive: keys that are
     /// rarely used in a demo (media and browser keys, ...) are still shown as plain words.
+    /// "Return" and "Win" are drawn differently (arrow glyph, logo) by their own triggers in KeyShowView.xaml,
+    /// so they must not be added here.
     /// </summary>
     public static class SpecialKeys
     {
@@ -20,7 +22,7 @@ namespace Carnac.Logic
                 "Alt", "Ctrl", "Shift",
                 "Back", "Escape", "Tab", "Space",
                 "Insert", "Delete", "Home", "End", "PageUp", "PageDown",
-                "CapsLock", "NumLock", "ScrollLock", "PrintScreen", "Pause", "Cancel", "Clear", "Menu"
+                "CapsLock", "NumLock", "ScrollLock", "PrintScreen", "Pause", "Break", "Clear", "ContextMenu"
             };
 
             for (var i = 1; i <= 24; i++)
