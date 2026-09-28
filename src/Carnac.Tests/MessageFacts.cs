@@ -185,9 +185,9 @@ namespace Carnac.Tests
         [Fact]
         public void typed_characters_outside_ascii_follow_the_same_rule()
         {
-            var surrogatePairLetter = "𝒜";
+            var surrogatePairLetter = "\U0001D49C";
 
-            Assert.Equal("üü", TextOf(Typed("ü", "ü")));
+            Assert.Equal("\u00fc\u00fc", TextOf(Typed("\u00fc", "\u00fc")));
             Assert.Equal(surrogatePairLetter + surrogatePairLetter, TextOf(Typed(surrogatePairLetter, surrogatePairLetter)));
             Assert.Equal(surrogatePairLetter + " x 4 ", TextOf(Typed(surrogatePairLetter, surrogatePairLetter, surrogatePairLetter, surrogatePairLetter)));
         }
