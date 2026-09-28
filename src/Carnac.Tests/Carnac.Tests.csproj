@@ -71,13 +71,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChordTimeoutFacts.cs" />
     <Compile Include="KeyCombinationParserFacts.cs" />
     <Compile Include="KeyPlayer.cs" />
+    <Compile Include="KeyPresses.cs" />
     <Compile Include="KeysControllerFacts.cs" />
     <Compile Include="KeyStreams.cs" />
     <Compile Include="MessageFacts.cs" />
     <Compile Include="MessageProviderFacts.cs" />
     <Compile Include="RxTestExtensions.cs" />
+    <Compile Include="ShortcutAccumulatorFacts.cs" />
     <Compile Include="ShortcutProviderFacts.cs" />
     <Compile Include="SpecificationFor.cs" />
     <Compile Include="SpecialKeysFacts.cs" />

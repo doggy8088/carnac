@@ -51,6 +51,28 @@ namespace Carnac.Logic
 
         public bool HasCompletedValue { get; private set; }
 
+        /// <summary>
+        /// True while keys are buffered because they may be the start of a shortcut, and the given key was pressed in
+        /// another process. Such a key cannot continue the shortcut: <see cref="Flush"/> the buffered keys and
+        /// process the key with a new accumulator.
+        /// </summary>
+        public bool IsPendingForOtherProcess(KeyPress key)
+        {
+            return !HasCompletedValue && keys.Count > 0 && keys[0].Process.ProcessName != key.Process.ProcessName;
+        }
+
+        /// <summary>
+        /// Gives up waiting for the rest of a shortcut: every buffered key becomes an ordinary message of its own.
+        /// Does nothing when no keys are buffered or the accumulator has already completed.
+        /// </summary>
+        public void Flush()
+        {
+            if (HasCompletedValue || keys.Count == 0)
+                return;
+
+            NoMatchingShortcut();
+        }
+
         void Add(KeyPress key)
         {
             var isFirstKey = keys.Count == 0;
