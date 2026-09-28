@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Carnac.Logic.KeyMonitor
@@ -25,5 +26,25 @@ namespace Carnac.Logic.KeyMonitor
         {
             return Key >= Keys.A && Key <= Keys.Z;
         }
+
+        public bool IsModifier()
+        {
+            return ModifierKeys.Contains(Key);
+        }
+
+        static readonly Keys[] ModifierKeys =
+        {
+            Keys.LControlKey,
+            Keys.RControlKey,
+            Keys.LShiftKey,
+            Keys.RShiftKey,
+            Keys.LMenu,
+            Keys.RMenu,
+            Keys.ShiftKey,
+            Keys.Shift,
+            Keys.Alt,
+            Keys.LWin,
+            Keys.RWin
+        };
     }
 }

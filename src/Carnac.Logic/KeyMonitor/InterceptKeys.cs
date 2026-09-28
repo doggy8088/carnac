@@ -53,7 +53,7 @@ namespace Carnac.Logic.KeyMonitor
             return keyStream;
         }
 
-        static InterceptKeyEventArgs CreateEventArgs(IntPtr wParam, IntPtr lParam)
+        internal static InterceptKeyEventArgs CreateEventArgs(IntPtr wParam, IntPtr lParam)
         {
             bool alt = (Control.ModifierKeys & Keys.Alt) != 0;
             bool control = (Control.ModifierKeys & Keys.Control) != 0;
@@ -72,6 +72,14 @@ namespace Carnac.Logic.KeyMonitor
             {
                 alt = true;
                 keyUp = true;
+            }
+            // the Alt keys themselves are reported as system keys as well
+            if (key == Keys.RMenu || key == Keys.LMenu)
+            {
+                if (wParam == (IntPtr)Win32Methods.WM_SYSKEYDOWN)
+                    keyDown = true;
+                else if (wParam == (IntPtr)Win32Methods.WM_SYSKEYUP)
+                    keyUp = true;
             }
 
             return new InterceptKeyEventArgs(
