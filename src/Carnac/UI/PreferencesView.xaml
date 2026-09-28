@@ -108,8 +108,9 @@
                         </ui:PreferencesField>
                         <TextBlock Margin="10,0,10,0" Foreground="OrangeRed" TextWrapping="Wrap" Text="{Binding HotkeyMessage}" />
                         <Separator Height="10" Margin="0"/>
-                         <ui:PreferencesField Header="Auto Update">
-                             <CheckBox IsChecked="{Binding Settings.AutoUpdate}" Content="auto check updates from GitHub (need to restart this program)" />
+                         <ui:PreferencesField Header="Updates">
+                             <CheckBox IsChecked="{Binding Settings.AutoUpdate}" Content="Check for updates on startup"
+                                       ToolTip="Once a day, Carnac asks GitHub whether a newer release exists and tells you in the tray. Nothing is downloaded or installed." />
                          </ui:PreferencesField>
                     </StackPanel>
                     </ScrollViewer>
