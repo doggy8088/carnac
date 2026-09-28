@@ -97,7 +97,7 @@ namespace Carnac.Logic
 
             if (root == null)
             {
-                warn(fileName + ": ignoring keymap, the top level must be a mapping with 'group', 'process' and 'shortcuts'");
+                warn(fileName + ": ignoring keymap, the top level must be a mapping (optional 'group' and 'process', and a 'shortcuts' list)");
                 return null;
             }
 
@@ -115,9 +115,12 @@ namespace Carnac.Logic
             string group = GetValueByKey(collection, "group");
             string process = GetValueByKey(collection, "process");
 
-            var shortCuts = from groupShortcuts in collection.Children.Where(n => n.Key.ToString() == "shortcuts").Take(1).Select(x => x.Value).OfType<YamlSequenceNode>()
-                            from shortcut in GetKeyShortcuts(groupShortcuts, fileName)
-                            select shortcut;
+            var shortcutsNode = collection.Children.FirstOrDefault(n => n.Key.ToString() == "shortcuts").Value;
+            var shortcutsList = shortcutsNode as YamlSequenceNode;
+            if (shortcutsList == null)
+                warn(fileName + ": the keymap has no 'shortcuts' list, so it names nothing");
+
+            var shortCuts = shortcutsList == null ? Enumerable.Empty<KeyShortcut>() : GetKeyShortcuts(shortcutsList, fileName);
 
             return new ShortcutCollection(shortCuts.ToList())
             {
@@ -128,8 +131,15 @@ namespace Carnac.Logic
 
         IEnumerable<KeyShortcut> GetKeyShortcuts(YamlSequenceNode groupShortcuts, string fileName)
         {
-            foreach (var entry in groupShortcuts.Children.OfType<YamlMappingNode>())
+            foreach (var node in groupShortcuts.Children)
             {
+                var entry = node as YamlMappingNode;
+                if (entry == null)
+                {
+                    warn(fileName + ": ignoring an entry of 'shortcuts' that is not a mapping with a 'name' and 'keys'");
+                    continue;
+                }
+
                 var name = GetValueByKey(entry, "name");
                 if (string.IsNullOrWhiteSpace(name))
                 {
@@ -147,10 +157,17 @@ namespace Carnac.Logic
 
                 foreach (var keyCombo in keys.Children)
                 {
+                    var keyText = keyCombo as YamlScalarNode;
+                    if (keyText == null)
+                    {
+                        warn(context + ": ignoring a 'keys' entry that is not plain text like 'Ctrl+S'");
+                        continue;
+                    }
+
                     // Every element of "keys" is one alternative way to trigger the shortcut; commas inside it
                     // separate the key presses of a chord. An element that cannot be understood is dropped as a whole,
                     // never half-read (a chord cut short would match the wrong keys).
-                    var definitions = parser.ParseSequence(keyCombo.ToString(), context);
+                    var definitions = parser.ParseSequence(keyText.Value, context);
                     if (definitions != null && definitions.Count > 0)
                         yield return new KeyShortcut(name, definitions.ToArray());
                 }

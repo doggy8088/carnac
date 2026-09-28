@@ -253,5 +253,47 @@ namespace Carnac.Tests
             Assert.Empty(warnings);
             Assert.Equal("Save", provider.GetShortcutsStartingWith(Press("whatever", Keys.S, control: true)).Single().Name);
         }
+
+        [Fact]
+        public void top_level_that_is_not_a_mapping_does_not_claim_group_or_process_are_required()
+        {
+            var folder = CreateKeymapFolder("list.yml", "- one\n- two\n");
+
+            new ShortcutProvider(folder, warnings.Add);
+
+            var warning = Assert.Single(warnings);
+            Assert.Contains("list.yml", warning);
+            Assert.Contains("top level must be a mapping", warning);
+            Assert.Contains("optional", warning);
+        }
+
+        [Fact]
+        public void keymap_without_a_shortcuts_list_is_reported()
+        {
+            var folder = CreateKeymapFolder("empty.yml", "group: Empty\nprocess:\n");
+
+            var provider = new ShortcutProvider(folder, warnings.Add);
+
+            var warning = Assert.Single(warnings);
+            Assert.Contains("empty.yml", warning);
+            Assert.Contains("'shortcuts'", warning);
+            Assert.Empty(provider.Keymaps.Single());
+        }
+
+        [Fact]
+        public void entries_that_are_not_mappings_and_keys_that_are_not_text_are_reported()
+        {
+            var folder = CreateKeymapFolder("odd2.yml",
+                "group: Odd\nprocess:\nshortcuts:\n  - just a string\n  - name: Nested\n    keys:\n      - [Ctrl, S]\n      - Ctrl+D\n");
+
+            var provider = new ShortcutProvider(folder, warnings.Add);
+
+            Assert.Equal(2, warnings.Count);
+            Assert.Contains("not a mapping", warnings[0]);
+            Assert.Contains("Nested", warnings[1]);
+            Assert.Contains("not plain text", warnings[1]);
+            // the usable key of the same shortcut still works
+            Assert.Equal("Nested", provider.GetShortcutsStartingWith(Press("x", Keys.D, control: true)).Single().Name);
+        }
     }
 }

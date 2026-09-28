@@ -215,8 +215,9 @@ namespace Carnac.Logic
         }
 
         /// <summary>
-        /// Splits a sequence on commas. A comma that directly follows a '+' is the comma key and stays part of the
-        /// combination ("Ctrl+K,Ctrl+," is Ctrl+K followed by Ctrl and the comma key).
+        /// Splits a sequence on commas. A comma that directly follows a '+' waiting for its key is the comma key and
+        /// stays part of the combination ("Ctrl+K,Ctrl+," is Ctrl+K followed by Ctrl and the comma key), while the
+        /// comma after the plus key itself separates ("Ctrl++,A" is Ctrl and the plus key followed by A).
         /// </summary>
         static IEnumerable<string> SplitSequence(string text)
         {
@@ -234,16 +235,20 @@ namespace Carnac.Logic
             yield return current.ToString();
         }
 
+        // A comma is the comma key only when the text so far ends in a '+' that still waits for its key ("Ctrl+" then ',').
+        // A '+' that follows another '+' ("Ctrl++") or stands alone ("+") is already the plus key, so the comma separates.
         static bool IsCommaKey(StringBuilder currentCombination)
         {
-            for (var i = currentCombination.Length - 1; i >= 0; i--)
-            {
-                var c = currentCombination[i];
-                if (char.IsWhiteSpace(c))
-                    continue;
-                return c == '+';
-            }
-            return false;
+            var i = currentCombination.Length - 1;
+            while (i >= 0 && char.IsWhiteSpace(currentCombination[i]))
+                i--;
+            if (i < 0 || currentCombination[i] != '+')
+                return false;
+
+            i--;
+            while (i >= 0 && char.IsWhiteSpace(currentCombination[i]))
+                i--;
+            return i >= 0 && currentCombination[i] != '+';
         }
 
         static bool TryResolveKey(string keyText, out Keys key, out string error)
