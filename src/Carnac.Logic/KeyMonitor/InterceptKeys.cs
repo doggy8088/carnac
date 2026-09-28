@@ -87,7 +87,7 @@ namespace Carnac.Logic.KeyMonitor
                 keyDown ?
                 KeyDirection.Down : keyUp
                 ? KeyDirection.Up : KeyDirection.Unknown,
-                alt, control, shift);
+                alt, control, shift) { IsFromKeyboardHook = true };
         }
 
         static IntPtr SetHook(Win32Methods.LowLevelKeyboardProc proc)

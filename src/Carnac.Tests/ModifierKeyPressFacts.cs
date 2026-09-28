@@ -63,6 +63,7 @@ namespace Carnac.Tests
         readonly ISettingsProvider settingsProvider = Substitute.For<ISettingsProvider>();
         readonly PopupSettings settings = new PopupSettings { ShowModifierKeyPresses = true };
         readonly Subject<SessionSwitchEventArgs> sessionSwitches = new Subject<SessionSwitchEventArgs>();
+        Func<Keys, bool> isKeyDown;
 
         public ModifierKeyPressFacts()
         {
@@ -202,6 +203,87 @@ namespace Carnac.Tests
             Assert.Empty(keyPresses);
         }
 
+        [Fact]
+        public async Task a_modifier_whose_key_up_was_never_seen_is_forgotten_when_it_is_not_down_any_more()
+        {
+            // Ctrl+Alt+Del or a UAC prompt: the keys go up on the secure desktop, where the hook sees nothing
+            isKeyDown = key => key != Keys.LControlKey && key != Keys.LMenu;
+
+            var keyPresses = await Play(FromHook(Down(Keys.LControlKey)), FromHook(Down(Keys.LMenu)), FromHook(Down(Keys.LShiftKey)), FromHook(Down(Keys.LControlKey)));
+
+            // Alt is shown without the Ctrl that is gone, Shift on its own is not shown (and Alt is gone too), and the
+            // next Ctrl is a new press, held with the Shift that is really down
+            Assert.Equal(new[] { "Ctrl", "Alt", "Ctrl + Shift" }, keyPresses.Select(k => string.Join(" + ", k.Input)).ToArray());
+        }
+
+        [Fact]
+        public async Task the_state_of_the_keyboard_is_not_asked_for_events_that_do_not_come_from_the_hook()
+        {
+            isKeyDown = key => { throw new InvalidOperationException("the keyboard is not the source of these events"); };
+
+            var keyPresses = await Play(Down(Keys.LControlKey), Down(Keys.LShiftKey));
+
+            Assert.Equal(2, keyPresses.Count);
+        }
+
+        [Fact]
+        public async Task the_windows_key_is_held_as_long_as_one_of_the_two_is_down()
+        {
+            var keyPresses = await Play(Down(Keys.LWin), Down(Keys.RWin), Up(Keys.LWin), Down(Keys.E), Up(Keys.E));
+
+            // the right Win key is still down when the left one is released
+            Assert.Equal(new[] { "Win", "Win", "Win + e" }, keyPresses.Select(k => string.Join(" + ", k.Input)).ToArray());
+        }
+
+        [Fact]
+        public void every_subscription_keeps_track_of_the_keys_that_are_down_itself()
+        {
+            var keys = new Subject<InterceptKeyEventArgs>();
+            var source = Substitute.For<IInterceptKeys>();
+            source.GetKeyStream().Returns(keys);
+            var provider = new KeyProvider(source, passwordModeService, desktopLockEventService, settingsProvider);
+            var first = new List<KeyPress>();
+            var second = new List<KeyPress>();
+
+            using (provider.GetKeyStream().Subscribe(first.Add))
+            using (provider.GetKeyStream().Subscribe(second.Add))
+            {
+                keys.OnNext(Down(Keys.LControlKey));
+            }
+
+            Assert.Equal(1, first.Count);
+            Assert.Equal(1, second.Count);
+        }
+
+        [Fact]
+        public void a_new_subscription_starts_without_keys_that_are_down()
+        {
+            var keys = new Subject<InterceptKeyEventArgs>();
+            var source = Substitute.For<IInterceptKeys>();
+            source.GetKeyStream().Returns(keys);
+            var provider = new KeyProvider(source, passwordModeService, desktopLockEventService, settingsProvider);
+            var keyPresses = new List<KeyPress>();
+
+            using (provider.GetKeyStream().Subscribe(keyPresses.Add))
+            {
+                keys.OnNext(Down(Keys.LControlKey));
+            }
+
+            // the key up was missed while nobody was subscribed
+            using (provider.GetKeyStream().Subscribe(keyPresses.Add))
+            {
+                keys.OnNext(Down(Keys.LControlKey));
+            }
+
+            Assert.Equal(2, keyPresses.Count);
+        }
+
+        static InterceptKeyEventArgs FromHook(InterceptKeyEventArgs keyEvent)
+        {
+            keyEvent.IsFromKeyboardHook = true;
+            return keyEvent;
+        }
+
         static InterceptKeyEventArgs Down(Keys key, bool control = false, bool alt = false, bool shift = false)
         {
             return new InterceptKeyEventArgs(key, KeyDirection.Down, alt, control, shift);
@@ -222,6 +304,8 @@ namespace Carnac.Tests
             var player = new KeyPlayer();
             player.AddRange(keys);
             var provider = new KeyProvider(player, passwordMode, desktopLockEventService, settingsProvider);
+            if (isKeyDown != null)
+                provider.IsKeyDown = isKeyDown;
 
             return await provider.GetKeyStream().ToList();
         }
@@ -279,6 +363,40 @@ namespace Carnac.Tests
 
             Assert.Same(ctrl, result.Previous);
             Assert.Equal("Ctrl", TextOf(result));
+        }
+
+        [Fact]
+        public void a_key_pressed_with_win_and_shift_takes_the_place_of_the_chord_although_its_text_leaves_shift_out()
+        {
+            var chord = new Message(Chord("Win", "Shift"));
+            var screenshot = new Message(new KeyPress(process, new InterceptKeyEventArgs(Keys.S, KeyDirection.Down, false, false, true), true, new[] { "Win", "S" }));
+
+            var result = Message.MergeIfNeeded(chord, screenshot);
+
+            Assert.Same(chord, result.Previous);
+            Assert.Equal("Win + S", TextOf(result));
+        }
+
+        [Fact]
+        public void a_key_takes_the_place_of_the_chord_when_one_of_its_modifiers_was_released()
+        {
+            var ctrlShift = new Message(Chord("Ctrl", "Shift"));
+            var ctrlC = new Message(Key(Keys.C, true, "Ctrl", "C"));
+
+            var result = Message.MergeIfNeeded(ctrlShift, ctrlC);
+
+            Assert.Same(ctrlShift, result.Previous);
+        }
+
+        [Fact]
+        public void shift_alone_is_not_what_a_chord_is_held_for()
+        {
+            var ctrlShift = new Message(Chord("Ctrl", "Shift"));
+            var capitalA = new Message(new KeyPress(process, new InterceptKeyEventArgs(Keys.A, KeyDirection.Down, false, false, true), false, new[] { "A" }));
+
+            var result = Message.MergeIfNeeded(ctrlShift, capitalA);
+
+            Assert.Null(result.Previous);
         }
 
         [Fact]
@@ -393,7 +511,7 @@ namespace Carnac.Tests
         }
 
         [Fact]
-        public async Task the_modifier_is_replaced_by_the_shortcut_it_is_held_for()
+        public async Task the_modifier_is_replaced_by_the_key_it_is_held_for()
         {
             var messages = await CreateMessageProvider(KeyStreams.CtrlU()).GetMessageStream().ToList();
 

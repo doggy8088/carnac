@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Windows.Forms;
 
 namespace Carnac.Logic.KeyMonitor
@@ -32,7 +32,7 @@ namespace Carnac.Logic.KeyMonitor
             return ModifierKeys.Contains(Key);
         }
 
-        static readonly Keys[] ModifierKeys =
+        static readonly HashSet<Keys> ModifierKeys = new HashSet<Keys>
         {
             Keys.LControlKey,
             Keys.RControlKey,
@@ -46,5 +46,11 @@ namespace Carnac.Logic.KeyMonitor
             Keys.LWin,
             Keys.RWin
         };
+
+        /// <summary>
+        /// The event comes from the keyboard hook, so the state of the keyboard at this moment is the real one.
+        /// It is not for events that are made up, as the tests do.
+        /// </summary>
+        public bool IsFromKeyboardHook { get; internal set; }
     }
 }

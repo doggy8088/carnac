@@ -72,6 +72,7 @@ namespace Carnac.Logic.Models
             canBeMerged = true;
         }
 
+        // the flag only tells this constructor from the one that merges
         private Message(Message initial, Message replacement, bool replace)
             : this(replacement.keys, new KeyShortcut(replacement.ShortcutName), replacement.isShortcut)
         {
@@ -135,15 +136,19 @@ namespace Carnac.Logic.Models
                 : previousMessage.Merge(newMessage);
         }
 
-        // Does the message start with the modifiers of the one before it, in the same process?
+        // Is the message the outcome of holding the modifiers of the one before it, in the same process? That is so when
+        // they have Ctrl, Alt or Win in common: the names of the modifiers in front of a key say too little for it (Shift
+        // is left out of "Win + S" when Win+Shift+S is pressed), and Shift alone is what capital letters are typed with.
         static bool IsHeldFor(Message modifiers, Message next)
         {
             if (modifiers.ProcessName != next.ProcessName)
                 return false;
 
-            var held = modifiers.keys.Last().Input.ToArray();
-            var nextInput = next.keys.First().Input.ToArray();
-            return nextInput.Length >= held.Length && nextInput.Take(held.Length).SequenceEqual(held);
+            var held = modifiers.keys.Last();
+            var pressed = next.keys.First();
+            return (held.InterceptKeyEventArgs.ControlPressed && pressed.InterceptKeyEventArgs.ControlPressed)
+                || (held.InterceptKeyEventArgs.AltPressed && pressed.InterceptKeyEventArgs.AltPressed)
+                || (held.WinkeyPressed && pressed.WinkeyPressed);
         }
 
         static bool ShouldCreateNewMessage(Message previous, Message current)

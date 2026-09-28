@@ -25,11 +25,8 @@ namespace Carnac.Logic
         string currentFilter = null;
         Regex currentFilterRegex;
 
-        // Modifier keys that are down right now, to tell a key that is held (auto-repeat) from a new press.
-        readonly HashSet<Keys> heldModifierKeys = new HashSet<Keys>();
-        readonly object heldModifierKeysSync = new object();
-
-        private bool winKeyPressed;
+        // How to tell whether a key really is down, for the key events that come from the keyboard hook.
+        internal Func<Keys, bool> IsKeyDown = HeldModifierKeys.IsKeyPhysicallyDown;
 
         public KeyProvider(IInterceptKeys interceptKeysSource, IPasswordModeService passwordModeService, IDesktopLockEventService desktopLockEventService, ISettingsProvider settingsProvider)
         {
@@ -82,23 +79,21 @@ namespace Carnac.Logic
             // We are using an observable create to tie the lifetimes of the session switch stream and the keystream
             return Observable.Create<KeyPress>(observer =>
             {
-                // When desktop is locked we will not get the keyup, because we track the windows key
-                // specially we need to set it to not being pressed anymore
+                // The modifiers that are down belong to this subscription
+                var heldModifierKeys = new HeldModifierKeys();
+
+                // When desktop is locked we will not get the keyup, because we track the modifier keys
+                // specially we need to set them to not being pressed anymore
                 var sessionSwitchStreamSubscription = desktopLockEventService.GetSessionSwitchStream()
                 .Subscribe(ss =>
                 {
                     if (ss.Reason == SessionSwitchReason.SessionLock)
-                    {
-                        winKeyPressed = false;
-                        lock (heldModifierKeysSync)
-                            heldModifierKeys.Clear();
-                    }
+                        heldModifierKeys.Clear();
                 }, observer.OnError);
 
                 var keyStreamSubsription = interceptKeysSource.GetKeyStream()
-                    .Select(DetectWindowsKey)
-                    .Where(ShouldShowKeyPress)
-                    .Select(ToCarnacKeyPress)
+                    .Where(k => ShouldShowKeyPress(k, heldModifierKeys))
+                    .Select(k => ToCarnacKeyPress(k, heldModifierKeys))
                     .Where(keypress => keypress != null)
                     .Where(k => !passwordModeService.CheckPasswordMode(k.InterceptKeyEventArgs))
                     .Subscribe(observer);
@@ -107,74 +102,31 @@ namespace Carnac.Logic
             });
         }
 
-        InterceptKeyEventArgs DetectWindowsKey(InterceptKeyEventArgs interceptKeyEventArgs)
+        // Keeps track of the modifier keys that are down, and tells which key events are shown
+        bool ShouldShowKeyPress(InterceptKeyEventArgs interceptKeyEventArgs, HeldModifierKeys heldModifierKeys)
         {
-            if (interceptKeyEventArgs.Key == Keys.LWin || interceptKeyEventArgs.Key == Keys.RWin)
-            {
-                if (interceptKeyEventArgs.KeyDirection == KeyDirection.Up)
-                    winKeyPressed = false;
-                else if (interceptKeyEventArgs.KeyDirection == KeyDirection.Down)
-                    winKeyPressed = true;
-            }
+            // The key ups of modifiers are not always seen, so ask the keyboard what is really down. Only for events
+            // of the keyboard hook: the state of the keyboard means nothing for events that are made up.
+            if (interceptKeyEventArgs.IsFromKeyboardHook)
+                heldModifierKeys.ForgetReleased(IsKeyDown, interceptKeyEventArgs.Key);
 
-            return interceptKeyEventArgs;
-        }
-
-        static bool IsModifierKeyPress(InterceptKeyEventArgs interceptKeyEventArgs)
-        {
-            return interceptKeyEventArgs.IsModifier();
-        }
-
-        bool ShouldShowKeyPress(InterceptKeyEventArgs interceptKeyEventArgs)
-        {
-            if (!IsModifierKeyPress(interceptKeyEventArgs))
+            if (!interceptKeyEventArgs.IsModifier())
                 return interceptKeyEventArgs.KeyDirection == KeyDirection.Down;
 
-            // Always keep track of the modifiers that are down, also while they are not shown
-            var isNewPress = TrackModifierKey(interceptKeyEventArgs);
-            if (!isNewPress || settings == null || !settings.ShowModifierKeyPresses)
-                return false;
+            var isNewPress = false;
+            if (interceptKeyEventArgs.KeyDirection == KeyDirection.Down)
+                isNewPress = heldModifierKeys.Press(interceptKeyEventArgs.Key);
+            else if (interceptKeyEventArgs.KeyDirection == KeyDirection.Up)
+                heldModifierKeys.Release(interceptKeyEventArgs.Key);
 
             // Shift on its own is what capital letters are typed with, it is only shown as part of Ctrl/Alt/Win + Shift
-            return GetHeldModifierNames().Any(name => name != "Shift");
+            return isNewPress
+                && settings != null
+                && settings.ShowModifierKeyPresses
+                && heldModifierKeys.GetState().IsAnyDownOtherThanShift;
         }
 
-        // True when the key went down just now, false for auto-repeat of a key that is held and for releases.
-        bool TrackModifierKey(InterceptKeyEventArgs interceptKeyEventArgs)
-        {
-            lock (heldModifierKeysSync)
-            {
-                if (interceptKeyEventArgs.KeyDirection == KeyDirection.Down)
-                    return heldModifierKeys.Add(interceptKeyEventArgs.Key);
-
-                if (interceptKeyEventArgs.KeyDirection == KeyDirection.Up)
-                    heldModifierKeys.Remove(interceptKeyEventArgs.Key);
-
-                return false;
-            }
-        }
-
-        // The modifiers that are down, named and ordered like the ones in front of a key: Ctrl, Alt, Win, Shift.
-        string[] GetHeldModifierNames()
-        {
-            bool control, alt, win, shift;
-            lock (heldModifierKeysSync)
-            {
-                control = heldModifierKeys.Contains(Keys.LControlKey) || heldModifierKeys.Contains(Keys.RControlKey);
-                alt = heldModifierKeys.Contains(Keys.LMenu) || heldModifierKeys.Contains(Keys.RMenu);
-                win = heldModifierKeys.Contains(Keys.LWin) || heldModifierKeys.Contains(Keys.RWin);
-                shift = heldModifierKeys.Contains(Keys.LShiftKey) || heldModifierKeys.Contains(Keys.RShiftKey);
-            }
-
-            var names = new List<string>();
-            if (control) names.Add("Ctrl");
-            if (alt) names.Add("Alt");
-            if (win) names.Add("Win");
-            if (shift) names.Add("Shift");
-            return names.ToArray();
-        }
-
-        KeyPress ToCarnacKeyPress(InterceptKeyEventArgs interceptKeyEventArgs)
+        KeyPress ToCarnacKeyPress(InterceptKeyEventArgs interceptKeyEventArgs, HeldModifierKeys heldModifierKeys)
         {
             var process = AssociatedProcessUtilities.GetAssociatedProcess();
             if (process == null)
@@ -189,21 +141,24 @@ namespace Carnac.Logic
                 return null;
             }
 
-            var isWinKeyPressed = winKeyPressed;
+            var modifiers = heldModifierKeys.GetState();
+            var isWinKeyPressed = modifiers.Win;
             string[] inputs;
-            if (IsModifierKeyPress(interceptKeyEventArgs))
+            if (interceptKeyEventArgs.IsModifier())
             {
-                // A modifier on its own is shown with the ones that are down with it ("Ctrl + Shift"). What the
-                // hook reports as modifier state while the key is being pressed is not reliable, so use the held keys.
-                inputs = GetHeldModifierNames();
+                // A modifier on its own is shown with the ones that are down with it ("Ctrl + Shift"). What the hook
+                // reports as modifier state while the key is being pressed is not reliable, so use the held keys.
+                inputs = modifiers.GetNames();
+                if (inputs.Length == 0)
+                    return null;
+
                 interceptKeyEventArgs = new InterceptKeyEventArgs(interceptKeyEventArgs.Key, interceptKeyEventArgs.KeyDirection,
-                    altPressed: inputs.Contains("Alt"), controlPressed: inputs.Contains("Ctrl"), shiftPressed: inputs.Contains("Shift"));
-                isWinKeyPressed = inputs.Contains("Win");
+                    altPressed: modifiers.Alt, controlPressed: modifiers.Control, shiftPressed: modifiers.Shift);
             }
             else
             {
                 var isLetter = interceptKeyEventArgs.IsLetter();
-                inputs = ToInputs(isLetter, winKeyPressed, interceptKeyEventArgs).ToArray();
+                inputs = ToInputs(isLetter, isWinKeyPressed, interceptKeyEventArgs).ToArray();
             }
 
             try
