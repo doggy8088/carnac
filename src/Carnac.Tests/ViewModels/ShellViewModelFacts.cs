@@ -1,5 +1,8 @@
-﻿using Carnac.Logic;
+﻿using System.Collections.Generic;
+using Carnac.Logic;
+using Carnac.Logic.Enums;
 using Carnac.Logic.Models;
+using Carnac.Logic.Native;
 using Carnac.UI;
 using NSubstitute;
 using SettingsProviderNet;
@@ -83,6 +86,35 @@ namespace Carnac.Tests.ViewModels
             public void the_settings_file_is_the_existing_instance()
             {
                 Assert.NotNull(Subject.Settings);
+            }
+        }
+
+        public class when_positioning_notifications_on_a_selected_screen
+        {
+            [Fact]
+            public void selected_screen_left_and_top_are_copied_to_settings()
+            {
+                var settingsService = Substitute.For<ISettingsProvider>();
+                var screenManager = Substitute.For<IScreenManager>();
+                var popupSettings = new PopupSettings
+                {
+                    Screen = 2,
+                    Placement = NotificationPlacement.TopRight
+                };
+                var screens = new List<DetailedScreen>
+                {
+                    new DetailedScreen { Index = 1, Left = 0, Top = 0 },
+                    new DetailedScreen { Index = 2, Left = 640, Top = 480 }
+                };
+
+                settingsService.GetSettings<PopupSettings>().Returns(popupSettings);
+                screenManager.GetScreens().Returns(screens);
+
+                var subject = new PreferencesViewModel(settingsService, screenManager);
+
+                Assert.Equal(640, subject.Settings.Left);
+                Assert.Equal(480, subject.Settings.Top);
+                Assert.Same(screens[1], subject.SelectedScreen);
             }
         }
     }

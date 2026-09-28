@@ -10,11 +10,23 @@ A keyboard logging and presentation utility for presentations, screencasts, and 
 
 ### Installation
 
-You can install the latest version of Carnac via [Chocolatey](https://chocolatey.org/):
+There are several options to install the latest version of Carnac on Windows.
 
-```ps
-cinst carnac
+#### [WinGet](https://learn.microsoft.com/en-us/windows/package-manager/winget/)
+
+```powershell
+winget install --id code52.Carnac
 ```
+
+#### [Chocolatey](https://chocolatey.org/)
+
+You can install the latest version of [Carnac](https://community.chocolatey.org/packages/carnac) via Chocolatey:
+
+```powershell
+choco install carnac
+```
+
+#### Manual setup
 
 Alternatively, you can grab the latest zip file from [here](https://github.com/Code52/carnac/releases/latest), unpack it and run `Setup.exe`.
 
@@ -28,29 +40,29 @@ The application will check for updates in the background, if a new version has b
 
 ### Usage
 
-**Enabling silent mode**
+#### Enabling silent mode
 
 If you want to stop `Carnac` from recording certain key strokes, you can enter _silent mode_ by pressing `Ctrl+Alt+P`. To exit _silent mode_ you simply press `Ctrl+Alt+P` again.
 
 ### Contributing
 
-**Getting started with Git and GitHub**
+#### Getting started with Git and GitHub
 
 - [Setting up Git for Windows and connecting to GitHub](http://help.github.com/win-set-up-git/)
 - [Forking a GitHub repository](http://help.github.com/fork-a-repo/)
 - [The simple guide to GIT guide](http://rogerdudler.github.com/git-guide/)
 - [Open an issue](https://github.com/Code52/carnac/issues) if you encounter a bug or have a suggestion for improvements/features
 
-Once you're familiar with Git and GitHub, clone the repository and run the `.\build.cmd` script to compile the code and run all the unit tests. You can use this script to test your changes quickly.
+Once you're familiar with Git and GitHub, clone the repository and run `.\build.ps1 -Target Run-Unit-Tests -Configuration Release` to compile the code and run the unit tests on Windows.
 
 ### Resources
 
 This blog series covers a series of refactorings which have recently happened in Carnac to make better use of Rx.
 If you are learning Rx and want to be shown through Carnac's codebase then this blog series may help you.
 
-[Part 1 - Refactoring the InterceptKeys class](http://jake.ginnivan.net/blog/carnac-improvements/part-1/)  
-[Part 2 - Refactoring the MessageProvider class](http://jake.ginnivan.net/blog/carnac-improvements/part-2/)  
-[Part 3 - Introducing the MessageController class](http://jake.ginnivan.net/blog/carnac-improvements/part-3/)
+1. [Part 1 - Refactoring the InterceptKeys class](http://jake.ginnivan.net/blog/carnac-improvements/part-1/)
+1. [Part 2 - Refactoring the MessageProvider class](http://jake.ginnivan.net/blog/carnac-improvements/part-2/)
+1. [Part 3 - Introducing the MessageController class](http://jake.ginnivan.net/blog/carnac-improvements/part-3/)
 
 ### Install Carnac with ClickOnce (Auto-update)
 
