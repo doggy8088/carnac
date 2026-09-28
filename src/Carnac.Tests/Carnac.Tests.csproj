@@ -78,6 +78,7 @@
     <Compile Include="MonitorLayoutFacts.cs" />
     <Compile Include="Overlay\OverlayPlacementControllerFacts.cs" />
     <Compile Include="Overlay\OverlayPlacementFacts.cs" />
+    <Compile Include="Overlay\OverlayStyleControllerFacts.cs" />
     <Compile Include="Overlay\OverlayWindowStylesFacts.cs" />
     <Compile Include="PreviewServiceFacts.cs" />
     <Compile Include="RxTestExtensions.cs" />
