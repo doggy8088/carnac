@@ -16,7 +16,6 @@ using Microsoft.Win32;
 using NSubstitute;
 using SettingsProviderNet;
 using Xunit;
-using Message = Carnac.Logic.Models.Message;
 
 namespace Carnac.Tests
 {
@@ -360,7 +359,10 @@ namespace Carnac.Tests
         {
             var keyProvider = Substitute.For<IKeyProvider>();
             keyProvider.GetKeyStream().Returns(keys);
-            return new MessageProvider(shortcutProvider, keyProvider, settings);
+            var concurrencyService = Substitute.For<IConcurrencyService>();
+            concurrencyService.MainThreadScheduler.Returns(testScheduler);
+            concurrencyService.Default.Returns(testScheduler);
+            return new MessageProvider(shortcutProvider, keyProvider, settings, concurrencyService);
         }
 
         static readonly ProcessInfo fakeProcess = new ProcessInfo("FakeProcess");
