@@ -295,5 +295,34 @@ namespace Carnac.Tests
             // the usable key of the same shortcut still works
             Assert.Equal("Nested", provider.GetShortcutsStartingWith(Press("x", Keys.D, control: true)).Single().Name);
         }
+
+        [Fact]
+        public void a_keymap_with_a_repeated_mapping_key_is_reported_and_other_keymaps_still_load()
+        {
+            var folder = CreateKeymapFolder(
+                "a-duplicate.yml", "group: One\ngroup: Two\nprocess:\nshortcuts:\n  - name: Save\n    keys:\n      - Ctrl+S\n",
+                "b-fine.yml", "group: Fine\nprocess:\nshortcuts:\n  - name: Save\n    keys:\n      - Ctrl+S\n");
+
+            var provider = new ShortcutProvider(folder, warnings.Add);
+
+            var warning = Assert.Single(warnings);
+            Assert.Contains("a-duplicate.yml", warning);
+            Assert.Contains("not valid YAML", warning);
+            Assert.Equal("Fine", provider.Keymaps.Single().Group);
+        }
+
+        [Fact]
+        public void a_shortcut_with_an_empty_keys_list_is_reported()
+        {
+            var folder = CreateKeymapFolder("nokeys.yml",
+                "group: Empty keys\nprocess:\nshortcuts:\n  - name: Nothing\n    keys: []\n  - name: Save\n    keys:\n      - Ctrl+S\n");
+
+            var provider = new ShortcutProvider(folder, warnings.Add);
+
+            var warning = Assert.Single(warnings);
+            Assert.Contains("Nothing", warning);
+            Assert.Contains("empty", warning);
+            Assert.Equal("Save", provider.GetShortcutsStartingWith(Press("x", Keys.S, control: true)).Single().Name);
+        }
     }
 }
