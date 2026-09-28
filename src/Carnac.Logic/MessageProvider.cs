@@ -9,12 +9,25 @@ namespace Carnac.Logic
         readonly IShortcutProvider shortcutProvider;
         readonly IKeyProvider keyProvider;
         readonly PopupSettings settings;
+        readonly IKeyDisplayState displayState;
 
+        /// <summary>Creates a provider that is never paused; the application passes the shared state instead.</summary>
         public MessageProvider(IShortcutProvider shortcutProvider, IKeyProvider keyProvider, PopupSettings settings)
+            : this(shortcutProvider, keyProvider, settings, new KeyDisplayState())
         {
+        }
+
+        public MessageProvider(IShortcutProvider shortcutProvider, IKeyProvider keyProvider, PopupSettings settings, IKeyDisplayState displayState)
+        {
+            if (displayState == null)
+            {
+                throw new ArgumentNullException("displayState");
+            }
+
             this.shortcutProvider = shortcutProvider;
             this.keyProvider = keyProvider;
             this.settings = settings;
+            this.displayState = displayState;
         }
 
         public IObservable<Message> GetMessageStream()
@@ -32,7 +45,10 @@ namespace Carnac.Logic
             sel many    :  a---b-------------ctrl+r,ctrl+r-------------ctrl+r---a-----↓---↓
             msg merger  :  a---*ab-----------ctrl+r,ctrl+r-------------ctrl+r---a-----↓---*'↓ x2'
             */
+            // While paused, keys are dropped before they are accumulated, so nothing typed during a pause
+            // can show up later merged into the first message after resuming.
             return keyProvider.GetKeyStream()
+                .Where(key => !displayState.IsPaused)
                 .Scan(new ShortcutAccumulator(), (acc, key) => acc.ProcessKey(shortcutProvider, key))
                 .Where(c => c.HasCompletedValue)
                 .SelectMany(c => c.GetMessages())

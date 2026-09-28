@@ -117,4 +117,22 @@
   <data name="ShellView_Exit" xml:space="preserve">
     <value>Exit</value>
   </data>
+  <data name="TrayMenu_Pause" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="TrayMenu_Resume" xml:space="preserve">
+    <value>Resume</value>
+  </data>
+  <data name="TrayMenu_Settings" xml:space="preserve">
+    <value>Settings…</value>
+  </data>
+  <data name="TrayMenu_SilentMode" xml:space="preserve">
+    <value>Silent mode</value>
+  </data>
+  <data name="TrayStatus_Paused" xml:space="preserve">
+    <value>paused</value>
+  </data>
+  <data name="TrayStatus_Silent" xml:space="preserve">
+    <value>silent mode</value>
+  </data>
 </root>

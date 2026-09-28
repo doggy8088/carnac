@@ -68,5 +68,59 @@ namespace Carnac.Properties {
                 return ResourceManager.GetString("ShellView_Exit", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Pause.
+        /// </summary>
+        internal static string TrayMenu_Pause {
+            get {
+                return ResourceManager.GetString("TrayMenu_Pause", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Resume.
+        /// </summary>
+        internal static string TrayMenu_Resume {
+            get {
+                return ResourceManager.GetString("TrayMenu_Resume", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Settings….
+        /// </summary>
+        internal static string TrayMenu_Settings {
+            get {
+                return ResourceManager.GetString("TrayMenu_Settings", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Silent mode.
+        /// </summary>
+        internal static string TrayMenu_SilentMode {
+            get {
+                return ResourceManager.GetString("TrayMenu_SilentMode", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to paused.
+        /// </summary>
+        internal static string TrayStatus_Paused {
+            get {
+                return ResourceManager.GetString("TrayStatus_Paused", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to silent mode.
+        /// </summary>
+        internal static string TrayStatus_Silent {
+            get {
+                return ResourceManager.GetString("TrayStatus_Silent", resourceCulture);
+            }
+        }
     }
 }

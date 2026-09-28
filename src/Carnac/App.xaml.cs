@@ -19,6 +19,7 @@ namespace Carnac
         readonly SettingsProvider settingsProvider;
         readonly IMessageProvider messageProvider;
         readonly PopupSettings settings;
+        readonly IKeyDisplayState displayState = new KeyDisplayState();
         KeyShowView keyShowView;
         CarnacTrayIcon trayIcon;
         KeysController carnac;
@@ -31,8 +32,8 @@ namespace Carnac
         {
             settingsProvider = new SettingsProvider(new RoamingAppDataStorage("Carnac"));
             settings = settingsProvider.GetSettings<PopupSettings>();
-            var keyProvider = new KeyProvider(InterceptKeys.Current, new PasswordModeService(), new DesktopLockEventService(), settingsProvider);
-            messageProvider = new MessageProvider(new ShortcutProvider(), keyProvider, settings);
+            var keyProvider = new KeyProvider(InterceptKeys.Current, new PasswordModeService(displayState), new DesktopLockEventService(), settingsProvider);
+            messageProvider = new MessageProvider(new ShortcutProvider(), keyProvider, settings, displayState);
         }
 
         protected override void OnStartup(StartupEventArgs e)
@@ -46,7 +47,7 @@ namespace Carnac
                 return;
             }
 
-            trayIcon = new CarnacTrayIcon();
+            trayIcon = new CarnacTrayIcon(displayState);
             trayIcon.OpenPreferences += TrayIconOnOpenPreferences;
 
             // Settings saved before Top was persisted load it as 0, so refresh the

@@ -78,18 +78,21 @@
   <ItemGroup>
     <Compile Include="Enums\NotificationPlacement.cs" />
     <Compile Include="IConcurrencyService.cs" />
+    <Compile Include="IKeyDisplayState.cs" />
     <Compile Include="IMessageProvider.cs" />
     <Compile Include="Internal\FixedQueue.cs" />
     <Compile Include="IKeyProvider.cs" />
     <Compile Include="IPasswordModeService.cs" />
     <Compile Include="IScreenManager.cs" />
     <Compile Include="IShortcutProvider.cs" />
+    <Compile Include="ITrayNotifier.cs" />
     <Compile Include="KeyMonitor\IInterceptKeys.cs" />
     <Compile Include="KeyMonitor\DesktopLockEventService.cs" />
     <Compile Include="KeyMonitor\IDesktopLockEventService.cs" />
     <Compile Include="KeyMonitor\InterceptKeyEventArgs.cs" />
     <Compile Include="KeyMonitor\InterceptKeys.cs" />
     <Compile Include="KeyMonitor\KeyDirection.cs" />
+    <Compile Include="KeyDisplayState.cs" />
     <Compile Include="KeysController.cs" />
     <Compile Include="Models\Processinfo.cs" />
     <Compile Include="AssociatedProcessUtilities.cs" />
@@ -107,6 +110,7 @@
     <Compile Include="ScreenManager.cs" />
     <Compile Include="ShortcutCollection.cs" />
     <Compile Include="ShortcutProvider.cs" />
+    <Compile Include="TrayStatusText.cs" />
     <Compile Include="Win32Methods.cs" />
     <Compile Include="Native\DetailedScreen.cs" />
     <Compile Include="Native\DEVMODE.cs" />
