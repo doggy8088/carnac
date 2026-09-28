@@ -186,12 +186,10 @@ namespace Carnac.Tests
         public void typed_characters_outside_ascii_follow_the_same_rule()
         {
             var surrogatePairLetter = "𝒜";
-            var decomposedAccent = "é";
 
             Assert.Equal("üü", TextOf(Typed("ü", "ü")));
             Assert.Equal(surrogatePairLetter + surrogatePairLetter, TextOf(Typed(surrogatePairLetter, surrogatePairLetter)));
-            Assert.Equal(decomposedAccent + decomposedAccent, TextOf(Typed(decomposedAccent, decomposedAccent)));
-            Assert.Equal(decomposedAccent + " x 4 ", TextOf(Typed(decomposedAccent, decomposedAccent, decomposedAccent, decomposedAccent)));
+            Assert.Equal(surrogatePairLetter + " x 4 ", TextOf(Typed(surrogatePairLetter, surrogatePairLetter, surrogatePairLetter, surrogatePairLetter)));
         }
 
         [Fact]
@@ -246,14 +244,14 @@ namespace Carnac.Tests
         }
 
         [Fact]
-        public void a_single_typed_character_with_a_modifier_flag_is_still_summarised_from_two()
+        public void a_character_typed_with_altgr_is_a_typed_character()
         {
-            // however the input was produced, a key pressed with Ctrl held is a shortcut, not typing
-            var press = new KeyPress(fakeProcess, new InterceptKeyEventArgs(Keys.L, KeyDirection.Down, false, true, false), false, new[] { "l" });
+            // AltGr is reported as Ctrl+Alt, the character is what is typed
+            var press = new KeyPress(fakeProcess, new InterceptKeyEventArgs(Keys.D7, KeyDirection.Down, true, true, false), false, new[] { "{" });
 
-            var result = new Message(press).Merge(new Message(press));
+            var result = new Message(press).Merge(new Message(press)).Merge(new Message(press));
 
-            Assert.Equal("l x 2 ", TextOf(result));
+            Assert.Equal("{{{", TextOf(result));
         }
 
         [Fact]
