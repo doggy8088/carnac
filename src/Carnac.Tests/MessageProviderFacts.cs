@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Carnac.Logic;
 using Carnac.Logic.KeyMonitor;
 using Carnac.Logic.Models;
+using Microsoft.Reactive.Testing;
 using Microsoft.Win32;
 using NSubstitute;
 using SettingsProviderNet;
@@ -18,6 +19,7 @@ namespace Carnac.Tests
     public class MessageProviderFacts
     {
         readonly IShortcutProvider shortcutProvider;
+        readonly TestScheduler testScheduler = new TestScheduler();
 
         public MessageProviderFacts()
         {
@@ -34,7 +36,10 @@ namespace Carnac.Tests
             var settingsProvider = Substitute.For<ISettingsProvider>();
             desktopLockEventService.GetSessionSwitchStream().Returns(Observable.Never<SessionSwitchEventArgs>());
             var keyProvider = new KeyProvider(source, new PasswordModeService(), desktopLockEventService, settingsProvider);
-            return new MessageProvider(shortcutProvider, keyProvider, new PopupSettings());
+            var concurrencyService = Substitute.For<IConcurrencyService>();
+            concurrencyService.MainThreadScheduler.Returns(testScheduler);
+            concurrencyService.Default.Returns(testScheduler);
+            return new MessageProvider(shortcutProvider, keyProvider, new PopupSettings(), concurrencyService);
         }
 
         [Fact]

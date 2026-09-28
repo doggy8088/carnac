@@ -17,7 +17,6 @@ namespace Carnac
     public partial class App
     {
         readonly SettingsProvider settingsProvider;
-        readonly IMessageProvider messageProvider;
         readonly PopupSettings settings;
         KeyShowView keyShowView;
         CarnacTrayIcon trayIcon;
@@ -31,8 +30,6 @@ namespace Carnac
         {
             settingsProvider = new SettingsProvider(new RoamingAppDataStorage("Carnac"));
             settings = settingsProvider.GetSettings<PopupSettings>();
-            var keyProvider = new KeyProvider(InterceptKeys.Current, new PasswordModeService(), new DesktopLockEventService(), settingsProvider);
-            messageProvider = new MessageProvider(new ShortcutProvider(), keyProvider, settings);
         }
 
         protected override void OnStartup(StartupEventArgs e)
@@ -62,7 +59,13 @@ namespace Carnac
             keyShowView = new KeyShowView(keyShowViewModel);
             keyShowView.Show();
 
-            carnac = new KeysController(keyShowViewModel.Messages, messageProvider, new ConcurrencyService(), settingsProvider);
+            // One ConcurrencyService (its main thread scheduler wraps the UI thread's synchronization context) is shared by the
+            // message provider, which schedules the chord timeout on it, and the controller that shows the messages.
+            var concurrencyService = new ConcurrencyService();
+            var keyProvider = new KeyProvider(InterceptKeys.Current, new PasswordModeService(), new DesktopLockEventService(), settingsProvider);
+            var messageProvider = new MessageProvider(new ShortcutProvider(), keyProvider, settings, concurrencyService);
+
+            carnac = new KeysController(keyShowViewModel.Messages, messageProvider, concurrencyService, settingsProvider);
             carnac.Start();
 
 #if !DEBUG
