@@ -81,7 +81,7 @@ shortcuts:
       - msedge
     ```
 
-- `keys` lists the ways to trigger a shortcut. Write modifiers (`Ctrl`, `Alt`, `Shift`, `Win`) joined with `+`, then one key: a letter, a digit, or a key name such as `Enter`, `Escape`, `Back`, `Up`, `F5`, `PageDown` or `Oemcomma` (the names of [`System.Windows.Forms.Keys`](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keys)). The plus key is `Ctrl++`, and the comma key after a modifier is `Ctrl+,`.
+- `keys` lists the ways to trigger a shortcut. Write modifiers (`Ctrl`, `Alt`, `Shift`, `Win`) joined with `+`, then one key: a letter, a digit, or a key name such as `Enter`, `Escape`, `Back`, `Up`, `F5`, `PageDown` or `Oemcomma` (the names of [`System.Windows.Forms.Keys`](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keys)). The plus key is `Ctrl++`: like every character that is typed with Shift on a US keyboard (`!`, `?`, `_`, `{` ...), it means the shifted key, so `Ctrl++` is `Ctrl+Shift+=`. Write `Ctrl+=` or `Ctrl+Oemplus` for the unshifted key. The comma key after a modifier is `Ctrl+,`.
 - A chord, several key presses one after the other, uses commas: `Ctrl+K,Ctrl+C`. Carnac holds back the first key of a possible chord; if the rest does not follow within about a second, that key is shown on its own.
 - An entry Carnac cannot understand is skipped, and a message naming the file and shortcut goes to the Windows debug output (visible with a tool such as DebugView). Typical mistakes are `Ctrl+K Ctrl+C` (chords need a comma), `Up Arrow` (write `Up`) and `Esc` (write `Escape`).
 - `src/Carnac.Logic/Keymaps/samples` holds opt-in keymaps that are not installed, for example the Konami code. To use one, copy it into the `Keymaps` folder and rename it to end in `.yml`.
