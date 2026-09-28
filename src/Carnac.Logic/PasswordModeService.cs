@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -10,11 +11,23 @@ namespace Carnac.Logic
     {
         readonly InterceptKeyEventArgsEqualityComparer comparer = new InterceptKeyEventArgsEqualityComparer();
         readonly FixedQueue<InterceptKeyEventArgs> log;
+        readonly IKeyDisplayState displayState;
         InterceptKeyEventArgs[] passwordKeyCombination;
-        bool currentMode;
 
+        /// <summary>Creates a service with its own private state; the application passes the shared state instead.</summary>
         public PasswordModeService()
+            : this(new KeyDisplayState())
         {
+        }
+
+        public PasswordModeService(IKeyDisplayState displayState)
+        {
+            if (displayState == null)
+            {
+                throw new ArgumentNullException("displayState");
+            }
+
+            this.displayState = displayState;
             log = new FixedQueue<InterceptKeyEventArgs>(this.PasswordKeyCombination.Count());
         }
 
@@ -26,12 +39,12 @@ namespace Carnac.Logic
             var isMatch = sortedLog.SequenceEqual(PasswordKeyCombination, comparer);
             if (isMatch)
             {
-                currentMode = !currentMode;
+                displayState.ToggleSilent();
                 this.log.Clear();
                 return true; //this way when the sequence is entered again to EXIT password mode, the key password keycombo doesn't show on screen
             }
 
-            return currentMode;
+            return displayState.IsSilent;
         }
 
         public IEnumerable<InterceptKeyEventArgs> PasswordKeyCombination

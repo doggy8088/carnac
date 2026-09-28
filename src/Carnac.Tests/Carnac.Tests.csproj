@@ -70,13 +70,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="KeyDisplayStateFacts.cs" />
     <Compile Include="KeyPlayer.cs" />
     <Compile Include="KeysControllerFacts.cs" />
     <Compile Include="KeyStreams.cs" />
     <Compile Include="MessageFacts.cs" />
     <Compile Include="MessageProviderFacts.cs" />
+    <Compile Include="MessageProviderPauseFacts.cs" />
+    <Compile Include="PasswordModeServiceFacts.cs" />
     <Compile Include="RxTestExtensions.cs" />
     <Compile Include="SpecificationFor.cs" />
+    <Compile Include="TrayMenuFacts.cs" />
+    <Compile Include="TrayStatusTextFacts.cs" />
     <Compile Include="KeyProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\ShellViewModelFacts.cs" />

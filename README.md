@@ -44,6 +44,17 @@ The application will check for updates in the background, if a new version has b
 
 If you want to stop `Carnac` from recording certain key strokes, you can enter _silent mode_ by pressing `Ctrl+Alt+P`. To exit _silent mode_ you simply press `Ctrl+Alt+P` again.
 
+#### Tray icon menu
+
+Hover over the Carnac icon in the notification area to see whether Carnac is active, paused or in silent mode. Right-click it for:
+
+- **Settings...** (a left click opens the settings too)
+- **Pause** / **Resume**: no popups are shown while Carnac is paused
+- **Silent mode**: the same switch as `Ctrl+Alt+P`
+- **Exit**
+
+Pause and silent mode are not remembered, Carnac always starts with both switched off.
+
 ### Contributing
 
 #### Getting started with Git and GitHub
