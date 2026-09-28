@@ -84,6 +84,13 @@ namespace Carnac.Logic
                 warn(fileName + ": ignoring keymap, it is not valid YAML: " + exception.Message);
                 return null;
             }
+            catch (ArgumentException exception)
+            {
+                // YamlDotNet reports some malformed documents (for example a mapping key that is written twice)
+                // as a plain ArgumentException instead of a YamlException.
+                warn(fileName + ": ignoring keymap, it is not valid YAML: " + exception.Message);
+                return null;
+            }
             catch (IOException exception)
             {
                 warn(fileName + ": ignoring keymap, it cannot be read: " + exception.Message);
@@ -152,6 +159,12 @@ namespace Carnac.Logic
                 if (keys == null)
                 {
                     warn(context + ": ignoring shortcut, it has no 'keys' list");
+                    continue;
+                }
+
+                if (keys.Children.Count == 0)
+                {
+                    warn(context + ": ignoring shortcut, its 'keys' list is empty");
                     continue;
                 }
 
