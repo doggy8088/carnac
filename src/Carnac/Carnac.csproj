@@ -190,8 +190,11 @@
       <DependentUpon>PositionOnMonitorSelector.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\DelegateCommand.cs" />
+    <Compile Include="UI\FontFamilyOption.cs" />
     <Compile Include="UI\PreferencesField.cs" />
     <Compile Include="Utilities\DesignTimeHelper.cs" />
+    <Compile Include="Utilities\FontFamilyNameConverter.cs" />
+    <Compile Include="Utilities\InstalledFonts.cs" />
     <Compile Include="Utilities\ConcurrencyService.cs" />
     <Compile Include="UI\AvailableColor.cs" />
     <Compile Include="Utilities\ProcessUtilities.cs" />

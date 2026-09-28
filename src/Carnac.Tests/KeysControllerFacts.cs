@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -305,24 +304,6 @@ namespace Carnac.Tests
             var screenManager = Substitute.For<IScreenManager>();
             screenManager.GetScreens().Returns(new[] { new DetailedScreen { Index = 1, Width = 1920, Height = 1080 } });
             return new PreferencesViewModel(settingsProvider, screenManager);
-        }
-
-        class InMemorySettingsStorage : ISettingsStorage
-        {
-            readonly Dictionary<string, Dictionary<string, string>> stored = new Dictionary<string, Dictionary<string, string>>();
-
-            public void Save(string key, Dictionary<string, string> settings)
-            {
-                stored[key] = new Dictionary<string, string>(settings);
-            }
-
-            public Dictionary<string, string> Load(string key)
-            {
-                Dictionary<string, string> settings;
-                return stored.TryGetValue(key, out settings)
-                    ? new Dictionary<string, string>(settings)
-                    : new Dictionary<string, string>();
-            }
         }
 
         static KeyPress A

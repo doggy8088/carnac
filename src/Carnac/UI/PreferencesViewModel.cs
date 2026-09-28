@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using Carnac.Logic;
@@ -43,6 +45,9 @@ namespace Carnac.UI
                 AvailableColors.Add(availableColor);
             }
 
+            AvailableFontFamilies = FontFamilyOption.CreateList(
+                Fonts.SystemFontFamilies, SystemFonts.MessageFontFamily, "System default", CultureInfo.CurrentUICulture);
+
             SaveCommand = new DelegateCommand(SaveSettings);
             ResetToDefaultsCommand = new DelegateCommand(() => settingsProvider.ResetToDefaults<PopupSettings>());
             VisitCommand = new DelegateCommand(Visit);
@@ -55,6 +60,8 @@ namespace Carnac.UI
         public ICommand SaveCommand { get; private set; }
 
         public ObservableCollection<AvailableColor> AvailableColors { get; private set; }
+
+        public IList<FontFamilyOption> AvailableFontFamilies { get; private set; }
 
         public ObservableCollection<DetailedScreen> Screens { get; set; }
 

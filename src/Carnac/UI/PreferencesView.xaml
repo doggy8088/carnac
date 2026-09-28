@@ -40,6 +40,11 @@
                                    Text="{Binding Name}" />
                 </StackPanel>
             </DataTemplate>
+
+            <DataTemplate x:Key="FontFamilyPickerTemplate">
+                <TextBlock Margin="2" FontFamily="{Binding Family}" Text="{Binding DisplayName}"
+                           d:DataContext="{d:DesignInstance ui:FontFamilyOption}" />
+            </DataTemplate>
         </ResourceDictionary>
     </Window.Resources>
     <Grid>
@@ -134,6 +139,11 @@
                                 <TextBox Foreground="White" Text="{Binding Settings.FontSize}" />
                             </ui:PreferencesField.SecondaryControl>
                         </ui:PreferencesField>
+                        <ui:PreferencesField Header="Font Family">
+                            <ComboBox ItemsSource="{Binding AvailableFontFamilies}" SelectedValuePath="Name"
+                              SelectedValue="{Binding Settings.FontFamily}"
+                              ItemTemplate="{StaticResource FontFamilyPickerTemplate}" />
+                        </ui:PreferencesField>
                         <ui:PreferencesField Header="Font Color">
                             <ComboBox SelectedItem="{Binding FontColor}"
                               ItemsSource="{Binding AvailableColors}"
@@ -143,6 +153,20 @@
                             <ComboBox SelectedItem="{Binding ItemBackgroundColor}"
                               ItemsSource="{Binding AvailableColors}"
                               ItemTemplate="{StaticResource ColourPickerTemplate}" />
+                        </ui:PreferencesField>
+                        <ui:PreferencesField Header="Corner Radius">
+                            <Slider Value="{Binding Settings.ItemCornerRadius}" IsSnapToTickEnabled="True"
+                            LargeChange="5" Maximum="50" Minimum="0" SmallChange="1" TickFrequency="1" />
+                            <ui:PreferencesField.SecondaryControl>
+                                <TextBox Foreground="White" Text="{Binding Settings.ItemCornerRadius}" />
+                            </ui:PreferencesField.SecondaryControl>
+                        </ui:PreferencesField>
+                        <ui:PreferencesField Header="Popup Padding">
+                            <Slider Value="{Binding Settings.ItemPadding}" IsSnapToTickEnabled="True"
+                            LargeChange="5" Maximum="30" Minimum="0" SmallChange="1" TickFrequency="1" />
+                            <ui:PreferencesField.SecondaryControl>
+                                <TextBox Foreground="White" Text="{Binding Settings.ItemPadding}" />
+                            </ui:PreferencesField.SecondaryControl>
                         </ui:PreferencesField>
                         <ui:PreferencesField Header="Shortcuts Only">
                             <CheckBox IsChecked="{Binding Settings.DetectShortcutsOnly}" Content="Only show keys that are listed in the Keymaps folder" />
