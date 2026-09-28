@@ -92,7 +92,7 @@ namespace Carnac.Tests.ViewModels
         public class when_positioning_notifications_on_a_selected_screen
         {
             [Fact]
-            public void selected_screen_left_and_top_are_copied_to_settings()
+            public void the_screen_with_the_configured_index_is_selected_and_the_placement_is_checked()
             {
                 var settingsService = Substitute.For<ISettingsProvider>();
                 var screenManager = Substitute.For<IScreenManager>();
@@ -112,9 +112,9 @@ namespace Carnac.Tests.ViewModels
 
                 var subject = new PreferencesViewModel(settingsService, screenManager);
 
-                Assert.Equal(640, subject.Settings.Left);
-                Assert.Equal(480, subject.Settings.Top);
                 Assert.Same(screens[1], subject.SelectedScreen);
+                Assert.True(screens[1].NotificationPlacementTopRight);
+                Assert.False(screens[0].NotificationPlacementTopRight);
             }
         }
     }

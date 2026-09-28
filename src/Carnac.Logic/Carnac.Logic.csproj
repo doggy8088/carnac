@@ -102,6 +102,9 @@
     <Compile Include="Models\Message.cs" />
     <Compile Include="Models\PopupSettings.cs" />
     <Compile Include="NotifyPropertyChanged.cs" />
+    <Compile Include="Overlay\OverlayPlacement.cs" />
+    <Compile Include="Overlay\OverlayWindowStyles.cs" />
+    <Compile Include="Overlay\PixelRect.cs" />
     <Compile Include="PasswordModeService.cs" />
     <Compile Include="ReplaceKey.cs" />
     <Compile Include="ScreenManager.cs" />

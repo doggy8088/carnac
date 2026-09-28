@@ -170,9 +170,6 @@ namespace Carnac.UI
                     SelectedScreen.NotificationPlacementBottomLeft = true;
                     break;
             }
-
-            Settings.Left = SelectedScreen.Left;
-            Settings.Top = SelectedScreen.Top;
         }
     }
 }

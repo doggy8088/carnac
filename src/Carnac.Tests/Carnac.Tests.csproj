@@ -75,6 +75,8 @@
     <Compile Include="KeyStreams.cs" />
     <Compile Include="MessageFacts.cs" />
     <Compile Include="MessageProviderFacts.cs" />
+    <Compile Include="Overlay\OverlayPlacementFacts.cs" />
+    <Compile Include="Overlay\OverlayWindowStylesFacts.cs" />
     <Compile Include="RxTestExtensions.cs" />
     <Compile Include="SpecificationFor.cs" />
     <Compile Include="KeyProviderTests.cs" />

@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Windows;
 using Carnac.Logic.Enums;
 
@@ -32,45 +31,6 @@ namespace Carnac.Logic.Models
 
         [DefaultValue(false)]
         public bool AutoUpdate { get; set; }
-
-        //Used to determine which from it's leftmost co-ord
-        double left;
-        public double Left
-        {
-            get { return left; }
-            set
-            {
-                left = value;
-                OnLeftChanged(EventArgs.Empty);
-            }
-        }
-
-        public event EventHandler LeftChanged;
-
-        protected void OnLeftChanged(EventArgs e)
-        {
-            var handler = LeftChanged;
-            if (handler != null) handler(this, e);
-        }
-
-        double top;
-        public double Top
-        {
-            get { return top; }
-            set
-            {
-                top = value;
-                OnTopChanged(EventArgs.Empty);
-            }
-        }
-
-        public event EventHandler TopChanged;
-
-        protected void OnTopChanged(EventArgs e)
-        {
-            var handler = TopChanged;
-            if (handler != null) handler(this, e);
-        }
 
         [NotifyProperty(AlsoNotifyFor = new[] { "Margins" })]
         public int TopOffset { get; set; }
