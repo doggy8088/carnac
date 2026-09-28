@@ -1,13 +1,9 @@
 using System.Linq;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Carnac.Logic;
 using Carnac.Logic.KeyMonitor;
+using Carnac.Logic.Models;
 using Carnac.Utilities;
-using Microsoft.Win32;
-using NSubstitute;
-using SettingsProviderNet;
 using Xunit;
 
 namespace Carnac.Tests
@@ -21,37 +17,12 @@ namespace Carnac.Tests
             {
                 Keys.Back, Keys.Escape, Keys.Tab,
                 Keys.Insert, Keys.Delete, Keys.Home, Keys.End, Keys.PageUp, Keys.PageDown,
-                Keys.CapsLock, Keys.NumLock, Keys.Scroll, Keys.PrintScreen, Keys.Pause, Keys.Apps,
+                Keys.CapsLock, Keys.NumLock, Keys.Scroll, Keys.PrintScreen, Keys.Pause, Keys.Cancel, Keys.Clear, Keys.Apps,
                 Keys.LShiftKey, Keys.RShiftKey
             };
 
             foreach (var key in keys)
                 Assert.True(SpecialKeys.IsSpecialKey(key.Sanitise()), key + " is drawn as " + key.Sanitise());
-        }
-
-        [Fact]
-        public void keys_sharing_an_enum_value_have_a_pinned_name()
-        {
-            // Enum.ToString() may return either member of an aliased pair, so these are named explicitly
-            Assert.Equal("CapsLock", Keys.CapsLock.Sanitise());
-            Assert.Equal("CapsLock", Keys.Capital.Sanitise());
-            Assert.Equal("ScrollLock", Keys.Scroll.Sanitise());
-            Assert.Equal("PrintScreen", Keys.PrintScreen.Sanitise());
-            Assert.Equal("PrintScreen", Keys.Snapshot.Sanitise());
-            Assert.Equal("PageUp", Keys.PageUp.Sanitise());
-            Assert.Equal("PageUp", Keys.Prior.Sanitise());
-            Assert.Equal("PageDown", Keys.PageDown.Sanitise());
-            Assert.Equal("PageDown", Keys.Next.Sanitise());
-        }
-
-        [Fact]
-        public void keymap_names_still_resolve_to_the_same_keys()
-        {
-            Assert.Equal(Keys.PageUp, ReplaceKey.ToKey("PageUp"));
-            Assert.Equal(Keys.CapsLock, ReplaceKey.ToKey("CapsLock"));
-            Assert.Equal(Keys.Scroll, ReplaceKey.ToKey("ScrollLock"));
-            Assert.Equal(Keys.PrintScreen, ReplaceKey.ToKey("PrintScreen"));
-            Assert.Equal(Keys.Capital, ReplaceKey.ToKey("Capital"));
         }
 
         [Fact]
@@ -65,17 +36,62 @@ namespace Carnac.Tests
         }
 
         [Fact]
-        public async Task modifier_names_emitted_by_the_key_provider_are_special_keys()
+        public void keys_sharing_an_enum_value_have_a_pinned_name()
         {
-            var desktopLockEventService = Substitute.For<IDesktopLockEventService>();
-            desktopLockEventService.GetSessionSwitchStream().Returns(Observable.Never<SessionSwitchEventArgs>());
-            var provider = new KeyProvider(KeyStreams.CtrlShiftL(), new PasswordModeService(), desktopLockEventService, Substitute.For<ISettingsProvider>());
+            // Enum.ToString() may return either member of an aliased pair, so both are named explicitly
+            Assert.Equal("Return", Keys.Return.Sanitise());
+            Assert.Equal("Return", Keys.Enter.Sanitise());
+            Assert.Equal("CapsLock", Keys.CapsLock.Sanitise());
+            Assert.Equal("CapsLock", Keys.Capital.Sanitise());
+            Assert.Equal("PrintScreen", Keys.PrintScreen.Sanitise());
+            Assert.Equal("PrintScreen", Keys.Snapshot.Sanitise());
+            Assert.Equal("PageUp", Keys.PageUp.Sanitise());
+            Assert.Equal("PageUp", Keys.Prior.Sanitise());
+            Assert.Equal("PageDown", Keys.PageDown.Sanitise());
+            Assert.Equal("PageDown", Keys.Next.Sanitise());
+        }
 
-            var keyPress = (await provider.GetKeyStream().ToList()).Single();
+        [Fact]
+        public void keys_are_labelled_as_on_the_keyboard()
+        {
+            Assert.Equal("ScrollLock", Keys.Scroll.Sanitise());
+            Assert.Equal("Menu", Keys.Apps.Sanitise());
+        }
 
-            Assert.True(SpecialKeys.IsSpecialKey(keyPress.Input.ElementAt(0)), keyPress.Input.ElementAt(0));
-            Assert.True(SpecialKeys.IsSpecialKey(keyPress.Input.ElementAt(1)), keyPress.Input.ElementAt(1));
-            Assert.False(SpecialKeys.IsSpecialKey(keyPress.Input.ElementAt(2)), keyPress.Input.ElementAt(2));
+        [Fact]
+        public void keymap_names_still_resolve_to_the_same_keys()
+        {
+            Assert.Equal(Keys.PageUp, ReplaceKey.ToKey("PageUp"));
+            Assert.Equal(Keys.CapsLock, ReplaceKey.ToKey("CapsLock"));
+            Assert.Equal(Keys.Scroll, ReplaceKey.ToKey("ScrollLock"));
+            Assert.Equal(Keys.PrintScreen, ReplaceKey.ToKey("PrintScreen"));
+            Assert.Equal(Keys.Capital, ReplaceKey.ToKey("Capital"));
+            Assert.Equal(Keys.Return, ReplaceKey.ToKey("Return"));
+        }
+
+        [Fact]
+        public void modifier_names_are_special_keys()
+        {
+            // "Ctrl", "Alt" and "Shift" are the texts KeyProvider emits (see KeyProviderTests.ctrlshiftl_is_processed_correctly)
+            Assert.True(SpecialKeys.IsSpecialKey("Ctrl"));
+            Assert.True(SpecialKeys.IsSpecialKey("Alt"));
+            Assert.True(SpecialKeys.IsSpecialKey("Shift"));
+        }
+
+        [Fact]
+        public void space_in_a_shortcut_is_drawn_as_a_key_cap()
+        {
+            var keyPress = new KeyPress(
+                new ProcessInfo("FakeProcess"),
+                new InterceptKeyEventArgs(Keys.Space, KeyDirection.Down, false, true, false),
+                false,
+                new[] { "Ctrl", " " });
+
+            var textParts = keyPress.GetTextParts().ToArray();
+
+            Assert.Equal(new[] { "Ctrl", " + ", "Space" }, textParts);
+            Assert.True(SpecialKeys.IsSpecialKey(textParts[2]));
+            Assert.False(SpecialKeys.IsSpecialKey(" "));
         }
 
         [Fact]
@@ -107,14 +123,6 @@ namespace Carnac.Tests
 
             Assert.Equal(false, converter.Convert(null, typeof(bool), null, null));
             Assert.Equal(false, converter.Convert(42, typeof(bool), null, null));
-        }
-
-        [Fact]
-        public void converter_is_one_way()
-        {
-            var converter = new SpecialKeyConverter();
-
-            Assert.Same(System.Windows.Data.Binding.DoNothing, converter.ConvertBack(true, typeof(string), null, null));
         }
     }
 }

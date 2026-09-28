@@ -37,10 +37,15 @@ namespace Carnac.Logic
         static readonly Dictionary<Keys, string> Replacements = new Dictionary<Keys, string>
         {
             {Keys.Space, " "},
+            // Names shown for keys drawn as key caps (see SpecialKeys). Some Keys members share a value
+            // (Return/Enter, PageUp/Prior, Capital/CapsLock, PrintScreen/Snapshot) and Enum.ToString() may
+            // return either name, so these are spelled out; the others use the label printed on the key.
+            {Keys.Return, "Return"},
             {Keys.PageUp, "PageUp"},
             {Keys.Capital, "CapsLock"},
             {Keys.Scroll, "ScrollLock"},
             {Keys.PrintScreen, "PrintScreen"},
+            {Keys.Apps, "Menu"},
             {Keys.D0, "0"},
             {Keys.D1, "1"},
             {Keys.D2, "2"},
