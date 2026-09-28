@@ -174,7 +174,7 @@ namespace Carnac.Logic
             if (isWinKeyPressed)
                 yield return "Win";
 
-            if (controlPressed || altPressed)
+            if (controlPressed || altPressed || isWinKeyPressed)
             {
                 //Treat as a shortcut, don't be too smart
                 if (shiftPressed)

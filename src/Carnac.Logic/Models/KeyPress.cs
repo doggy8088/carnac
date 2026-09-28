@@ -30,6 +30,20 @@ namespace Carnac.Logic.Models
             }
         }
 
+        /// <summary>
+        /// True when the key press is a shortcut rather than typing: Alt, Ctrl or the Windows key is held, or Shift is held
+        /// with a key that does not type a character (Shift+Enter, Shift+Tab, Shift+F5, Shift+Left...).
+        /// Shift with a letter, digit or punctuation key is just a capital letter or symbol and does not count.
+        /// </summary>
+        public bool IsShortcutLike
+        {
+            get
+            {
+                return HasModifierPressed
+                    || (InterceptKeyEventArgs.ShiftPressed && !InterceptKeyEventArgs.Key.ProducesCharacter());
+            }
+        }
+
         public IEnumerable<string> GetTextParts()
         {
             var isFirst = true;
