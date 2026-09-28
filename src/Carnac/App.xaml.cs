@@ -7,6 +7,7 @@ using Carnac.Logic;
 using Carnac.Logic.KeyMonitor;
 using Carnac.Logic.Models;
 using Carnac.Logic.MouseMonitor;
+using Carnac.Logic.Overlay;
 using Carnac.UI;
 using Carnac.Utilities;
 using SettingsProviderNet;
@@ -55,13 +56,13 @@ namespace Carnac
             trayIcon = new CarnacTrayIcon();
             trayIcon.OpenPreferences += TrayIconOnOpenPreferences;
 
-            var keyShowViewModel = new KeyShowViewModel(settings);
-            keyShowView = new KeyShowView(keyShowViewModel, screenManager, new InterceptMouse());
-            keyShowView.Show();
-
             // One ConcurrencyService (its main thread scheduler wraps the UI thread's synchronization context) is shared by the
             // message provider, which schedules the chord timeout on it, and the controller that shows the messages.
             var concurrencyService = new ConcurrencyService();
+            var keyShowViewModel = new KeyShowViewModel(settings);
+            keyShowView = new KeyShowView(keyShowViewModel, screenManager, new SystemEventsDisplaySettingsMonitor(), concurrencyService, new InterceptMouse());
+            keyShowView.Show();
+
             var keyProvider = new KeyProvider(InterceptKeys.Current, new PasswordModeService(), new DesktopLockEventService(), settingsProvider, new KeyboardLayoutTranslator());
             var messageProvider = new MessageProvider(new ShortcutProvider(), keyProvider, settings, concurrencyService);
 

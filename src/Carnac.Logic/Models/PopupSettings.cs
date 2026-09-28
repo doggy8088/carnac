@@ -71,7 +71,15 @@ namespace Carnac.Logic.Models
             return Math.Min(value, max);
         }
 
+        /// <summary>The number of the screen; the screen is found by <see cref="ScreenDeviceName"/> first and this is only used when that is empty.</summary>
         public int Screen { get; set; }
+
+        /// <summary>
+        /// The device name of the screen the popups appear on, such as <c>\\.\DISPLAY2</c>. Unlike <see cref="Screen"/> it
+        /// survives monitors being plugged and unplugged. When it is empty and the number matches no screen, or when no
+        /// screen has this name (the monitor is unplugged), the popups appear on the primary screen.
+        /// </summary>
+        public string ScreenDeviceName { get; set; }
 
         [NotifyProperty(AlsoNotifyFor = new[] { "ScaleTransform", "Alignment" })]
         public NotificationPlacement Placement { get; set; }

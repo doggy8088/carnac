@@ -12,6 +12,7 @@ using Carnac.Logic;
 using Carnac.Logic.Enums;
 using Carnac.Logic.Models;
 using Carnac.Logic.Native;
+using Carnac.Logic.Overlay;
 using SettingsProviderNet;
 
 namespace Carnac.UI
@@ -25,6 +26,9 @@ namespace Carnac.UI
             this.settingsProvider = settingsProvider;
             
             Screens = new ObservableCollection<DetailedScreen>(screenManager.GetScreens());
+            var screenLayout = MonitorLayout.Create(Screens);
+            ScreenLayoutWidth = screenLayout.Width;
+            ScreenLayoutHeight = screenLayout.Height;
 
             Settings = settingsProvider.GetSettings<PopupSettings>();
 
@@ -89,6 +93,11 @@ namespace Carnac.UI
         public IList<LanguageOption> AvailableLanguages { get; private set; }
 
         public ObservableCollection<DetailedScreen> Screens { get; set; }
+
+        /// <summary>The size of the drawing of all screens in their real arrangement (see <see cref="MonitorLayout"/>).</summary>
+        public double ScreenLayoutWidth { get; private set; }
+
+        public double ScreenLayoutHeight { get; private set; }
 
         public DetailedScreen SelectedScreen { get; set; }
 
@@ -203,6 +212,8 @@ namespace Carnac.UI
             if (SelectedScreen == null)
                 SelectedScreen = Screens.First();
 
+            // The device name first: it is what selects the screen, the number is only kept for older versions.
+            Settings.ScreenDeviceName = SelectedScreen.DeviceName;
             Settings.Screen = SelectedScreen.Index;
 
             if (SelectedScreen.NotificationPlacementTopLeft)
@@ -229,7 +240,7 @@ namespace Carnac.UI
             if (Screens == null) 
                 return;
 
-            SelectedScreen = Screens.FirstOrDefault(s => s.Index == Settings.Screen);
+            SelectedScreen = OverlayPlacement.SelectScreen(Screens, Settings.ScreenDeviceName, Settings.Screen);
 
             if (SelectedScreen == null) 
                 return;

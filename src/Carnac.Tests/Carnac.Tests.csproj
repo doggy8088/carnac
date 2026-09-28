@@ -94,12 +94,15 @@
     <Compile Include="LocalizationResourceFacts.cs" />
     <Compile Include="MessageFacts.cs" />
     <Compile Include="MessageProviderFacts.cs" />
+    <Compile Include="MonitorLayoutFacts.cs" />
     <Compile Include="MouseClickHighlightFacts.cs" />
+    <Compile Include="Overlay\OverlayPlacementControllerFacts.cs" />
     <Compile Include="Overlay\OverlayPlacementFacts.cs" />
     <Compile Include="Overlay\OverlayWindowStylesFacts.cs" />
     <Compile Include="PopupSettingsFacts.cs" />
     <Compile Include="RepeatedKeyPolicyFacts.cs" />
     <Compile Include="RxTestExtensions.cs" />
+    <Compile Include="ScreenListFacts.cs" />
     <Compile Include="ShortcutAccumulatorFacts.cs" />
     <Compile Include="ShortcutCollectionFacts.cs" />
     <Compile Include="ShortcutProviderFacts.cs" />

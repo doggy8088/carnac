@@ -113,9 +113,13 @@
     <Compile Include="Models\PopupSettings.cs" />
     <Compile Include="Models\RepeatedKeyPolicy.cs" />
     <Compile Include="NotifyPropertyChanged.cs" />
+    <Compile Include="Overlay\IDisplaySettingsMonitor.cs" />
+    <Compile Include="Overlay\IOverlayWindow.cs" />
     <Compile Include="Overlay\OverlayPlacement.cs" />
+    <Compile Include="Overlay\OverlayPlacementController.cs" />
     <Compile Include="Overlay\OverlayWindowStyles.cs" />
     <Compile Include="Overlay\PixelRect.cs" />
+    <Compile Include="Overlay\SystemEventsDisplaySettingsMonitor.cs" />
     <Compile Include="PasswordModeService.cs" />
     <Compile Include="ReplaceKey.cs" />
     <Compile Include="ScreenManager.cs" />
@@ -126,6 +130,9 @@
     <Compile Include="Win32Methods.cs" />
     <Compile Include="WindowBoundsClamper.cs" />
     <Compile Include="Native\DetailedScreen.cs" />
+    <Compile Include="Native\DisplayInfo.cs" />
+    <Compile Include="Native\MonitorLayout.cs" />
+    <Compile Include="Native\ScreenList.cs" />
     <Compile Include="Native\DEVMODE.cs" />
     <Compile Include="Native\DisplayDeviceStateFlags.cs" />
     <Compile Include="Native\DISPLAY_DEVICE.cs" />
