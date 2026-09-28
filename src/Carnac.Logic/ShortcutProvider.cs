@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Carnac.Logic.Models;
+using YamlDotNet.Core;
 using YamlDotNet.RepresentationModel;
 
 namespace Carnac.Logic
@@ -10,19 +12,41 @@ namespace Carnac.Logic
     public class ShortcutProvider : IShortcutProvider
     {
         readonly List<ShortcutCollection> shortcuts;
+        readonly Action<string> warn;
+        readonly KeyCombinationParser parser;
 
+        /// <summary>Loads the keymaps installed next to the running executable (the "Keymaps" folder).</summary>
         public ShortcutProvider()
+            : this(GetDefaultKeymapFolder())
         {
-            string folder = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + @"\Keymaps\";
-            string filter = "*.yml";
-            if (!Directory.Exists(folder))
-            {
-                shortcuts = new List<ShortcutCollection>();
-                return;
-            }
-            string[] files = Directory.GetFiles(folder, filter);
+        }
 
-            shortcuts = GetYamlMappings(files).Select(GetShortcuts).ToList();
+        /// <param name="keymapFolder">Folder containing the *.yml keymap files; a missing folder means no keymaps.</param>
+        /// <param name="warn">
+        /// Receives one message for every keymap file or entry that is ignored because it cannot be understood.
+        /// Null writes the messages to <see cref="System.Diagnostics.Trace"/>.
+        /// </param>
+        public ShortcutProvider(string keymapFolder, Action<string> warn = null)
+        {
+            if (keymapFolder == null)
+                throw new ArgumentNullException("keymapFolder");
+
+            this.warn = warn ?? KeyCombinationParser.TraceWarning;
+            parser = new KeyCombinationParser(this.warn);
+
+            shortcuts = Directory.Exists(keymapFolder)
+                ? Directory.GetFiles(keymapFolder, "*.yml")
+                    .OrderBy(file => file, StringComparer.OrdinalIgnoreCase)
+                    .Select(LoadShortcuts)
+                    .Where(collection => collection != null)
+                    .ToList()
+                : new List<ShortcutCollection>();
+        }
+
+        /// <summary>The keymaps that were loaded, one collection per keymap file.</summary>
+        public IReadOnlyList<ShortcutCollection> Keymaps
+        {
+            get { return shortcuts; }
         }
 
         public List<KeyShortcut> GetShortcutsStartingWith(KeyPress keys)
@@ -34,74 +58,103 @@ namespace Carnac.Logic
                 .ToList();
         }
 
-        static string GetValueByKey(YamlMappingNode node, string name)
+        static string GetDefaultKeymapFolder()
         {
-            return node.Children.First(n => n.Key.ToString() == name).Value.ToString();
-        }
-
-        static KeyPressDefinition GetKeyPressDefintion(string combo)
-        {
-            combo = combo.ToLower();
-            var key = combo.Split('+').Last();
-            var keys = ReplaceKey.ToKey(key);
-            if (keys != null)
-                return
-                    new KeyPressDefinition
-                        (keys.Value,
-                         shiftPressed: combo.Contains("shift"),
-                         controlPressed: combo.Contains("ctrl"),
-                         altPressed: combo.Contains("alt"),
-                         winkeyPressed: combo.Contains("win"));
-            return null;
-        }
-
-        static IEnumerable<YamlMappingNode> GetYamlMappings(IEnumerable<string> filePaths)
-        {
-            var yaml = new YamlStream();
-
-            foreach (var file in filePaths)
+            using (var process = Process.GetCurrentProcess())
             {
-                yaml.Load(File.OpenText(file));
-                var root = yaml.Documents[0].RootNode;
-
-                var collection = root as YamlMappingNode;
-                if (collection != null)
-                    yield return collection;
+                return Path.GetDirectoryName(process.MainModule.FileName) + @"\Keymaps\";
             }
         }
 
-        static ShortcutCollection GetShortcuts(YamlMappingNode collection)
+        ShortcutCollection LoadShortcuts(string file)
+        {
+            var fileName = Path.GetFileName(file);
+            YamlMappingNode root;
+            try
+            {
+                var yaml = new YamlStream();
+                using (var reader = File.OpenText(file))
+                {
+                    yaml.Load(reader);
+                }
+                root = yaml.Documents.Count > 0 ? yaml.Documents[0].RootNode as YamlMappingNode : null;
+            }
+            catch (YamlException exception)
+            {
+                warn(fileName + ": ignoring keymap, it is not valid YAML: " + exception.Message);
+                return null;
+            }
+            catch (IOException exception)
+            {
+                warn(fileName + ": ignoring keymap, it cannot be read: " + exception.Message);
+                return null;
+            }
+            catch (UnauthorizedAccessException exception)
+            {
+                warn(fileName + ": ignoring keymap, it cannot be read: " + exception.Message);
+                return null;
+            }
+
+            if (root == null)
+            {
+                warn(fileName + ": ignoring keymap, the top level must be a mapping with 'group', 'process' and 'shortcuts'");
+                return null;
+            }
+
+            return GetShortcuts(root, fileName);
+        }
+
+        static string GetValueByKey(YamlMappingNode node, string name)
+        {
+            var child = node.Children.FirstOrDefault(n => n.Key.ToString() == name);
+            return child.Value == null ? null : child.Value.ToString();
+        }
+
+        ShortcutCollection GetShortcuts(YamlMappingNode collection, string fileName)
         {
             string group = GetValueByKey(collection, "group");
             string process = GetValueByKey(collection, "process");
 
             var shortCuts = from groupShortcuts in collection.Children.Where(n => n.Key.ToString() == "shortcuts").Take(1).Select(x => x.Value).OfType<YamlSequenceNode>()
-                            from shortcut in GetKeyShortcuts(groupShortcuts)
+                            from shortcut in GetKeyShortcuts(groupShortcuts, fileName)
                             select shortcut;
 
             return new ShortcutCollection(shortCuts.ToList())
             {
-                Process = process, 
+                Process = process,
                 Group = @group
             };
         }
 
-        static IEnumerable<KeyShortcut> GetKeyShortcuts(YamlSequenceNode groupShortcuts)
+        IEnumerable<KeyShortcut> GetKeyShortcuts(YamlSequenceNode groupShortcuts, string fileName)
         {
-            return from entry in groupShortcuts.Children.OfType<YamlMappingNode>()
-                   from keys in entry.Children.Where(n => n.Key.ToString() == "keys").Take(1).Select(x=>x.Value).OfType<YamlSequenceNode>()
-                   let name = GetValueByKey(entry, "name")
-                   from definitions in keys.Children.Select(KeyPressDefinitions).Where(definitions => definitions.Count > 0)
-                   select new KeyShortcut(name, definitions.ToArray());
-        }
+            foreach (var entry in groupShortcuts.Children.OfType<YamlMappingNode>())
+            {
+                var name = GetValueByKey(entry, "name");
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    warn(fileName + ": ignoring a shortcut without a 'name'");
+                    continue;
+                }
 
-        static List<KeyPressDefinition> KeyPressDefinitions(YamlNode keyCombo)
-        {
-            return keyCombo.ToString()
-                .Split(',')
-                .Select(GetKeyPressDefintion)
-                .Where(definition => definition != null)
-                .ToList();
+                var context = fileName + ", shortcut '" + name + "'";
+                var keys = entry.Children.Where(n => n.Key.ToString() == "keys").Take(1).Select(x => x.Value).OfType<YamlSequenceNode>().FirstOrDefault();
+                if (keys == null)
+                {
+                    warn(context + ": ignoring shortcut, it has no 'keys' list");
+                    continue;
+                }
+
+                foreach (var keyCombo in keys.Children)
+                {
+                    // Every element of "keys" is one alternative way to trigger the shortcut; commas inside it
+                    // separate the key presses of a chord. An element that cannot be understood is dropped as a whole,
+                    // never half-read (a chord cut short would match the wrong keys).
+                    var definitions = parser.ParseSequence(keyCombo.ToString(), context);
+                    if (definitions != null && definitions.Count > 0)
+                        yield return new KeyShortcut(name, definitions.ToArray());
+                }
+            }
         }
     }
 }

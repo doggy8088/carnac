@@ -85,7 +85,7 @@ namespace Carnac.Logic
         {
             foreach (var shiftReplacement in ShiftReplacements)
             {
-                if (shiftReplacement.Value.Equals(keyText, StringComparison.CurrentCultureIgnoreCase))
+                if (shiftReplacement.Value.Equals(keyText, StringComparison.OrdinalIgnoreCase))
                     return shiftReplacement.Key;
             }
             Keys parsedKey;
@@ -94,7 +94,7 @@ namespace Carnac.Logic
 
             foreach (var replacement in Replacements)
             {
-                if (replacement.Value.Equals(keyText, StringComparison.CurrentCultureIgnoreCase))
+                if (replacement.Value.Equals(keyText, StringComparison.OrdinalIgnoreCase))
                     return replacement.Key;
             }
             return null;

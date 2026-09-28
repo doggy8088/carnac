@@ -23,7 +23,8 @@ shortcuts:
 
     - name: Cancel Build
       keys:
-      - Ctrl+Break
+      - Ctrl+Cancel
+      - Ctrl+Pause
 
     - name: ClassViewContextMenus.ClassViewMultiselectProjectreferencesItems.Properties
       keys:
@@ -51,7 +52,8 @@ shortcuts:
 
     - name: Debug.BreakAll
       keys:
-      - Ctrl+Alt+Break
+      - Ctrl+Alt+Cancel
+      - Ctrl+Alt+Pause
 
     - name: Debug.BreakatFunction
       keys:
@@ -176,7 +178,7 @@ shortcuts:
 
     - name: Debug.ShowNextStatement
       keys:
-      - Alt+Num *
+      - Alt+Multiply
 
     - name: Debug.Start
       keys:
@@ -347,35 +349,35 @@ shortcuts:
 
     - name: MoveControlDown
       keys:
-      - Ctrl+Down Arrow
+      - Ctrl+Down
 
     - name: MoveControlDownGrid
       keys:
-      - Down Arrow
+      - Down
 
     - name: MoveControlLeft
       keys:
-      - Ctrl+Left Arrow
+      - Ctrl+Left
 
     - name: MoveControlLeftGrid
       keys:
-      - Left Arrow
+      - Left
 
     - name: MoveControlRight
       keys:
-      - Ctrl+Right Arrow
+      - Ctrl+Right
 
     - name: MoveControlRightGrid
       keys:
-      - Right Arrow
+      - Right
 
     - name: MoveControlUp
       keys:
-      - Ctrl+Up Arrow
+      - Ctrl+Up
 
     - name: MoveControlUpGrid
       keys:
-      - Up Arrow
+      - Up
 
     - name: NavigateTo
       keys:
@@ -414,7 +416,7 @@ shortcuts:
       keys:
       - Ctrl+Y
       - Ctrl+Shift+Z
-      - Shift+Alt+Bkspce
+      - Shift+Alt+Back
 
     - name: Replace
       keys:
@@ -430,35 +432,35 @@ shortcuts:
 
     - name: SizeControlDown
       keys:
-      - Ctrl+Shift+Down Arrow
+      - Ctrl+Shift+Down
 
     - name: SizeControlDownGrid
       keys:
-      - Shift+Down Arrow
+      - Shift+Down
 
     - name: SizeControlLeft
       keys:
-      - Ctrl+Shift+Left Arrow
+      - Ctrl+Shift+Left
 
     - name: SizeControlLeftGrid
       keys:
-      - Shift+Left Arrow
+      - Shift+Left
 
     - name: SizeControlRight
       keys:
-      - Ctrl+Shift+Right Arrow
+      - Ctrl+Shift+Right
 
     - name: SizeControlRightGrid
       keys:
-      - Shift+Right Arrow
+      - Shift+Right
 
     - name: SizeControlUp
       keys:
-      - Ctrl+Shift+Up Arrow
+      - Ctrl+Shift+Up
 
     - name: SizeControlUpGrid
       keys:
-      - Shift+Up Arrow
+      - Shift+Up
 
     - name: StopSearch
       keys:
@@ -471,7 +473,7 @@ shortcuts:
     - name: Undo
       keys:
       - Ctrl+Z
-      - Alt+Bkspce
+      - Alt+Back
 
     - name: EditorContextMenus.CodeWindow.AddView
       keys:
@@ -576,11 +578,11 @@ shortcuts:
 
     - name: ProjectandSolutionContextMenus.Item.MoveDown
       keys:
-      - Alt+Down Arrow
+      - Alt+Down
 
     - name: ProjectandSolutionContextMenus.Item.MoveUp
       keys:
-      - Alt+Up Arrow
+      - Alt+Up
 
     - name: ProjectandSolutionContextMenus.Project.Add.Controller
       keys:
@@ -708,7 +710,7 @@ shortcuts:
 
     - name: View.Backward
       keys:
-      - Alt+Left Arrow
+      - Alt+Left
 
     - name: View.BookmarkWindow
       keys:
@@ -766,7 +768,7 @@ shortcuts:
 
     - name: View.Forward
       keys:
-      - Alt+Right Arrow
+      - Alt+Right
 
     - name: View.ForwardBrowseContext
       keys:
@@ -868,7 +870,7 @@ shortcuts:
 
     - name: Window.ActivateDocumentWindow
       keys:
-      - Esc
+      - Escape
 
     - name: Window.CloseDocumentWindow
       keys:
@@ -876,7 +878,7 @@ shortcuts:
 
     - name: Window.CloseToolWindow
       keys:
-      - Shift+Esc
+      - Shift+Escape
 
     - name: Window.MovetoNavigationBar
       keys:
@@ -900,7 +902,7 @@ shortcuts:
 
     - name: Window.NextTab
       keys:
-      - Ctrl+PgDn
+      - Ctrl+PageDown
 
     - name: Window.NextToolWindowNav
       keys:
@@ -924,7 +926,7 @@ shortcuts:
 
     - name: Window.PreviousTab
       keys:
-      - Ctrl+PgUp
+      - Ctrl+PageUp
 
     - name: Window.PreviousToolWindowNav
       keys:
@@ -936,4 +938,4 @@ shortcuts:
 
     - name: Window.ShowEzMDIFileList
       keys:
-      - Ctrl+Alt+Down Arrow
+      - Ctrl+Alt+Down

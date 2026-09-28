@@ -36,7 +36,7 @@ shortcuts:
       - Ctrl+D
     - name: Move Last Selection To Next Find Match
       keys:
-      - Ctrl+K Ctrl+D
+      - Ctrl+K,Ctrl+D
     - name: Undo last cursor operation
       keys:
       - Ctrl+U
@@ -99,22 +99,22 @@ shortcuts:
       - Ctrl+Shift+]
     - name: Fold (collapse) all subregions
       keys:
-      - Ctrl+K Ctrl+[
+      - Ctrl+K,Ctrl+[
     - name: Unfold (uncollapse) all subregions
       keys:
-      - Ctrl+K Ctrl+]
+      - Ctrl+K,Ctrl+]
     - name: Fold (collapse) all regions
       keys:
-      - Ctrl+K Ctrl+0
+      - Ctrl+K,Ctrl+0
     - name: Unfold (uncollapse) all regions
       keys:
-      - Ctrl+K Ctrl+J
+      - Ctrl+K,Ctrl+J
     - name: Add Line Comment
       keys:
-      - Ctrl+K Ctrl+C
+      - Ctrl+K,Ctrl+C
     - name: Remove Line Comment
       keys:
-      - Ctrl+K Ctrl+U
+      - Ctrl+K,Ctrl+U
     - name: Toggle Line Comment
       keys:
       - Ctrl+/
@@ -148,9 +148,6 @@ shortcuts:
     - name: Toggle Use of Tab Key for Setting Focus
       keys:
       - Ctrl+M
-    - name: Toggle Render Whitespace
-      keys:
-      - unassigned
     - name: Toggle Word Wrap
       keys:
       - Alt+Z
@@ -165,19 +162,19 @@ shortcuts:
       - Shift+Alt+F
     - name: Format Selection
       keys:
-      - Ctrl+K Ctrl+F
+      - Ctrl+K,Ctrl+F
     - name: Go to Definition
       keys:
       - F12
     - name: Show Hover
       keys:
-      - Ctrl+K Ctrl+I
+      - Ctrl+K,Ctrl+I
     - name: Peek Definition
       keys:
       - Alt+F12
     - name: Open Definition to the Side
       keys:
-      - Ctrl+K F12
+      - Ctrl+K,F12
     - name: Quick Fix
       keys:
       - Ctrl+.
@@ -201,10 +198,10 @@ shortcuts:
       - Shift+Alt+Left
     - name: Trim Trailing Whitespace
       keys:
-      - Ctrl+K Ctrl+X
+      - Ctrl+K,Ctrl+X
     - name: Change Language Mode
       keys:
-      - Ctrl+K M
+      - Ctrl+K,M
     - name: Show All Symbols
       keys:
       - Ctrl+T
@@ -249,10 +246,7 @@ shortcuts:
       - Ctrl+F4
     - name: Close Folder
       keys:
-      - Ctrl+K F
-    - name: Cycle Between Editor Groups
-      keys:
-      - unassigned
+      - Ctrl+K,F
     - name: Split Editor
       keys:
       - Ctrl+\
@@ -267,10 +261,10 @@ shortcuts:
       - Ctrl+3
     - name: Focus into Editor Group on the Left
       keys:
-      - Ctrl+K Ctrl+Left
+      - Ctrl+K,Ctrl+Left
     - name: Focus into Editor Group on the Right
       keys:
-      - Ctrl+K Ctrl+Right
+      - Ctrl+K,Ctrl+Right
     - name: Move Editor Left
       keys:
       - Ctrl+Shift+PageUp
@@ -279,10 +273,10 @@ shortcuts:
       - Ctrl+Shift+PageDown
     - name: Move Active Editor Group Left
       keys:
-      - Ctrl+K Left
+      - Ctrl+K,Left
     - name: Move Active Editor Group Right
       keys:
-      - Ctrl+K Right
+      - Ctrl+K,Right
     - name: New File
       keys:
       - Ctrl+N
@@ -294,37 +288,25 @@ shortcuts:
       - Ctrl+S
     - name: Save All
       keys:
-      - Ctrl+K S
+      - Ctrl+K,S
     - name: Save As...
       keys:
       - Ctrl+Shift+S
     - name: Close
       keys:
       - Ctrl+F4
-    - name: Close Others
-      keys:
-      - unassigned
     - name: Close Group
       keys:
-      - Ctrl+K W
-    - name: Close Other Groups
-      keys:
-      - unassigned
-    - name: Close Group to Left
-      keys:
-      - unassigned
-    - name: Close Group to Right
-      keys:
-      - unassigned
+      - Ctrl+K,W
     - name: Close All
       keys:
-      - Ctrl+K Ctrl+W
+      - Ctrl+K,Ctrl+W
     - name: Reopen Closed Editor
       keys:
       - Ctrl+Shift+T
     - name: Keep Open
       keys:
-      - Ctrl+K Enter
+      - Ctrl+K,Enter
     - name: Open Next
       keys:
       - Ctrl+Tab
@@ -333,25 +315,22 @@ shortcuts:
       - Ctrl+Shift+Tab
     - name: Copy Path of Active File
       keys:
-      - Ctrl+K P
+      - Ctrl+K,P
     - name: Reveal Active File in Windows
       keys:
-      - Ctrl+K R
+      - Ctrl+K,R
     - name: Show Opened File in New Window
       keys:
-      - Ctrl+K O
-    - name: Compare Opened File With
-      keys:
-      - unassigned
+      - Ctrl+K,O
     - name: Toggle Full Screen
       keys:
       - F11
     - name: Toggle Zen Mode
       keys:
-      - Ctrl+K Z
+      - Ctrl+K,Z
     - name: Leave Zen Mode
       keys:
-      - Escape Escape
+      - Escape,Escape
     - name: Zoom in
       keys:
       - Ctrl+=
@@ -399,28 +378,19 @@ shortcuts:
       - Ctrl+Shift+V
     - name: Open Preview to the Side
       keys:
-      - Ctrl+K V
+      - Ctrl+K,V
     - name: Toggle Integrated Terminal
       keys:
       - Ctrl+`
     - name: Open User Settings
       keys:
       - Ctrl+,
-    - name: Open Workspace Settings
-      keys:
-      - unassigned
     - name: Open Keyboard Shortcuts
       keys:
-      - Ctrl+K Ctrl+S
-    - name: Open User Snippets
-      keys:
-      - unassigned
+      - Ctrl+K,Ctrl+S
     - name: Select Color Theme
       keys:
-      - Ctrl+K Ctrl+T
-    - name: Configure Display Language
-      keys:
-      - unassigned
+      - Ctrl+K,Ctrl+T
     - name: Toggle Breakpoint
       keys:
       - F9
@@ -450,7 +420,7 @@ shortcuts:
       - Shift+F5
     - name: Show Hover
       keys:
-      - Ctrl+K Ctrl+I
+      - Ctrl+K,Ctrl+I
     - name: Run Build Task
       keys:
       - Ctrl+Shift+B
