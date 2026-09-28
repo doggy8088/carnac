@@ -26,3 +26,6 @@ tools/**
 .vs/
 
 .nuget/
+
+# Tools restored by the release workflow
+build-tools/

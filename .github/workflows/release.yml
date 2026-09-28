@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    env:
+      REF_NAME: ${{ github.ref_name }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Resolve version from tag
+        shell: pwsh
+        run: |
+          $version = $env:REF_NAME.TrimStart('v')
+          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "Tag '$env:REF_NAME' must look like v2.4.0" }
+          "VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: Stamp assembly versions
+        shell: pwsh
+        run: |
+          Get-ChildItem src -Recurse -Filter AssemblyInfo.cs | ForEach-Object {
+            $text = Get-Content $_.FullName -Raw
+            $text = $text -replace 'AssemblyVersion\("[^"]*"\)', "AssemblyVersion(`"$env:VERSION.0`")"
+            $text = $text -replace 'AssemblyFileVersion\("[^"]*"\)', "AssemblyFileVersion(`"$env:VERSION.0`")"
+            $text = $text -replace 'AssemblyInformationalVersion\("[^"]*"\)', "AssemblyInformationalVersion(`"$env:VERSION+$env:GITHUB_SHA`")"
+            Set-Content $_.FullName $text -NoNewline
+          }
+
+      - name: Restore NuGet packages and build tools
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          nuget restore src/Carnac.sln -NonInteractive
+          nuget install Microsoft.NETFramework.ReferenceAssemblies.net45 -Version 1.0.3 -OutputDirectory build-tools -NonInteractive
+          nuget install xunit.runners -Version 1.9.2 -OutputDirectory build-tools -NonInteractive
+
+      # Build against the .NET Framework 4.5 reference assemblies package, and skip
+      # the ClickOnce manifests (they are only used by the gh-pages ClickOnce feed).
+      - name: Build
+        shell: pwsh
+        run: >
+          msbuild src/Carnac.sln -m -v:minimal
+          -p:Configuration=Release
+          -p:TargetFrameworkRootPath="$env:GITHUB_WORKSPACE\build-tools\Microsoft.NETFramework.ReferenceAssemblies.net45.1.0.3\build"
+          -p:GenerateManifests=false
+          -p:SignManifests=false
+
+      - name: Run unit tests
+        run: build-tools\xunit.runners.1.9.2\tools\xunit.console.clr4.exe src\Carnac.Tests\bin\Release\Carnac.Tests.dll
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup --no-progress -y }
+          & $iscc /Q "/DAppVersion=$env:VERSION" installer\Carnac.iss
+          $setup = "Carnac-$env:VERSION-Setup.exe"
+          $hash = (Get-FileHash "deploy\$setup" -Algorithm SHA256).Hash
+          "$hash  $setup" | Set-Content deploy\sha256sums.txt
+          Get-Content deploy\sha256sums.txt
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create $env:REF_NAME
+          "deploy\Carnac-$env:VERSION-Setup.exe" deploy\sha256sums.txt
+          --title "Carnac $env:VERSION"
+          --generate-notes
