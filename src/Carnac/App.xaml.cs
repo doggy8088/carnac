@@ -18,6 +18,7 @@ namespace Carnac
     {
         readonly SettingsProvider settingsProvider;
         readonly IScreenManager screenManager = new ScreenManager();
+        IPreviewService previewService;
         readonly IMessageProvider messageProvider;
         readonly PopupSettings settings;
         KeyShowView keyShowView;
@@ -54,6 +55,7 @@ namespace Carnac
             var keyShowViewModel = new KeyShowViewModel(settings);
             keyShowView = new KeyShowView(keyShowViewModel, screenManager, new SystemEventsDisplaySettingsMonitor(), concurrencyService);
             keyShowView.Show();
+            previewService = new PreviewService(keyShowViewModel.Messages, PreviewService.CreateSampleProcess());
 
             carnac = new KeysController(keyShowViewModel.Messages, messageProvider, concurrencyService, settingsProvider);
             carnac.Start();
@@ -94,7 +96,7 @@ namespace Carnac
 
         void TrayIconOnOpenPreferences()
         {
-            var preferencesViewModel = new PreferencesViewModel(settingsProvider, screenManager);
+            var preferencesViewModel = new PreferencesViewModel(settingsProvider, screenManager, previewService);
             var preferencesView = new PreferencesView(preferencesViewModel);
             preferencesView.Show();
         }
