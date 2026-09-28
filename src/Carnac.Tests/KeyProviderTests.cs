@@ -146,6 +146,28 @@ namespace Carnac.Tests
             Assert.Equal(new[] { "Delete" }, await InputOf(KeyPressedAlone(Keys.Delete)));
         }
 
+        [Fact]
+        public async Task the_key_press_helper_builds_the_same_input_as_the_key_provider()
+        {
+            var keys = new[]
+            {
+                Keys.A, Keys.D1, Keys.Space, Keys.OemPeriod, Keys.Enter, Keys.Tab, Keys.Left, Keys.F5,
+                Keys.Insert, Keys.Delete, Keys.Home, Keys.PageDown
+            };
+
+            foreach (var key in keys)
+            {
+                foreach (var shift in new[] { false, true })
+                {
+                    var expected = KeyPresses.Create("helper", key, shift: shift).Input.ToArray();
+                    var actual = await InputOf(shift ? ShiftPressedWith(key) : KeyPressedAlone(key));
+
+                    Assert.True(expected.SequenceEqual(actual),
+                        (shift ? "Shift+" : "") + key + ": helper [" + string.Join(", ", expected) + "] but provider [" + string.Join(", ", actual) + "]");
+                }
+            }
+        }
+
         static KeyPlayer ShiftPressedWith(Keys key)
         {
             return new KeyPlayer
