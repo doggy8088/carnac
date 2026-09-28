@@ -31,6 +31,42 @@ namespace Carnac.Logic.Models
         [DefaultValue(40)]
         public int FontSize { get; set; }
 
+        /// <summary>
+        /// Family name of the popup font. Empty (the default) uses the system font of the user interface,
+        /// which is also used when the named font is not installed.
+        /// </summary>
+        [DefaultValue("")]
+        public string FontFamily { get; set; }
+
+        // Upper limits of the sliders of the Appearance tab. Typed values beyond them are limited when the popup is drawn.
+        public const double MaxItemCornerRadius = 50;
+        public const double MaxItemPadding = 30;
+
+        [DefaultValue(15D)]
+        public double ItemCornerRadius { get; set; }
+
+        [DefaultValue(3D)]
+        public double ItemPadding { get; set; }
+
+        public CornerRadius ItemBorderCornerRadius
+        {
+            get { return new CornerRadius(Limit(ItemCornerRadius, MaxItemCornerRadius)); }
+        }
+
+        public Thickness ItemBorderPadding
+        {
+            get { return new Thickness(Limit(ItemPadding, MaxItemPadding)); }
+        }
+
+        // A negative or NaN value would throw when it is applied to the border.
+        static double Limit(double value, double max)
+        {
+            if (double.IsNaN(value) || value < 0)
+                return 0;
+
+            return Math.Min(value, max);
+        }
+
         public int Screen { get; set; }
 
         [NotifyProperty(AlsoNotifyFor = new[] { "ScaleTransform", "Alignment" })]

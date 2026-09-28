@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -190,9 +190,12 @@
       <DependentUpon>PositionOnMonitorSelector.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\DelegateCommand.cs" />
+    <Compile Include="UI\FontFamilyOption.cs" />
     <Compile Include="UI\KeyCategoryOption.cs" />
     <Compile Include="UI\PreferencesField.cs" />
     <Compile Include="Utilities\DesignTimeHelper.cs" />
+    <Compile Include="Utilities\FontFamilyNameConverter.cs" />
+    <Compile Include="Utilities\InstalledFonts.cs" />
     <Compile Include="Utilities\ConcurrencyService.cs" />
     <Compile Include="Utilities\SpecialKeyConverter.cs" />
     <Compile Include="UI\AvailableColor.cs" />

@@ -338,24 +338,6 @@ namespace Carnac.Tests
             return new PreferencesViewModel(settingsProvider, screenManager);
         }
 
-        class InMemorySettingsStorage : ISettingsStorage
-        {
-            readonly Dictionary<string, Dictionary<string, string>> stored = new Dictionary<string, Dictionary<string, string>>();
-
-            public void Save(string key, Dictionary<string, string> settings)
-            {
-                stored[key] = new Dictionary<string, string>(settings);
-            }
-
-            public Dictionary<string, string> Load(string key)
-            {
-                Dictionary<string, string> settings;
-                return stored.TryGetValue(key, out settings)
-                    ? new Dictionary<string, string>(settings)
-                    : new Dictionary<string, string>();
-            }
-        }
-
         static KeyPress A
         {
             get

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
@@ -57,6 +58,9 @@ namespace Carnac.UI
             // the settings live as long as the application and this view model as long as the Preferences window.
             WeakEventManager<PopupSettings, PropertyChangedEventArgs>.AddHandler(Settings, "PropertyChanged", OnSettingsPropertyChanged);
 
+            AvailableFontFamilies = FontFamilyOption.CreateList(
+                Fonts.SystemFontFamilies, SystemFonts.MessageFontFamily, "System default", CultureInfo.CurrentUICulture);
+
             SaveCommand = new DelegateCommand(SaveSettings);
             ResetToDefaultsCommand = new DelegateCommand(() => settingsProvider.ResetToDefaults<PopupSettings>());
             VisitCommand = new DelegateCommand(Visit);
@@ -77,6 +81,8 @@ namespace Carnac.UI
         public ObservableCollection<AvailableColor> AvailableColors { get; private set; }
 
         public IEnumerable<KeyValuePair<RepeatedKeyGrouping, string>> RepeatedKeyGroupingOptions { get; private set; }
+
+        public IList<FontFamilyOption> AvailableFontFamilies { get; private set; }
 
         public ObservableCollection<DetailedScreen> Screens { get; set; }
 
