@@ -22,7 +22,7 @@ namespace Carnac.Tests.ViewModels
             public override PreferencesViewModel Given()
             {
                 settingsService.GetSettings<PopupSettings>().Returns(new PopupSettings());
-                return new PreferencesViewModel(settingsService, screenManager);
+                return new PreferencesViewModel(settingsService, screenManager, Substitute.For<IPreviewService>());
             }
 
             public override void When()
@@ -52,7 +52,7 @@ namespace Carnac.Tests.ViewModels
             public override PreferencesViewModel Given()
             {
                 settingsService.GetSettings<PopupSettings>().Returns(popupSettings);
-                return new PreferencesViewModel(settingsService, screenManager);
+                return new PreferencesViewModel(settingsService, screenManager, Substitute.For<IPreviewService>());
             }
 
             public override void When()
@@ -76,7 +76,7 @@ namespace Carnac.Tests.ViewModels
             public override PreferencesViewModel Given()
             {
                 settingsService.GetSettings<PopupSettings>().Returns(popupSettings);
-                return new PreferencesViewModel(settingsService, screenManager);
+                return new PreferencesViewModel(settingsService, screenManager, Substitute.For<IPreviewService>());
             }
 
             public override void When()
@@ -131,11 +131,138 @@ namespace Carnac.Tests.ViewModels
                 settingsService.GetSettings<PopupSettings>().Returns(popupSettings);
                 screenManager.GetScreens().Returns(screens);
 
-                var subject = new PreferencesViewModel(settingsService, screenManager);
+                var subject = new PreferencesViewModel(settingsService, screenManager, Substitute.For<IPreviewService>());
 
                 Assert.Same(screens[1], subject.SelectedScreen);
                 Assert.True(screens[1].NotificationPlacementTopRight);
                 Assert.False(screens[0].NotificationPlacementTopRight);
+            }
+        }
+
+        public class when_previewing_the_settings
+        {
+            readonly IPreviewService previewService = Substitute.For<IPreviewService>();
+            readonly IDisposable visit = Substitute.For<IDisposable>();
+            readonly PopupSettings popupSettings = new PopupSettings { FontColor = "White", ItemBackgroundColor = "Black" };
+
+            PreferencesViewModel Create()
+            {
+                var settingsService = Substitute.For<ISettingsProvider>();
+                var screenManager = Substitute.For<IScreenManager>();
+                settingsService.GetSettings<PopupSettings>().Returns(popupSettings);
+                previewService.Show().Returns(visit);
+                return new PreferencesViewModel(settingsService, screenManager, previewService);
+            }
+
+            [Fact]
+            public void creating_the_view_model_does_not_show_the_preview_by_itself()
+            {
+                Create();
+
+                previewService.DidNotReceive().Show();
+            }
+
+            [Fact]
+            public void starting_the_preview_shows_it()
+            {
+                var subject = Create();
+
+                subject.StartPreview();
+
+                previewService.Received(1).Show();
+            }
+
+            [Fact]
+            public void starting_the_preview_twice_shows_it_once()
+            {
+                var subject = Create();
+
+                subject.StartPreview();
+                subject.StartPreview();
+
+                previewService.Received(1).Show();
+            }
+
+            [Fact]
+            public void stopping_the_preview_hides_it_once()
+            {
+                var subject = Create();
+                subject.StartPreview();
+
+                subject.StopPreview();
+                subject.StopPreview();
+
+                visit.Received(1).Dispose();
+            }
+
+            [Fact]
+            public void stopping_a_preview_that_was_never_started_does_nothing()
+            {
+                var subject = Create();
+
+                subject.StopPreview();
+
+                visit.DidNotReceive().Dispose();
+            }
+
+            [Fact]
+            public void the_preview_can_be_started_again_after_it_was_stopped()
+            {
+                var subject = Create();
+                subject.StartPreview();
+                subject.StopPreview();
+
+                subject.StartPreview();
+
+                previewService.Received(2).Show();
+            }
+
+            [Fact]
+            public void the_font_color_shows_on_the_overlay_as_soon_as_it_is_picked()
+            {
+                var subject = Create();
+
+                subject.FontColor = subject.AvailableColors.First(c => c.Name == "Red");
+
+                Assert.Equal("Red", popupSettings.FontColor);
+            }
+
+            [Fact]
+            public void the_background_color_shows_on_the_overlay_as_soon_as_it_is_picked()
+            {
+                var subject = Create();
+
+                subject.ItemBackgroundColor = subject.AvailableColors.First(c => c.Name == "Blue");
+
+                Assert.Equal("Blue", popupSettings.ItemBackgroundColor);
+            }
+
+            [Fact]
+            public void the_colors_that_are_in_the_settings_are_selected_without_changing_them()
+            {
+                var subject = Create();
+
+                Assert.Equal("White", subject.FontColor.Name);
+                Assert.Equal("Black", subject.ItemBackgroundColor.Name);
+                Assert.Equal("White", popupSettings.FontColor);
+                Assert.Equal("Black", popupSettings.ItemBackgroundColor);
+            }
+
+            [Fact]
+            public void clearing_a_color_does_not_clear_the_setting()
+            {
+                var subject = Create();
+
+                subject.FontColor = null;
+
+                Assert.Equal("White", popupSettings.FontColor);
+            }
+
+            [Fact]
+            public void the_preview_service_is_required()
+            {
+                Assert.Throws<ArgumentNullException>(() =>
+                    new PreferencesViewModel(Substitute.For<ISettingsProvider>(), Substitute.For<IScreenManager>(), null));
             }
         }
 
@@ -147,7 +274,7 @@ namespace Carnac.Tests.ViewModels
                 var screenManager = Substitute.For<IScreenManager>();
                 settingsService.GetSettings<PopupSettings>().Returns(popupSettings);
                 screenManager.GetScreens().Returns(new List<DetailedScreen>(screens));
-                return new PreferencesViewModel(settingsService, screenManager);
+                return new PreferencesViewModel(settingsService, screenManager, Substitute.For<IPreviewService>());
             }
 
             static DetailedScreen Screen(int index, string deviceName, int left, int top, int width, int height, bool primary = false)

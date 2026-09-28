@@ -16,8 +16,13 @@ namespace Carnac.UI
 {
     public partial class PreferencesView
     {
+        readonly PreferencesViewModel viewModel;
+
         public PreferencesView(PreferencesViewModel viewModel)
         {
+            if (viewModel == null) throw new ArgumentNullException("viewModel");
+
+            this.viewModel = viewModel;
             DataContext = viewModel;
             // WPF picks the fonts of Chinese text by the language of the element: without this the Traditional and Simplified
             // translations would both be drawn with the fonts for the default language.
@@ -34,6 +39,16 @@ namespace Carnac.UI
             // handler, which is raised by the base implementation, so the bounds can only be validated afterwards.
             base.OnSourceInitialized(e);
             EnsureWindowIsReachable();
+
+            // The sample popups are on the overlay for as long as this window is.
+            viewModel.StartPreview();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            viewModel.StopPreview();
+
+            base.OnClosed(e);
         }
 
         // The title bar is hidden, so the window is dragged by any part of its background.

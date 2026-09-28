@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -20,10 +21,22 @@ namespace Carnac.UI
     public class PreferencesViewModel : NotifyPropertyChanged
     {
         readonly ISettingsProvider settingsProvider;
-        
+        readonly IPreviewService previewService;
+        IDisposable preview;
+        AvailableColor fontColor;
+        AvailableColor itemBackgroundColor;
+
         public PreferencesViewModel(ISettingsProvider settingsProvider, IScreenManager screenManager)
+            : this(settingsProvider, screenManager, new PreviewService(new ObservableCollection<Message>(), PreviewService.CreateSampleProcess()))
         {
+        }
+
+        public PreferencesViewModel(ISettingsProvider settingsProvider, IScreenManager screenManager, IPreviewService previewService)
+        {
+            if (previewService == null) throw new ArgumentNullException("previewService");
+
             this.settingsProvider = settingsProvider;
+            this.previewService = previewService;
             
             Screens = new ObservableCollection<DetailedScreen>(screenManager.GetScreens());
             var screenLayout = MonitorLayout.Create(Screens);
@@ -163,9 +176,46 @@ namespace Carnac.UI
             get { return string.Join(", ", components); }
         }
 
-        public AvailableColor FontColor { get; set; }
+        // The overlay shows the shared settings, so a colour is previewed as soon as it is picked
+        // (like the sliders, which change the settings directly); Save persists them.
+        public AvailableColor FontColor
+        {
+            get { return fontColor; }
+            set
+            {
+                fontColor = value;
+                if (value != null)
+                    Settings.FontColor = value.Name;
+            }
+        }
 
-        public AvailableColor ItemBackgroundColor { get; set; }
+        public AvailableColor ItemBackgroundColor
+        {
+            get { return itemBackgroundColor; }
+            set
+            {
+                itemBackgroundColor = value;
+                if (value != null)
+                    Settings.ItemBackgroundColor = value.Name;
+            }
+        }
+
+        /// <summary>Shows the sample popups on the overlay until <see cref="StopPreview"/>. Calling it again while showing does nothing.</summary>
+        public void StartPreview()
+        {
+            if (preview == null)
+                preview = previewService.Show();
+        }
+
+        /// <summary>Removes the sample popups again. Does nothing when they are not showing.</summary>
+        public void StopPreview()
+        {
+            if (preview == null)
+                return;
+
+            preview.Dispose();
+            preview = null;
+        }
 
         // These change the settings as soon as they are picked, like the checkbox and the sliders of the Mouse tab do
         public AvailableColor LeftClickColor
