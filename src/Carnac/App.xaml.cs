@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reactive.Linq;
 using System.Windows;
@@ -18,6 +17,7 @@ namespace Carnac
     public partial class App
     {
         readonly SettingsProvider settingsProvider;
+        readonly IScreenManager screenManager = new ScreenManager();
         readonly PopupSettings settings;
         KeyShowView keyShowView;
         CarnacTrayIcon trayIcon;
@@ -55,17 +55,8 @@ namespace Carnac
             trayIcon = new CarnacTrayIcon();
             trayIcon.OpenPreferences += TrayIconOnOpenPreferences;
 
-            // Settings saved before Top was persisted load it as 0, so refresh the
-            // configured screen's origin to place the overlay on the right display.
-            var screen = new ScreenManager().GetScreens().FirstOrDefault(s => s.Index == settings.Screen);
-            if (screen != null)
-            {
-                settings.Left = screen.Left;
-                settings.Top = screen.Top;
-            }
-
             var keyShowViewModel = new KeyShowViewModel(settings);
-            keyShowView = new KeyShowView(keyShowViewModel, new InterceptMouse());
+            keyShowView = new KeyShowView(keyShowViewModel, screenManager, new InterceptMouse());
             keyShowView.Show();
 
             // One ConcurrencyService (its main thread scheduler wraps the UI thread's synchronization context) is shared by the
@@ -113,7 +104,7 @@ namespace Carnac
 
         void TrayIconOnOpenPreferences()
         {
-            var preferencesViewModel = new PreferencesViewModel(settingsProvider, new ScreenManager());
+            var preferencesViewModel = new PreferencesViewModel(settingsProvider, screenManager);
             var preferencesView = new PreferencesView(preferencesViewModel);
             preferencesView.Show();
         }

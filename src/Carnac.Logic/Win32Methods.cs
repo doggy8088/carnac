@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Carnac.Logic.Overlay;
 
 namespace Carnac.Logic
 {
@@ -20,7 +21,15 @@ namespace Carnac.Logic
         public const int WM_SYSKEYDOWN = 260;
         public const int WS_EX_TRANSPARENT = 0x00000020;
         public const int WS_EX_TOOLWINDOW = 0x00000080;
+        public const int WS_EX_NOACTIVATE = 0x08000000;
         public  const int GWL_EXSTYLE = (-20);
+
+        const uint SWP_NOSIZE = 0x0001;
+        const uint SWP_NOMOVE = 0x0002;
+        const uint SWP_NOZORDER = 0x0004;
+        const uint SWP_NOACTIVATE = 0x0010;
+        const uint SWP_SHOWWINDOW = 0x0040;
+        static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
 
         //
         // ReSharper restore InconsistentNaming
@@ -64,10 +73,33 @@ namespace Carnac.Logic
         [DllImport("user32.dll")]
         static extern int SetWindowLong(IntPtr hwnd, int index, int newStyle);
 
-        public static void SetWindowExTransparentAndNotInWindowList(IntPtr hwnd)
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+
+        /// <summary>
+        /// Makes the window click-through, hides it from window lists and keeps it from ever taking the focus.
+        /// </summary>
+        public static void ApplyOverlayWindowStyles(IntPtr hwnd)
         {
             var extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-            SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW);
+            SetWindowLong(hwnd, GWL_EXSTYLE, OverlayWindowStyles.Apply(extendedStyle));
+        }
+
+        /// <summary>
+        /// Moves and resizes the window to a rectangle in virtual desktop pixels, without activating it or changing its z-order.
+        /// </summary>
+        public static bool SetWindowRect(IntPtr hwnd, PixelRect rect)
+        {
+            return SetWindowPos(hwnd, IntPtr.Zero, rect.X, rect.Y, rect.Width, rect.Height, SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+
+        /// <summary>
+        /// Puts the window back on top of the topmost windows, without activating it, moving it or resizing it.
+        /// </summary>
+        public static bool BringToTopmost(IntPtr hwnd)
+        {
+            return SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
         }
     }
 }
