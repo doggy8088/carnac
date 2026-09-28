@@ -120,6 +120,9 @@
   <data name="TrayMenu_Pause" xml:space="preserve">
     <value>Pause</value>
   </data>
+  <data name="TrayMenu_RestartAsAdministrator" xml:space="preserve">
+    <value>Restart as administrator</value>
+  </data>
   <data name="TrayMenu_Resume" xml:space="preserve">
     <value>Resume</value>
   </data>

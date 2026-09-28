@@ -78,13 +78,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdministratorRestart.cs" />
     <Compile Include="BoundedCache.cs" />
     <Compile Include="ConfiguredHotkeys.cs" />
+    <Compile Include="ElevatedAppDetector.cs" />
     <Compile Include="ErrorNotifyingLogger.cs" />
     <Compile Include="FileLogger.cs" />
     <Compile Include="GitHubReleaseFeed.cs" />
     <Compile Include="Enums\NotificationPlacement.cs" />
     <Compile Include="IConcurrencyService.cs" />
+    <Compile Include="IForegroundSource.cs" />
+    <Compile Include="IElevationChecker.cs" />
     <Compile Include="IKeyDisplayState.cs" />
     <Compile Include="IMessageProvider.cs" />
     <Compile Include="HotkeyParser.cs" />
@@ -123,10 +127,13 @@
     <Compile Include="ReleaseVersion.cs" />
     <Compile Include="ReplaceKey.cs" />
     <Compile Include="RetryWithDelayExtensions.cs" />
+    <Compile Include="RestartArguments.cs" />
     <Compile Include="ScreenManager.cs" />
     <Compile Include="SettingsUpdateCheckHistory.cs" />
     <Compile Include="ShortcutCollection.cs" />
     <Compile Include="ShortcutProvider.cs" />
+    <Compile Include="SystemElevationChecker.cs" />
+    <Compile Include="SystemForegroundSource.cs" />
     <Compile Include="TrayStatusText.cs" />
     <Compile Include="UpdateCheckRunner.cs" />
     <Compile Include="UpdateChecker.cs" />
