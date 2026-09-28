@@ -162,8 +162,13 @@ namespace Carnac.Logic.Models
 
         private sealed class RepeatedKeyPress
         {
+            // Repeated typed characters ("ll" in "hello", "www", "1000") read naturally as typed,
+            // so they are only summarised as "x N" once the repeat is clearly deliberate.
+            const int MinimumTypedCharacterRepeatToSummarise = 4;
+
             readonly bool requiresPrefix;
             readonly bool nextRequiresSeperator;
+            readonly bool isTypedCharacter;
             readonly string[] textParts;
             int repeatCount;
 
@@ -171,8 +176,18 @@ namespace Carnac.Logic.Models
             {
                 nextRequiresSeperator = keyPress.HasModifierPressed;
                 textParts = keyPress.GetTextParts().ToArray();
+                isTypedCharacter = !keyPress.HasModifierPressed && IsTypedCharacter(textParts);
                 this.requiresPrefix = requiresPrefix;
                 repeatCount = 1;
+            }
+
+            static bool IsTypedCharacter(string[] textParts)
+            {
+                if (textParts.Length != 1 || textParts[0].Length != 1)
+                    return false;
+
+                var character = textParts[0][0];
+                return char.IsLetterOrDigit(character) || character == '.';
             }
 
             public bool NextRequiresSeperator { get { return nextRequiresSeperator; } }
@@ -191,11 +206,18 @@ namespace Carnac.Logic.Models
             {
                 if (requiresPrefix)
                     yield return ", ";
-                foreach (var textPart in textParts)
+
+                var summarise = repeatCount > 1
+                    && (!isTypedCharacter || repeatCount >= MinimumTypedCharacterRepeatToSummarise);
+                var copies = summarise ? 1 : repeatCount;
+                for (var copy = 0; copy < copies; copy++)
                 {
-                    yield return textPart;
+                    foreach (var textPart in textParts)
+                    {
+                        yield return textPart;
+                    }
                 }
-                if (repeatCount > 1)
+                if (summarise)
                     yield return string.Format(" x {0} ", repeatCount);
             }
         }
