@@ -181,7 +181,7 @@
                                         <Setter TargetName="icon" Property="Rectangle.Width" Value="50" />
                                         <Setter TargetName="icon" Property="Rectangle.Height" Value="50" />
                                     </DataTrigger>
-                                    </DataTemplate.Triggers>
+                                </DataTemplate.Triggers>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>

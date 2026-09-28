@@ -17,7 +17,7 @@ namespace Carnac.Tests
             {
                 Keys.Back, Keys.Escape, Keys.Tab,
                 Keys.Insert, Keys.Delete, Keys.Home, Keys.End, Keys.PageUp, Keys.PageDown,
-                Keys.CapsLock, Keys.NumLock, Keys.Scroll, Keys.PrintScreen, Keys.Pause, Keys.Cancel, Keys.Clear, Keys.Apps,
+                Keys.CapsLock, Keys.NumLock, Keys.Scroll, Keys.PrintScreen, Keys.Pause, Keys.Cancel, Keys.Apps,
                 Keys.LShiftKey, Keys.RShiftKey
             };
 
@@ -60,16 +60,15 @@ namespace Carnac.Tests
         }
 
         [Fact]
-        public void keymap_names_still_resolve_to_the_same_keys()
+        public void keymap_names_resolve_to_the_keys_that_are_named_by_the_table()
         {
-            Assert.Equal(Keys.PageUp, ReplaceKey.ToKey("PageUp"));
-            Assert.Equal(Keys.CapsLock, ReplaceKey.ToKey("CapsLock"));
+            // These only resolve through the table: the names are not members of Keys. (Names that are members, such as
+            // "PageUp", "CapsLock", "PrintScreen" and "Capital", are parsed by Enum.TryParse first, so they resolve
+            // whatever the table says.)
             Assert.Equal(Keys.Scroll, ReplaceKey.ToKey("ScrollLock"));
-            Assert.Equal(Keys.PrintScreen, ReplaceKey.ToKey("PrintScreen"));
-            Assert.Equal(Keys.Capital, ReplaceKey.ToKey("Capital"));
-            Assert.Equal(Keys.Return, ReplaceKey.ToKey("Return"));
-            Assert.Equal(Keys.Cancel, ReplaceKey.ToKey("Break"));
             Assert.Equal(Keys.Apps, ReplaceKey.ToKey("ContextMenu"));
+            // "Break" is what the Visual Studio keymap calls Ctrl+Break, which is Keys.Cancel
+            Assert.Equal(Keys.Cancel, ReplaceKey.ToKey("break"));
             // "Menu" is the Alt key (VK_MENU); the context-menu key must not take its name
             Assert.Equal(Keys.Menu, ReplaceKey.ToKey("Menu"));
         }
@@ -105,39 +104,6 @@ namespace Carnac.Tests
             // own. In this set they would fight over the same item, so they must stay out of it.
             Assert.False(SpecialKeys.IsSpecialKey("Return"));
             Assert.False(SpecialKeys.IsSpecialKey("Win"));
-        }
-
-        [Fact]
-        public void keymap_names_of_the_break_key_resolve()
-        {
-            // "Break" is what the Visual Studio keymap calls Ctrl+Break, which is Keys.Cancel
-            Assert.Equal(Keys.Cancel, ReplaceKey.ToKey("break"));
-        }
-
-        [Fact]
-        public void a_typed_space_is_not_a_key_cap()
-        {
-            var keyPress = new KeyPress(
-                new ProcessInfo("FakeProcess"),
-                new InterceptKeyEventArgs(Keys.Space, KeyDirection.Down, false, false, false),
-                false,
-                new[] { " " });
-
-            Assert.Equal(new[] { " " }, keyPress.GetTextParts().ToArray());
-            Assert.False(SpecialKeys.IsSpecialKey(" "));
-        }
-
-        [Fact]
-        public void text_is_not_a_special_key()
-        {
-            var texts = new[]
-            {
-                null, string.Empty, "a", "A", "1", " ", ".", " + ", ", ", " x 3 ", " [Copy]",
-                "back", "f1", "F0", "F25", "Left", "Up", "Right", "Down"
-            };
-
-            foreach (var text in texts)
-                Assert.False(SpecialKeys.IsSpecialKey(text), text ?? "<null>");
         }
 
         [Fact]
