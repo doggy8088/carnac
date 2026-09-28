@@ -107,6 +107,7 @@
     <Compile Include="ScreenManager.cs" />
     <Compile Include="ShortcutCollection.cs" />
     <Compile Include="ShortcutProvider.cs" />
+    <Compile Include="SpecialKeys.cs" />
     <Compile Include="Win32Methods.cs" />
     <Compile Include="Native\DetailedScreen.cs" />
     <Compile Include="Native\DEVMODE.cs" />
