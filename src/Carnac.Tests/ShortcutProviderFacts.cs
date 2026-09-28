@@ -171,6 +171,142 @@ namespace Carnac.Tests
             Assert.Equal("Konami!!!", provider.GetShortcutsStartingWith(Press("chrome", Keys.Up)).Single().Name);
         }
 
+        // Loads a keymap whose only shortcut is Ctrl+S and whose process entry is the given YAML text.
+        ShortcutProvider ProviderWithProcess(string processYaml)
+        {
+            var folder = CreateKeymapFolder("app.yml",
+                "group: App\n" + processYaml + "\nshortcuts:\n  - name: Save\n    keys:\n      - Ctrl+S\n");
+            return new ShortcutProvider(folder, warnings.Add);
+        }
+
+        static int ShortcutsFor(ShortcutProvider provider, string processName)
+        {
+            return provider.GetShortcutsStartingWith(Press(processName, Keys.S, control: true)).Count;
+        }
+
+        [Fact]
+        public void keymap_process_is_compared_case_insensitively()
+        {
+            var provider = ProviderWithProcess("process: Code");
+
+            Assert.Equal(1, ShortcutsFor(provider, "Code"));
+            Assert.Equal(1, ShortcutsFor(provider, "code"));
+            Assert.Equal(1, ShortcutsFor(provider, "CODE"));
+            Assert.Equal(0, ShortcutsFor(provider, "devenv"));
+            Assert.Empty(warnings);
+        }
+
+        [Fact]
+        public void lower_case_process_in_a_keymap_behaves_like_the_capitalised_name()
+        {
+            var lower = ProviderWithProcess("process: code");
+
+            Assert.Equal(1, ShortcutsFor(lower, "Code"));
+            Assert.Equal(1, ShortcutsFor(lower, "code"));
+        }
+
+        [Fact]
+        public void keymap_process_must_match_the_whole_name()
+        {
+            var provider = ProviderWithProcess("process: chrome");
+
+            Assert.Equal(0, ShortcutsFor(provider, "chromedriver"));
+            Assert.Equal(0, ShortcutsFor(provider, "chrom"));
+        }
+
+        [Fact]
+        public void keymap_process_accepts_alternatives_separated_by_a_bar()
+        {
+            var provider = ProviderWithProcess("process: chrome|msedge");
+
+            Assert.Equal(1, ShortcutsFor(provider, "chrome"));
+            Assert.Equal(1, ShortcutsFor(provider, "msedge"));
+            Assert.Equal(1, ShortcutsFor(provider, "MSEdge"));
+            Assert.Equal(0, ShortcutsFor(provider, "firefox"));
+            Assert.Empty(warnings);
+        }
+
+        [Fact]
+        public void keymap_process_alternatives_may_have_spaces_around_the_bar()
+        {
+            var provider = ProviderWithProcess("process: chrome | msedge");
+
+            Assert.Equal(1, ShortcutsFor(provider, "chrome"));
+            Assert.Equal(1, ShortcutsFor(provider, "msedge"));
+        }
+
+        [Fact]
+        public void keymap_process_accepts_a_yaml_list()
+        {
+            var provider = ProviderWithProcess("process:\n  - chrome\n  - msedge");
+
+            Assert.Equal(1, ShortcutsFor(provider, "chrome"));
+            Assert.Equal(1, ShortcutsFor(provider, "Msedge"));
+            Assert.Equal(0, ShortcutsFor(provider, "firefox"));
+            Assert.Empty(warnings);
+        }
+
+        [Fact]
+        public void keymap_process_accepts_a_flow_style_list()
+        {
+            var provider = ProviderWithProcess("process: [chrome, msedge]");
+
+            Assert.Equal(1, ShortcutsFor(provider, "chrome"));
+            Assert.Equal(1, ShortcutsFor(provider, "msedge"));
+            Assert.Equal(0, ShortcutsFor(provider, "firefox"));
+        }
+
+        [Fact]
+        public void keymap_process_list_items_may_contain_alternatives_too()
+        {
+            var provider = ProviderWithProcess("process:\n  - chrome|msedge\n  - firefox");
+
+            Assert.Equal(1, ShortcutsFor(provider, "msedge"));
+            Assert.Equal(1, ShortcutsFor(provider, "firefox"));
+            Assert.Equal(0, ShortcutsFor(provider, "opera"));
+        }
+
+        [Fact]
+        public void keymap_with_an_empty_process_applies_to_every_process()
+        {
+            Assert.Equal(1, ShortcutsFor(ProviderWithProcess("process:"), "anything"));
+            Assert.Equal(1, ShortcutsFor(ProviderWithProcess("process: \"\""), "anything"));
+            Assert.Equal(1, ShortcutsFor(ProviderWithProcess("process: []"), "anything"));
+            Assert.Empty(warnings);
+        }
+
+        [Fact]
+        public void keymap_process_that_is_neither_a_name_nor_a_list_is_reported_and_the_keymap_ignored()
+        {
+            var provider = ProviderWithProcess("process:\n  name: chrome");
+
+            var warning = Assert.Single(warnings);
+            Assert.Contains("app.yml", warning);
+            Assert.Contains("process", warning);
+            Assert.Empty(provider.Keymaps);
+        }
+
+        [Fact]
+        public void keymap_process_list_with_a_nested_list_is_reported_and_the_keymap_ignored()
+        {
+            var provider = ProviderWithProcess("process:\n  - chrome\n  - [a, b]");
+
+            Assert.Single(warnings);
+            Assert.Empty(provider.Keymaps);
+        }
+
+        [Fact]
+        public void shipped_vscode_keymap_applies_to_the_code_process_in_any_case()
+        {
+            var provider = new ShortcutProvider(FindShippedKeymapsFolder(), warnings.Add);
+
+            var ctrlD = new[] { "Code", "code", "CODE" }
+                .Select(name => provider.GetShortcutsStartingWith(Press(name, Keys.D, control: true)).Single().Name)
+                .ToArray();
+
+            Assert.Equal(new[] { "Add Selection To Next Find Match", "Add Selection To Next Find Match", "Add Selection To Next Find Match" }, ctrlD);
+        }
+
         [Fact]
         public void missing_folder_gives_no_shortcuts()
         {
