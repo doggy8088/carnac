@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -6,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Markup;
 using System.Windows.Media;
 using Carnac.Logic;
 using Forms = System.Windows.Forms;
@@ -17,6 +19,9 @@ namespace Carnac.UI
         public PreferencesView(PreferencesViewModel viewModel)
         {
             DataContext = viewModel;
+            // WPF picks the fonts of Chinese text by the language of the element: without this the Traditional and Simplified
+            // translations would both be drawn with the fonts for the default language.
+            Language = XmlLanguage.GetLanguage((Properties.Resources.Culture ?? CultureInfo.CurrentUICulture).IetfLanguageTag);
             InitializeComponent();
         }
 

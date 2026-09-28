@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Carnac.Logic.KeyMonitor;
 
@@ -32,6 +33,15 @@ namespace Carnac.Logic.Models
 
         public IEnumerable<string> GetTextParts()
         {
+            return GetTextParts(KeyLabels.Culture);
+        }
+
+        /// <summary>
+        /// The text to display for the key press. Key names are translated for the language of the culture
+        /// (see <see cref="KeyLabels"/>); null keeps the canonical English names.
+        /// </summary>
+        public IEnumerable<string> GetTextParts(CultureInfo culture)
+        {
             var isFirst = true;
             foreach (var text in Input)
             {
@@ -43,11 +53,11 @@ namespace Carnac.Logic.Models
                 {
                     isFirst = false;
                 }
-                yield return Format(text, HasModifierPressed);
+                yield return Format(text, HasModifierPressed, culture);
             }
         }
-        
-        static string Format(string text, bool isShortcut)
+
+        static string Format(string text, bool isShortcut, CultureInfo culture)
         {
             if (text == "Left")
                 return GetString(8592);
@@ -63,9 +73,9 @@ namespace Carnac.Logic.Models
             // Otherwise we want to preserve a space as part of
             // what is probably a sentence.
             if (text == " " && isShortcut)
-                return "Space";
+                return KeyLabels.Localize("Space", culture);
 
-            return text;
+            return KeyLabels.Localize(text, culture);
         }
 
         static string GetString(int decimalValue)

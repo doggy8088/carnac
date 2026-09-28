@@ -115,123 +115,123 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ShellView_Exit" xml:space="preserve">
-    <value>Exit</value>
+    <value>結束</value>
   </data>
   <data name="Preferences_TabGeneral" xml:space="preserve">
-    <value>General</value>
+    <value>一般</value>
   </data>
   <data name="Preferences_TabAppearance" xml:space="preserve">
-    <value>Appearance</value>
+    <value>外觀</value>
   </data>
   <data name="Preferences_TabAbout" xml:space="preserve">
-    <value>About</value>
+    <value>關於</value>
   </data>
   <data name="Preferences_TopOffset" xml:space="preserve">
-    <value>Top Offset</value>
+    <value>上方偏移</value>
   </data>
   <data name="Preferences_BottomOffset" xml:space="preserve">
-    <value>Bottom Offset</value>
+    <value>下方偏移</value>
   </data>
   <data name="Preferences_LeftOffset" xml:space="preserve">
-    <value>Left Offset</value>
+    <value>左側偏移</value>
   </data>
   <data name="Preferences_RightOffset" xml:space="preserve">
-    <value>Right Offset</value>
+    <value>右側偏移</value>
   </data>
   <data name="Preferences_AutoUpdate" xml:space="preserve">
-    <value>Auto Update</value>
+    <value>自動更新</value>
   </data>
   <data name="Preferences_AutoUpdateDescription" xml:space="preserve">
-    <value>auto check updates from GitHub (need to restart this program)</value>
+    <value>自動從 GitHub 檢查更新 (需要重新啟動本程式)</value>
   </data>
   <data name="Preferences_Language" xml:space="preserve">
-    <value>Language</value>
+    <value>語言</value>
   </data>
   <data name="Preferences_LanguageSystemDefault" xml:space="preserve">
-    <value>System default</value>
+    <value>系統預設值</value>
   </data>
   <data name="Preferences_LanguageHint" xml:space="preserve">
-    <value>Reopen Preferences to see this window in the new language.</value>
+    <value>重新開啟偏好設定後，此視窗會以新的語言顯示。</value>
   </data>
   <data name="Preferences_ResetToDefaults" xml:space="preserve">
-    <value>Reset to Defaults</value>
+    <value>重設為預設值</value>
   </data>
   <data name="Preferences_Save" xml:space="preserve">
-    <value>Save</value>
+    <value>儲存</value>
   </data>
   <data name="Preferences_PopupTextWidth" xml:space="preserve">
-    <value>Popup Text Width</value>
+    <value>彈出視窗文字寬度</value>
   </data>
   <data name="Preferences_PopupOpacity" xml:space="preserve">
-    <value>Popup Opacity</value>
+    <value>彈出視窗不透明度</value>
   </data>
   <data name="Preferences_PopupFadeDelay" xml:space="preserve">
-    <value>Popup Fade Delay (sec)</value>
+    <value>彈出視窗淡出延遲 (秒)</value>
   </data>
   <data name="Preferences_FontSize" xml:space="preserve">
-    <value>Font Size</value>
+    <value>字型大小</value>
   </data>
   <data name="Preferences_FontFamily" xml:space="preserve">
-    <value>Font Family</value>
+    <value>字型</value>
   </data>
   <data name="Preferences_FontColor" xml:space="preserve">
-    <value>Font Color</value>
+    <value>字型顏色</value>
   </data>
   <data name="Preferences_BackgroundColor" xml:space="preserve">
-    <value>Background Color</value>
+    <value>背景顏色</value>
   </data>
   <data name="Preferences_CornerRadius" xml:space="preserve">
-    <value>Corner Radius</value>
+    <value>圓角半徑</value>
   </data>
   <data name="Preferences_PopupPadding" xml:space="preserve">
-    <value>Popup Padding</value>
+    <value>彈出視窗內距</value>
   </data>
   <data name="Preferences_SystemDefaultFont" xml:space="preserve">
-    <value>System default</value>
+    <value>系統預設字型</value>
   </data>
   <data name="Preferences_ShortcutsOnly" xml:space="preserve">
-    <value>Shortcuts Only</value>
+    <value>僅限快速鍵</value>
   </data>
   <data name="Preferences_ShortcutsOnlyDescription" xml:space="preserve">
-    <value>Only show keys that are listed in the Keymaps folder</value>
+    <value>只顯示 Keymaps 資料夾中列出的按鍵</value>
   </data>
   <data name="Preferences_OnlyModifiers" xml:space="preserve">
-    <value>Only keys with Modifiers</value>
+    <value>僅限含修飾鍵的按鍵</value>
   </data>
   <data name="Preferences_OnlyModifiersDescription" xml:space="preserve">
-    <value>Only show keys that have Ctrl, Shift, Alt or Windows</value>
+    <value>只顯示搭配 Ctrl、Shift、Alt 或 Windows 的按鍵</value>
   </data>
   <data name="Preferences_ShowSpaceAsUnicode" xml:space="preserve">
-    <value>Show Space as ␣</value>
+    <value>以 ␣ 顯示空白鍵</value>
   </data>
   <data name="Preferences_ShowSpaceAsUnicodeDescription" xml:space="preserve">
-    <value>Show Space as Unicode character &apos;␣&apos;</value>
+    <value>以 Unicode 字元「␣」顯示空白鍵</value>
   </data>
   <data name="Preferences_ShowApplicationIcon" xml:space="preserve">
-    <value>Show Application Icon</value>
+    <value>顯示應用程式圖示</value>
   </data>
   <data name="Preferences_ShowApplicationIconDescription" xml:space="preserve">
-    <value>Display the active application&apos;s icon</value>
+    <value>顯示使用中應用程式的圖示</value>
   </data>
   <data name="Preferences_ProcessFilter" xml:space="preserve">
-    <value>Process Filter</value>
+    <value>處理序篩選</value>
   </data>
   <data name="Preferences_ProcessFilterDescription" xml:space="preserve">
-    <value>Only show keys from processes matching this regular expression</value>
+    <value>只顯示符合此規則運算式的處理序所輸入的按鍵</value>
   </data>
   <data name="About_Code52Project" xml:space="preserve">
-    <value>a code52 project</value>
+    <value>一個 code52 專案</value>
   </data>
   <data name="About_ProjectBy" xml:space="preserve">
-    <value>a project by</value>
+    <value>專案作者</value>
   </data>
   <data name="About_CarnacUses" xml:space="preserve">
-    <value>Carnac uses</value>
+    <value>Carnac 使用了</value>
   </data>
   <data name="About_VisitWebsite" xml:space="preserve">
-    <value>Visit Carnac Website</value>
+    <value>造訪 Carnac 網站</value>
   </data>
   <data name="About_Version" xml:space="preserve">
-    <value>version</value>
+    <value>版本</value>
   </data>
 </root>
