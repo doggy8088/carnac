@@ -38,9 +38,11 @@ namespace Carnac.Logic
         {
             {Keys.Space, " "},
             // Names shown for keys drawn as key caps (see SpecialKeys). Some Keys members share a value
-            // (Return/Enter, PageUp/Prior, Capital/CapsLock, PrintScreen/Snapshot) and Enum.ToString() may
-            // return either name, so these are spelled out. The others are named after the key itself; a name
-            // that is also a Keys member ("Menu" is the Alt key) would not survive the round trip in ToKey.
+            // (Return/Enter, PageUp/Prior, Capital/CapsLock, PrintScreen/Snapshot, PageDown/Next) and Enum.ToString()
+            // may return either name, so these are spelled out - only once: listing both members of a pair would
+            // throw a duplicate key when this table is built. The others are named after the key itself; a name
+            // that is also a Keys member ("Menu" is the Alt key) would not survive the round trip in ToKey, which
+            // reads this table as well to parse the shortcuts of the keymap files.
             {Keys.Return, "Return"},
             {Keys.PageUp, "PageUp"},
             {Keys.Capital, "CapsLock"},

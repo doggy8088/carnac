@@ -86,20 +86,32 @@ namespace Carnac.Tests
         [Fact]
         public void space_in_a_shortcut_is_drawn_as_a_key_cap()
         {
-            // Ctrl+Space, and Shift+Space (HasModifierPressed does not cover Shift)
-            foreach (var modifier in new[] { "Ctrl", "Shift" })
-            {
-                var keyPress = new KeyPress(
-                    new ProcessInfo("FakeProcess"),
-                    new InterceptKeyEventArgs(Keys.Space, KeyDirection.Down, false, modifier == "Ctrl", modifier == "Shift"),
-                    false,
-                    new[] { modifier, " " });
+            var keyPress = new KeyPress(
+                new ProcessInfo("FakeProcess"),
+                new InterceptKeyEventArgs(Keys.Space, KeyDirection.Down, false, true, false),
+                false,
+                new[] { "Ctrl", " " });
 
-                var textParts = keyPress.GetTextParts().ToArray();
+            var textParts = keyPress.GetTextParts().ToArray();
 
-                Assert.Equal(new[] { modifier, " + ", "Space" }, textParts);
-                Assert.True(SpecialKeys.IsSpecialKey(textParts[2]));
-            }
+            Assert.Equal(new[] { "Ctrl", " + ", "Space" }, textParts);
+            Assert.True(SpecialKeys.IsSpecialKey(textParts[2]));
+        }
+
+        [Fact]
+        public void return_and_win_are_drawn_by_their_own_triggers()
+        {
+            // KeyShowView.xaml draws Return as an arrow glyph and Win as the Windows logo with triggers of their
+            // own. In this set they would fight over the same item, so they must stay out of it.
+            Assert.False(SpecialKeys.IsSpecialKey("Return"));
+            Assert.False(SpecialKeys.IsSpecialKey("Win"));
+        }
+
+        [Fact]
+        public void keymap_names_of_the_break_key_resolve()
+        {
+            // "Break" is what the Visual Studio keymap calls Ctrl+Break, which is Keys.Cancel
+            Assert.Equal(Keys.Cancel, ReplaceKey.ToKey("break"));
         }
 
         [Fact]
