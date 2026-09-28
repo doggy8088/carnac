@@ -119,6 +119,7 @@ namespace Carnac.Logic
                     .Where(k => !IsModifierKeyPress(k) && k.KeyDirection == KeyDirection.Down)
                     .Select(ToCarnacKeyPress)
                     .Where(keypress => keypress != null)
+                    .Select(NameByKeyboardLayout)
                     .Where(k => !passwordModeService.CheckPasswordMode(k.InterceptKeyEventArgs))
                     .Subscribe(observer);
 
@@ -160,21 +161,7 @@ namespace Carnac.Logic
             }
 
             var isLetter = interceptKeyEventArgs.IsLetter();
-            string[] inputs;
-            var typedText = GetTypedText(interceptKeyEventArgs);
-            if (typedText != null)
-            {
-                // What is typed is the character, also with AltGr: without the Ctrl and Alt Windows reports for it, it is
-                // text like the rest and merges with the text around it.
-                inputs = new[] { typedText };
-                interceptKeyEventArgs = new InterceptKeyEventArgs(interceptKeyEventArgs.Key, interceptKeyEventArgs.KeyDirection,
-                    false, false, interceptKeyEventArgs.ShiftPressed);
-            }
-            else
-            {
-                inputs = ToInputs(isLetter, winKeyPressed, interceptKeyEventArgs).ToArray();
-            }
-
+            var inputs = ToInputs(isLetter, winKeyPressed, interceptKeyEventArgs).ToArray();
             try
             {
                 string processFileName = process.MainModule.FileName;
@@ -192,7 +179,6 @@ namespace Carnac.Logic
             var controlPressed = interceptKeyEventArgs.ControlPressed;
             var altPressed = interceptKeyEventArgs.AltPressed;
             var shiftPressed = interceptKeyEventArgs.ShiftPressed;
-
             if (controlPressed)
                 yield return "Ctrl";
             if (altPressed)
@@ -239,14 +225,26 @@ namespace Carnac.Logic
             }
         }
 
-        // The character a key types on its own, or with AltGr, with the layout of the window that has the focus
-        string GetTypedText(InterceptKeyEventArgs interceptKeyEventArgs)
+        // A key that types a character on the keyboard layout of the window that has the focus is shown as that
+        // character, with AltGr too. It is text like the rest, so without the Ctrl and Alt Windows reports for AltGr:
+        // it merges with the text around it and is not taken for a shortcut.
+        KeyPress NameByKeyboardLayout(KeyPress keyPress)
         {
-            // Ctrl or Alt alone, or the Windows key, make a shortcut; Ctrl and Alt together may be AltGr
-            if (winKeyPressed || interceptKeyEventArgs.ControlPressed != interceptKeyEventArgs.AltPressed)
-                return null;
+            var eventArgs = keyPress.InterceptKeyEventArgs;
 
-            return GetLayoutText(interceptKeyEventArgs.Key, interceptKeyEventArgs.ShiftPressed, interceptKeyEventArgs.ControlPressed);
+            // Ctrl or Alt alone, or the Windows key, make a shortcut; Ctrl and Alt together may be AltGr
+            if (keyboardLayoutTranslator == null || keyPress.WinkeyPressed || eventArgs.ControlPressed != eventArgs.AltPressed)
+                return keyPress;
+
+            var text = GetLayoutText(eventArgs.Key, eventArgs.ShiftPressed, eventArgs.ControlPressed);
+            if (text == null)
+                return keyPress;
+
+            return new KeyPress(
+                keyPress.Process,
+                new InterceptKeyEventArgs(eventArgs.Key, eventArgs.KeyDirection, false, false, eventArgs.ShiftPressed),
+                false,
+                new[] { text });
         }
 
         string GetLayoutText(Keys key, bool shift, bool controlAlt)
