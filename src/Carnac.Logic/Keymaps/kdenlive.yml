@@ -79,7 +79,7 @@ shortcuts:
   - name: Ripple Delete
     keys:
       - Ctrl+X
-  - name: Open Project Settings
+  - name: New Project
     keys:
       - Ctrl+N
   - name: Spacer Tool

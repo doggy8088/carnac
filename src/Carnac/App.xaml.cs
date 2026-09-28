@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reactive.Linq;
 using System.Windows;
@@ -47,6 +48,16 @@ namespace Carnac
 
             trayIcon = new CarnacTrayIcon();
             trayIcon.OpenPreferences += TrayIconOnOpenPreferences;
+
+            // Settings saved before Top was persisted load it as 0, so refresh the
+            // configured screen's origin to place the overlay on the right display.
+            var screen = new ScreenManager().GetScreens().FirstOrDefault(s => s.Index == settings.Screen);
+            if (screen != null)
+            {
+                settings.Left = screen.Left;
+                settings.Top = screen.Top;
+            }
+
             var keyShowViewModel = new KeyShowViewModel(settings);
             keyShowView = new KeyShowView(keyShowViewModel);
             keyShowView.Show();
