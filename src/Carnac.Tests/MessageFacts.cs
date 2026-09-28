@@ -358,13 +358,14 @@ namespace Carnac.Tests
         }
 
         [Fact]
-        public void a_typed_character_pressed_with_a_modifier_is_still_summarised_when_grouping_is_off()
+        public void a_shortcut_is_still_summarised_when_grouping_is_off()
         {
-            var press = new KeyPress(fakeProcess, new InterceptKeyEventArgs(Keys.L, KeyDirection.Down, false, true, false), false, new[] { "l" });
+            // a shortcut carries its modifiers in the input ("Ctrl", "L"); only single characters count as typed
+            var press = new KeyPress(fakeProcess, new InterceptKeyEventArgs(Keys.L, KeyDirection.Down, false, true, false), false, new[] { "Ctrl", "L" });
 
             var result = MergeAll(RepeatedKeyPolicy.Never, new Message(press), new Message(press));
 
-            Assert.Equal("l x 2 ", TextOf(result));
+            Assert.Equal("Ctrl + L x 2 ", TextOf(result));
         }
 
         [Fact]
