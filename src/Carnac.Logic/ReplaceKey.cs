@@ -37,6 +37,10 @@ namespace Carnac.Logic
         static readonly Dictionary<Keys, string> Replacements = new Dictionary<Keys, string>
         {
             {Keys.Space, " "},
+            {Keys.PageUp, "PageUp"},
+            {Keys.Capital, "CapsLock"},
+            {Keys.Scroll, "ScrollLock"},
+            {Keys.PrintScreen, "PrintScreen"},
             {Keys.D0, "0"},
             {Keys.D1, "1"},
             {Keys.D2, "2"},

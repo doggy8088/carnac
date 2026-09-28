@@ -3,11 +3,12 @@ using System.Globalization;
 using System.Windows.Data;
 using Carnac.Logic;
 
-namespace Carnac.UI
+namespace Carnac.Utilities
 {
     /// <summary>
     /// Converts the text of a key into whether it should be drawn as a key cap.
     /// </summary>
+    [ValueConversion(typeof(string), typeof(bool))]
     public class SpecialKeyConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
