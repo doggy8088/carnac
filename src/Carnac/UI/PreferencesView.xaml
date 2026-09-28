@@ -120,6 +120,50 @@
                 </Setter>
             </Style>
 
+            <Style x:Key="ClearHotkeyButtonStyle" TargetType="{x:Type Button}">
+                <Setter Property="Height" Value="26" />
+                <Setter Property="Padding" Value="6,0" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="FontWeight" Value="Normal" />
+                <Setter Property="Foreground" Value="#E4E4EA" />
+                <Setter Property="Background" Value="#2D2D34" />
+                <Setter Property="BorderBrush" Value="#45454F" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border x:Name="Border" Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="4" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Path x:Name="ClearIcon"
+                                          Data="M 0,0 L 8,8 M 8,0 L 0,8"
+                                          Width="8" Height="8" Stretch="Fill"
+                                          Stroke="#B8B8C4" StrokeThickness="1.6"
+                                          StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                          VerticalAlignment="Center" Margin="0,0,5,0" />
+                                    <ContentPresenter VerticalAlignment="Center" RecognizesAccessKey="True" />
+                                </StackPanel>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Border" Property="Background" Value="#3A3A44" />
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="#5A5A66" />
+                                    <Setter TargetName="ClearIcon" Property="Stroke" Value="#FF7B7B" />
+                                    <Setter Property="Foreground" Value="#FFFFFF" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Border" Property="Background" Value="#24242A" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <Style x:Key="ModernTabControlStyle" TargetType="{x:Type TabControl}">
                 <Setter Property="Focusable" Value="False" />
                 <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -224,6 +268,47 @@
                                             Maximum="{Binding SelectedScreen.Width}" Minimum="0" SmallChange="1" TickFrequency="20" />
                                         <ui:PreferencesField.SecondaryControl>
                                             <TextBox Style="{StaticResource NumericValueBoxStyle}" Text="{Binding Settings.RightOffset}" />
+                                        </ui:PreferencesField.SecondaryControl>
+                                    </ui:PreferencesField>
+                                    <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_SilentModeHotkey}">
+                                        <TextBox IsReadOnly="True" Text="{Binding SilentModeHotkey, Mode=OneWay}"
+                                                 VerticalContentAlignment="Center" Padding="6,2" MinHeight="26"
+                                                 InputMethod.IsInputMethodEnabled="False" PreviewKeyDown="SilentModeHotkey_PreviewKeyDown"
+                                                 AutomationProperties.Name="Silent mode hotkey"
+                                                 ToolTip="{x:Static properties:Resources.Preferences_HotkeyToolTip}" />
+                                        <ui:PreferencesField.SecondaryControl>
+                                            <Button Style="{StaticResource ClearHotkeyButtonStyle}"
+                                                    Content="{x:Static properties:Resources.Preferences_ClearHotkey}"
+                                                    ToolTip="{x:Static properties:Resources.Preferences_ClearHotkey}"
+                                                    Command="{Binding ClearSilentModeHotkeyCommand}"
+                                                    AutomationProperties.Name="Clear silent mode hotkey" />
+                                        </ui:PreferencesField.SecondaryControl>
+                                    </ui:PreferencesField>
+                                    <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_PauseHotkey}">
+                                        <StackPanel Orientation="Vertical">
+                                            <TextBox IsReadOnly="True" Text="{Binding PauseHotkey, Mode=OneWay}"
+                                                     VerticalContentAlignment="Center" Padding="6,2" MinHeight="26"
+                                                     InputMethod.IsInputMethodEnabled="False" PreviewKeyDown="PauseHotkey_PreviewKeyDown"
+                                                     AutomationProperties.Name="Pause hotkey"
+                                                     ToolTip="{x:Static properties:Resources.Preferences_HotkeyToolTip}" />
+                                            <TextBlock Margin="0,4,0,0" Foreground="#FF6B6B" TextWrapping="Wrap" Text="{Binding HotkeyMessage}">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Style.Triggers>
+                                                            <Trigger Property="Text" Value="">
+                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <ui:PreferencesField.SecondaryControl>
+                                            <Button VerticalAlignment="Top" Style="{StaticResource ClearHotkeyButtonStyle}"
+                                                    Content="{x:Static properties:Resources.Preferences_ClearHotkey}"
+                                                    ToolTip="{x:Static properties:Resources.Preferences_ClearHotkey}"
+                                                    Command="{Binding ClearPauseHotkeyCommand}"
+                                                    AutomationProperties.Name="Clear pause hotkey" />
                                         </ui:PreferencesField.SecondaryControl>
                                     </ui:PreferencesField>
                                     <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_AutoUpdate}">

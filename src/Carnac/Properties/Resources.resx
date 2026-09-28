@@ -396,4 +396,16 @@
   <data name="TrayStatus_Silent" xml:space="preserve">
     <value>silent mode</value>
   </data>
+  <data name="Preferences_SilentModeHotkey" xml:space="preserve">
+    <value>Silent Mode Hotkey</value>
+  </data>
+  <data name="Preferences_PauseHotkey" xml:space="preserve">
+    <value>Pause Hotkey</value>
+  </data>
+  <data name="Preferences_HotkeyToolTip" xml:space="preserve">
+    <value>Click here and press the key combination to use. Backspace clears it.</value>
+  </data>
+  <data name="Preferences_ClearHotkey" xml:space="preserve">
+    <value>Clear</value>
+  </data>
 </root>

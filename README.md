@@ -54,16 +54,25 @@ The application will check for updates in the background, if a new version has b
 
 If you want to stop `Carnac` from recording certain key strokes, you can enter _silent mode_ by pressing `Ctrl+Alt+P`. To exit _silent mode_ you simply press `Ctrl+Alt+P` again.
 
+#### Hotkeys
+
+Both hotkeys can be changed in the settings (**General** tab): click into the hotkey box, press the key combination you want and click **Save**. The new hotkey works right away, no restart needed. **Clear** (or Backspace in the box) switches a hotkey off.
+
+- **Silent mode hotkey** (default `Ctrl+Alt+P`): switches silent mode on and off.
+- **Pause hotkey** (default: none): pauses Carnac, so no popups are shown, until you press it again.
+
+A hotkey needs at least one of Ctrl, Alt or Shift plus one other key, and the two hotkeys must differ. Carnac does not swallow the hotkey: the application that has the focus still receives it, so pick a combination that application does not use. You can also edit `SilentModeHotkey` and `PauseHotkey` (for example `"Ctrl+Alt+P"`) in the settings file. While a process filter is set (Appearance tab), the hotkeys are only recognised when a matching application has the focus; the tray menu always works.
+
 #### Tray icon menu
 
 Hover over the Carnac icon in the notification area to see whether Carnac is active, paused or in silent mode. Right-click it for:
 
 - **Settings...** (a left click opens the settings too)
 - **Pause** / **Resume**: no popups are shown while Carnac is paused
-- **Silent mode**: the same switch as `Ctrl+Alt+P`
+- **Silent mode**: the same switch as the silent mode hotkey
 - **Exit**
 
-Pause and silent mode are not remembered, Carnac always starts with both switched off.
+The menu shows the current hotkeys next to the items. Pause and silent mode are not remembered, Carnac always starts with both switched off.
 
 #### Keymaps and process filter
 

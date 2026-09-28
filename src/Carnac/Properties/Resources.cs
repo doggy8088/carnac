@@ -740,5 +740,29 @@ namespace Carnac.Properties {
                 return ResourceManager.GetString("TrayStatus_Silent", resourceCulture);
             }
         }
+
+        public static string Preferences_SilentModeHotkey {
+            get {
+                return ResourceManager.GetString("Preferences_SilentModeHotkey", resourceCulture);
+            }
+        }
+
+        public static string Preferences_PauseHotkey {
+            get {
+                return ResourceManager.GetString("Preferences_PauseHotkey", resourceCulture);
+            }
+        }
+
+        public static string Preferences_HotkeyToolTip {
+            get {
+                return ResourceManager.GetString("Preferences_HotkeyToolTip", resourceCulture);
+            }
+        }
+
+        public static string Preferences_ClearHotkey {
+            get {
+                return ResourceManager.GetString("Preferences_ClearHotkey", resourceCulture);
+            }
+        }
     }
 }

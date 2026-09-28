@@ -55,7 +55,7 @@ namespace Carnac
                 return;
             }
 
-            trayIcon = new CarnacTrayIcon(displayState);
+            trayIcon = new CarnacTrayIcon(displayState, settings);
             trayIcon.OpenPreferences += TrayIconOnOpenPreferences;
 
             // One ConcurrencyService (its main thread scheduler wraps the UI thread's synchronization context) is shared by the
@@ -66,7 +66,7 @@ namespace Carnac
             keyShowView.Show();
             previewService = new PreviewService(keyShowViewModel.Messages, PreviewService.CreateSampleProcess());
 
-            var keyProvider = new KeyProvider(InterceptKeys.Current, new PasswordModeService(displayState), new DesktopLockEventService(), settingsProvider, new KeyboardLayoutTranslator());
+            var keyProvider = new KeyProvider(InterceptKeys.Current, new PasswordModeService(displayState, settings), new DesktopLockEventService(), settingsProvider, new KeyboardLayoutTranslator());
             var messageProvider = new MessageProvider(new ShortcutProvider(), keyProvider, settings, concurrencyService, displayState);
 
             carnac = new KeysController(keyShowViewModel.Messages, messageProvider, concurrencyService, settingsProvider);

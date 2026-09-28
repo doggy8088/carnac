@@ -76,9 +76,14 @@
   <ItemGroup>
     <Compile Include="AppearanceSettingsFacts.cs" />
     <Compile Include="ChordTimeoutFacts.cs" />
+    <Compile Include="ConfiguredHotkeysFacts.cs" />
     <Compile Include="EmbeddedResourceManagerFacts.cs" />
     <Compile Include="FontFamilyNameConverterFacts.cs" />
+    <Compile Include="HotkeyParserFacts.cs" />
+    <Compile Include="HotkeyPipelineFacts.cs" />
+    <Compile Include="HotkeySettingsFacts.cs" />
     <Compile Include="InMemorySettingsStorage.cs" />
+    <Compile Include="InMemoryStorage.cs" />
     <Compile Include="KeyCategoriesFacts.cs" />
     <Compile Include="KeyCombinationParserFacts.cs" />
     <Compile Include="KeyDisplayStateFacts.cs" />
@@ -120,6 +125,7 @@
     <Compile Include="UiLanguageFacts.cs" />
     <Compile Include="UiLanguagesFacts.cs" />
     <Compile Include="ViewModels\KeyCategoryOptionFacts.cs" />
+    <Compile Include="ViewModels\PreferencesViewModelHotkeyFacts.cs" />
     <Compile Include="ViewModels\ShellViewModelFacts.cs" />
     <Compile Include="WindowBoundsClamperFacts.cs" />
   </ItemGroup>

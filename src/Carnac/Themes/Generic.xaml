@@ -28,7 +28,7 @@
                                 <ContentPresenter VerticalAlignment="Center" />
                             </Border>
 
-                            <Border x:Name="SecondaryHost" Grid.Column="2" Width="68" Padding="0,9,14,9" VerticalAlignment="Top">
+                            <Border x:Name="SecondaryHost" Grid.Column="2" Width="82" Padding="0,9,14,9" VerticalAlignment="Top">
                                 <ContentPresenter Content="{TemplateBinding SecondaryControl}" VerticalAlignment="Center" />
                             </Border>
                         </Grid>

@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Linq;
 using System.Windows;
 using Carnac.Logic;
+using Carnac.Logic.Models;
 using Application = System.Windows.Application;
 
 namespace Carnac
@@ -18,12 +19,14 @@ namespace Carnac
         Action balloonClickAction;
         bool disposed;
 
-        public CarnacTrayIcon(IKeyDisplayState displayState)
+        public CarnacTrayIcon(IKeyDisplayState displayState, PopupSettings settings)
         {
             if (displayState == null)
                 throw new ArgumentNullException("displayState");
+            if (settings == null)
+                throw new ArgumentNullException("settings");
 
-            trayMenu = new TrayMenu(displayState, OpenOrActivatePreferences, Exit, InvokeOnUiThread);
+            trayMenu = new TrayMenu(displayState, settings, OpenOrActivatePreferences, Exit, InvokeOnUiThread);
 
             using (var iconStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Carnac.icon.embedded.ico"))
             {

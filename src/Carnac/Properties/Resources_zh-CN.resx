@@ -396,4 +396,16 @@
   <data name="TrayStatus_Silent" xml:space="preserve">
     <value>静默模式</value>
   </data>
+  <data name="Preferences_SilentModeHotkey" xml:space="preserve">
+    <value>静默模式快捷键</value>
+  </data>
+  <data name="Preferences_PauseHotkey" xml:space="preserve">
+    <value>暂停快捷键</value>
+  </data>
+  <data name="Preferences_HotkeyToolTip" xml:space="preserve">
+    <value>点击此处并按下要使用的按键组合。按 Backspace 键可清除。</value>
+  </data>
+  <data name="Preferences_ClearHotkey" xml:space="preserve">
+    <value>清除</value>
+  </data>
 </root>
