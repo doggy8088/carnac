@@ -70,12 +70,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BoundedCacheFacts.cs" />
     <Compile Include="ConfiguredHotkeysFacts.cs" />
+    <Compile Include="ErrorNotifyingLoggerFacts.cs" />
+    <Compile Include="FileLoggerFacts.cs" />
     <Compile Include="HotkeyParserFacts.cs" />
     <Compile Include="HotkeyPipelineFacts.cs" />
     <Compile Include="HotkeySettingsFacts.cs" />
     <Compile Include="InMemoryStorage.cs" />
     <Compile Include="KeyDisplayStateFacts.cs" />
+    <Compile Include="KeyPipelineResilienceFacts.cs" />
     <Compile Include="KeyPlayer.cs" />
     <Compile Include="KeysControllerFacts.cs" />
     <Compile Include="KeyStreams.cs" />
@@ -84,6 +88,7 @@
     <Compile Include="MessageProviderPauseFacts.cs" />
     <Compile Include="PasswordModeServiceFacts.cs" />
     <Compile Include="RxTestExtensions.cs" />
+    <Compile Include="RetryWithDelayFacts.cs" />
     <Compile Include="SpecificationFor.cs" />
     <Compile Include="TrayMenuFacts.cs" />
     <Compile Include="TrayStatusTextFacts.cs" />

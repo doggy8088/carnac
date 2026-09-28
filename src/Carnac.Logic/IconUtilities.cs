@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
@@ -12,49 +11,75 @@ namespace Carnac.Logic
 {
     internal static class IconUtilities
     {
+        const int CacheCapacity = 64;
+
         [DllImport("gdi32.dll", SetLastError = true)]
         private static extern bool DeleteObject(IntPtr hObject);
 
-        private static readonly Dictionary<string, ImageSource> icons = new Dictionary<string, ImageSource>();
-
-
-        private static Icon GetProcessIcon(string processFileName)
-        {
-            Icon icon = Icon.ExtractAssociatedIcon(processFileName);
-            return icon;
-        }
-       
-        private static ImageSource IconToImageSource(Icon icon)
-        {
-            Bitmap bitmap = icon.ToBitmap();
-            IntPtr hBitmap = bitmap.GetHbitmap();
-
-            ImageSource wpfBitmap = Imaging.CreateBitmapSourceFromHBitmap(
-                hBitmap,
-                IntPtr.Zero,
-                Int32Rect.Empty,
-                BitmapSizeOptions.FromEmptyOptions());
-
-            if (!DeleteObject(hBitmap))
-            {
-                throw new Win32Exception();
-            }
-
-            return wpfBitmap;
-        }
+        // Icons are cached per executable path. An executable without a usable icon is cached as null, so nothing is extracted
+        // (and no exception is thrown) again on every key press. The cache is thread-safe and bounded.
+        private static readonly BoundedCache<string, ImageSource> icons = new BoundedCache<string, ImageSource>(CacheCapacity, LoadIcon);
 
         public static ImageSource GetProcessIconAsImageSource(string processFileName)
         {
-            if (icons.ContainsKey(processFileName))
+            return icons.Get(processFileName);
+        }
+
+        private static ImageSource LoadIcon(string processFileName)
+        {
+            try
             {
-                return icons[processFileName];
+                using (Icon icon = Icon.ExtractAssociatedIcon(processFileName))
+                {
+                    return icon == null ? null : IconToImageSource(icon);
+                }
             }
-            else
+            catch (ArgumentException)
             {
-                Icon icon = GetProcessIcon(processFileName);
-                ImageSource image = IconToImageSource(icon);
-                icons.Add(processFileName, image);
-                return image;
+                // no such file, or nothing to extract: an application without an icon is normal, not an error
+                return null;
+            }
+            catch (IOException)
+            {
+                return null;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return null;
+            }
+            catch (NotSupportedException)
+            {
+                return null;
+            }
+            catch (ExternalException)
+            {
+                // GDI+ and Win32 failures
+                return null;
+            }
+        }
+
+        private static ImageSource IconToImageSource(Icon icon)
+        {
+            using (Bitmap bitmap = icon.ToBitmap())
+            {
+                IntPtr hBitmap = bitmap.GetHbitmap();
+                try
+                {
+                    BitmapSource wpfBitmap = Imaging.CreateBitmapSourceFromHBitmap(
+                        hBitmap,
+                        IntPtr.Zero,
+                        Int32Rect.Empty,
+                        BitmapSizeOptions.FromEmptyOptions());
+
+                    // the icon is created on the keyboard hook's thread and shown on the UI thread
+                    wpfBitmap.Freeze();
+                    return wpfBitmap;
+                }
+                finally
+                {
+                    // the WPF bitmap has its own copy; if this fails there is nothing more to do than leaking one GDI handle
+                    DeleteObject(hBitmap);
+                }
             }
         }
     }
