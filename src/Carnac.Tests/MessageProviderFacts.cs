@@ -193,6 +193,7 @@ namespace Carnac.Tests
             // assert
             Assert.Equal(1, messages.Count);
             Assert.Equal("SomeShortcut", messages[0].ShortcutName);
+            Assert.Equal("Ctrl + U, l", string.Join("", messages[0].Text));
         }
 
         [Fact]
@@ -216,7 +217,7 @@ namespace Carnac.Tests
 
             // assert
             Assert.Equal(3, messages.Count);
-            Assert.Equal("Ctrl + U, l [SomeShortcut]", string.Join("", messages[0].Text));
+            Assert.Equal("Ctrl + U, l", string.Join("", messages[0].Text));
             Assert.Equal("SomeShortcut", messages[0].ShortcutName);
             Assert.Equal("1", string.Join("", messages[1].Text));
             Assert.Equal("1l", string.Join("", messages[2].Text));
