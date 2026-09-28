@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Carnac.Logic.Enums;
 using Carnac.Logic.Models;
 using Carnac.Logic.Native;
@@ -521,6 +522,24 @@ namespace Carnac.Tests.Overlay
                     Assert.True(raised.Contains(name), name + " raised no change notification");
                     Assert.True(OverlayPlacement.AffectsPlacement(name), name);
                 }
+            }
+
+            [Fact]
+            public void the_offsets_and_the_placement_notify_the_bindings_of_the_popup_list_so_it_moves_while_a_slider_is_dragged()
+            {
+                var settings = new PopupSettings();
+                var raised = new List<string>();
+                settings.PropertyChanged += (sender, e) => raised.Add(e.PropertyName);
+
+                settings.TopOffset = 10;
+                settings.BottomOffset = 20;
+                settings.LeftOffset = 30;
+                settings.RightOffset = 40;
+                settings.Placement = NotificationPlacement.BottomRight;
+
+                Assert.True(raised.Count(n => n == "Margins") >= 4, "Margins was notified " + raised.Count(n => n == "Margins") + " times");
+                Assert.True(raised.Contains("Alignment"), "Alignment was not notified");
+                Assert.True(raised.Contains("ScaleTransform"), "ScaleTransform was not notified");
             }
 
             [Fact]

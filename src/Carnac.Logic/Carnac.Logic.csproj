@@ -82,6 +82,7 @@
     <Compile Include="Internal\FixedQueue.cs" />
     <Compile Include="IKeyProvider.cs" />
     <Compile Include="IPasswordModeService.cs" />
+    <Compile Include="IPreviewService.cs" />
     <Compile Include="IScreenManager.cs" />
     <Compile Include="IShortcutProvider.cs" />
     <Compile Include="KeyMonitor\IInterceptKeys.cs" />
@@ -110,6 +111,7 @@
     <Compile Include="Overlay\PixelRect.cs" />
     <Compile Include="Overlay\SystemEventsDisplaySettingsMonitor.cs" />
     <Compile Include="PasswordModeService.cs" />
+    <Compile Include="PreviewService.cs" />
     <Compile Include="ReplaceKey.cs" />
     <Compile Include="ScreenManager.cs" />
     <Compile Include="ShortcutCollection.cs" />
