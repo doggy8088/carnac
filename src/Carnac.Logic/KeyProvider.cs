@@ -160,7 +160,21 @@ namespace Carnac.Logic
             }
 
             var isLetter = interceptKeyEventArgs.IsLetter();
-            var inputs = ToInputs(isLetter, winKeyPressed, interceptKeyEventArgs).ToArray();
+            string[] inputs;
+            var typedText = GetTypedText(interceptKeyEventArgs);
+            if (typedText != null)
+            {
+                // What is typed is the character, also with AltGr: without the Ctrl and Alt Windows reports for it, it is
+                // text like the rest and merges with the text around it.
+                inputs = new[] { typedText };
+                interceptKeyEventArgs = new InterceptKeyEventArgs(interceptKeyEventArgs.Key, interceptKeyEventArgs.KeyDirection,
+                    false, false, interceptKeyEventArgs.ShiftPressed);
+            }
+            else
+            {
+                inputs = ToInputs(isLetter, winKeyPressed, interceptKeyEventArgs).ToArray();
+            }
+
             try
             {
                 string processFileName = process.MainModule.FileName;
@@ -179,18 +193,6 @@ namespace Carnac.Logic
             var altPressed = interceptKeyEventArgs.AltPressed;
             var shiftPressed = interceptKeyEventArgs.ShiftPressed;
 
-            // What the key types on the layout of the window that has the focus. Windows reports AltGr as Ctrl+Alt,
-            // so on layouts that have one, Ctrl+Alt+key can be a character too.
-            if (!isWinKeyPressed && controlPressed == altPressed)
-            {
-                var typedText = GetLayoutText(interceptKeyEventArgs.Key, shiftPressed, controlPressed && altPressed);
-                if (typedText != null)
-                {
-                    yield return typedText;
-                    yield break;
-                }
-            }
-
             if (controlPressed)
                 yield return "Ctrl";
             if (altPressed)
@@ -198,13 +200,27 @@ namespace Carnac.Logic
             if (isWinKeyPressed)
                 yield return "Win";
 
+            // Win + a punctuation key, or a digit with Shift (its symbol): named as the key is on the layout, like the
+            // ones with Ctrl or Alt. Win + a letter or digit is named as in the lists of shortcuts ("Win+E", "Win+1").
+            var isDigit = interceptKeyEventArgs.Key >= Keys.D0 && interceptKeyEventArgs.Key <= Keys.D9;
+            if (isWinKeyPressed && !controlPressed && !altPressed
+                && (!IsNamedLikeItsLatinLetter(interceptKeyEventArgs.Key) || (isDigit && shiftPressed)))
+            {
+                var winText = GetLayoutText(interceptKeyEventArgs.Key, shiftPressed, false);
+                if (winText != null)
+                {
+                    yield return winText;
+                    yield break;
+                }
+            }
+
             if (controlPressed || altPressed)
             {
                 //Treat as a shortcut, don't be too smart
                 if (shiftPressed)
                     yield return "Shift";
 
-                yield return GetShortcutKeyName(interceptKeyEventArgs.Key, isLetter);
+                yield return GetShortcutKeyName(interceptKeyEventArgs.Key);
             }
             else
             {
@@ -223,16 +239,31 @@ namespace Carnac.Logic
             }
         }
 
-        string GetLayoutText(Keys key, bool shift, bool altGr)
+        // The character a key types on its own, or with AltGr, with the layout of the window that has the focus
+        string GetTypedText(InterceptKeyEventArgs interceptKeyEventArgs)
         {
-            return keyboardLayoutTranslator == null ? null : keyboardLayoutTranslator.GetText(key, shift, altGr);
+            // Ctrl or Alt alone, or the Windows key, make a shortcut; Ctrl and Alt together may be AltGr
+            if (winKeyPressed || interceptKeyEventArgs.ControlPressed != interceptKeyEventArgs.AltPressed)
+                return null;
+
+            return GetLayoutText(interceptKeyEventArgs.Key, interceptKeyEventArgs.ShiftPressed, interceptKeyEventArgs.ControlPressed);
         }
 
-        // Shortcuts are written with the name of the letter ("Ctrl+C") whatever the layout, punctuation keys are
-        // named as they are on the keyboard.
-        string GetShortcutKeyName(Keys key, bool isLetter)
+        string GetLayoutText(Keys key, bool shift, bool controlAlt)
         {
-            var layoutText = isLetter ? null : GetLayoutText(key, false, false);
+            return keyboardLayoutTranslator == null ? null : keyboardLayoutTranslator.GetText(key, shift, controlAlt);
+        }
+
+        // Shortcuts are written with the name of the letter or digit ("Ctrl+C", "Ctrl+1") whatever the layout, the
+        // punctuation keys are named as they are on the keyboard.
+        static bool IsNamedLikeItsLatinLetter(Keys key)
+        {
+            return (key >= Keys.A && key <= Keys.Z) || (key >= Keys.D0 && key <= Keys.D9);
+        }
+
+        string GetShortcutKeyName(Keys key)
+        {
+            var layoutText = IsNamedLikeItsLatinLetter(key) ? null : GetLayoutText(key, false, false);
             return layoutText ?? key.Sanitise();
         }
     }

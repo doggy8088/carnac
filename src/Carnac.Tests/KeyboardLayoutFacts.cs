@@ -7,16 +7,19 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Carnac.Logic;
 using Carnac.Logic.KeyMonitor;
+using Carnac.Logic.Models;
 using Microsoft.Win32;
 using NSubstitute;
 using SettingsProviderNet;
 using Xunit;
+using Message = Carnac.Logic.Models.Message;
 
 namespace Carnac.Tests
 {
-    // The translation itself is tested against real Windows keyboard layouts (they ship with Windows). A test
-    // returns early, as xunit 1.9 cannot skip dynamically, when the system is too old for the translator or a
-    // layout cannot be loaded.
+    // The translation itself is tested against real Windows keyboard layouts (they ship with Windows). Where a test
+    // depends on a layout that could not be loaded it returns early, as xunit 1.9 cannot skip dynamically; the layouts
+    // the tests rely on most are checked to be loadable on a system that supports the translator, so a machine
+    // that cannot load them fails instead of passing without testing anything.
     public class KeyboardLayoutTranslatorFacts
     {
         const string Us = "00000409";
@@ -24,6 +27,9 @@ namespace Carnac.Tests
         const string French = "0000040C";
         const string Russian = "00000419";
         const string Turkish = "0000041F";
+        const string PortugueseBrazil = "00000416";
+        const string PersianStandard = "00050429";
+        const string Sinhala = "0000045B";
 
         static readonly Keys[] LetterKeys = Enumerable.Range((int)Keys.A, 26).Select(k => (Keys)k).ToArray();
         static readonly Keys[] DigitKeys = Enumerable.Range((int)Keys.D0, 10).Select(k => (Keys)k).ToArray();
@@ -32,6 +38,20 @@ namespace Carnac.Tests
             Keys.Oem1, Keys.Oemplus, Keys.Oemcomma, Keys.OemMinus, Keys.OemPeriod, Keys.OemQuestion, Keys.Oemtilde,
             Keys.OemOpenBrackets, Keys.Oem5, Keys.Oem6, Keys.Oem7, Keys.OemBackslash
         };
+
+        [Fact]
+        public void the_layouts_these_tests_rely_on_can_be_loaded_where_the_translator_is_supported()
+        {
+            if (!KeyboardLayoutTranslator.IsSupported) return;
+
+            foreach (var layoutId in new[] { Us, German, French, Russian, Turkish, PortugueseBrazil })
+            {
+                using (var layout = LoadedLayout.Load(layoutId))
+                {
+                    Assert.True(layout != null, "the keyboard layout " + layoutId + " cannot be loaded, so the tests that use it would test nothing");
+                }
+            }
+        }
 
         [Fact]
         public void the_us_layout_names_keys_exactly_as_the_us_tables_do()
@@ -133,6 +153,39 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void the_extra_keys_of_brazilian_keyboards_are_character_keys()
+        {
+            var abntC1 = (Keys)0xC1;
+            var abntC2 = (Keys)0xC2;
+            Assert.True(KeyboardLayoutTranslator.IsCharacterKey(abntC1));
+            Assert.True(KeyboardLayoutTranslator.IsCharacterKey(abntC2));
+
+            using (var layout = LoadedLayout.Load(PortugueseBrazil))
+            {
+                if (layout == null) return;
+
+                Assert.Equal("/", Translate(abntC1, false, false, layout));
+                Assert.Equal("?", Translate(abntC1, true, false, layout));
+                Assert.Equal(".", Translate(abntC2, false, false, layout));
+            }
+        }
+
+        [Fact]
+        public void characters_nobody_can_see_are_not_names_of_keys()
+        {
+            // Persian types a zero width non-joiner on Shift+B, Sinhala a no-break space on Shift+the backslash key
+            using (var persian = LoadedLayout.Load(PersianStandard))
+            using (var sinhala = LoadedLayout.Load(Sinhala))
+            {
+                if (persian != null)
+                    Assert.Null(Translate(Keys.B, true, false, persian));
+
+                if (sinhala != null)
+                    Assert.Null(Translate(Keys.Oem5, true, false, sinhala));
+            }
+        }
+
+        [Fact]
         public void a_dead_key_is_named_by_its_accent_and_does_not_change_the_keyboard_state()
         {
             using (var layout = LoadedLayout.Load(German))
@@ -149,6 +202,32 @@ namespace Carnac.Tests
                 Assert.Equal("´", accent);
                 Assert.Equal("a", letterAfterwards);
                 Assert.Equal(accent, accentAgain);
+            }
+        }
+
+        [Fact]
+        public void a_dead_key_typed_in_the_application_is_combined_but_not_used_up()
+        {
+            using (var layout = LoadedLayout.Load(German))
+            {
+                if (layout == null) return;
+
+                try
+                {
+                    // the user types the acute accent in an application: Windows keeps it until the next key
+                    LoadedLayout.TypeDeadKey(layout.Handle, Keys.Oem6);
+
+                    var first = Translate(Keys.A, false, false, layout);
+                    var second = Translate(Keys.A, false, false, layout);
+
+                    Assert.Equal("á", first);
+                    // Carnac looked, the accent is still there for the application to combine
+                    Assert.Equal(first, second);
+                }
+                finally
+                {
+                    LoadedLayout.ClearPendingDeadKey(layout.Handle);
+                }
             }
         }
 
@@ -170,6 +249,36 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void ctrl_and_alt_are_altgr_only_when_the_right_alt_key_is_down()
+        {
+            using (var layout = LoadedLayout.Load(German))
+            {
+                if (layout == null) return;
+
+                var rightAltDown = false;
+                var translator = new KeyboardLayoutTranslator(() => layout.Handle, () => rightAltDown);
+
+                // Ctrl+Alt+Q with the left Alt key is a shortcut, not the @ that AltGr+Q types
+                Assert.Null(translator.GetText(Keys.Q, false, true));
+
+                rightAltDown = true;
+                Assert.Equal("@", translator.GetText(Keys.Q, false, true));
+
+                // without Ctrl+Alt the right Alt key is of no interest
+                rightAltDown = false;
+                Assert.Equal("q", translator.GetText(Keys.Q, false, false));
+            }
+        }
+
+        [Fact]
+        public void without_a_layout_nothing_is_translated()
+        {
+            var translator = new KeyboardLayoutTranslator(() => IntPtr.Zero);
+
+            Assert.Null(translator.GetText(Keys.A, false, false));
+        }
+
+        [Fact]
         public void an_unusable_layout_never_throws()
         {
             var translator = new KeyboardLayoutTranslator(() => new IntPtr(1));
@@ -180,11 +289,23 @@ namespace Carnac.Tests
         }
 
         [Fact]
-        public void the_translator_requires_a_layout_provider()
+        public void the_layout_of_the_window_that_has_the_focus_never_throws()
         {
-            var exception = Assert.Throws<ArgumentNullException>(() => new KeyboardLayoutTranslator(null));
+            var translator = new KeyboardLayoutTranslator();
 
-            Assert.Equal("layoutProvider", exception.ParamName);
+            string text = null;
+            var exception = Record.Exception(() => { text = translator.GetText(Keys.A, false, false); KeyboardLayoutTranslator.GetFocusedWindowLayout(); });
+
+            Assert.Null(exception);
+            // no focus at all (a locked desktop) is no layout; otherwise it is the letter of the focused layout
+            Assert.True(text == null || text.Length >= 1);
+        }
+
+        [Fact]
+        public void the_translator_requires_what_it_works_with()
+        {
+            Assert.Equal("layoutProvider", Assert.Throws<ArgumentNullException>(() => new KeyboardLayoutTranslator(null)).ParamName);
+            Assert.Equal("isRightAltDown", Assert.Throws<ArgumentNullException>(() => new KeyboardLayoutTranslator(() => IntPtr.Zero, null)).ParamName);
         }
 
         static string Translate(Keys key, bool shift, bool altGr, LoadedLayout layout)
@@ -195,13 +316,11 @@ namespace Carnac.Tests
         sealed class LoadedLayout : IDisposable
         {
             const uint DoNotTellShell = 0x80;
+            const uint SpaceKey = 0x20;
 
-            readonly bool loadedByThisTest;
-
-            LoadedLayout(IntPtr handle, bool loadedByThisTest)
+            LoadedLayout(IntPtr handle)
             {
                 Handle = handle;
-                this.loadedByThisTest = loadedByThisTest;
             }
 
             public IntPtr Handle { get; private set; }
@@ -212,31 +331,38 @@ namespace Carnac.Tests
                 if (!KeyboardLayoutTranslator.IsSupported)
                     return null;
 
-                var installed = new IntPtr[256];
-                var installedCount = GetKeyboardLayoutList(installed.Length, installed);
-
+                // Not unloaded afterwards: the list of layouts is shared with the other programs of the session, and the
+                // layout goes away by itself when the last program that uses it ends.
                 var handle = LoadKeyboardLayout(layoutId, DoNotTellShell);
-                if (handle == IntPtr.Zero)
-                    return null;
+                return handle == IntPtr.Zero ? null : new LoadedLayout(handle);
+            }
 
-                return new LoadedLayout(handle, !installed.Take(installedCount).Contains(handle));
+            // What an application does when the user types a dead key: ToUnicodeEx without the "do not change" flag
+            public static void TypeDeadKey(IntPtr layout, Keys deadKey)
+            {
+                var text = new char[8];
+                ToUnicodeEx((uint)deadKey, MapVirtualKeyEx((uint)deadKey, 0, layout), new byte[256], text, text.Length, 0, layout);
+            }
+
+            // ... and the space that follows uses the pending accent up
+            public static void ClearPendingDeadKey(IntPtr layout)
+            {
+                var text = new char[8];
+                ToUnicodeEx(SpaceKey, MapVirtualKeyEx(SpaceKey, 0, layout), new byte[256], text, text.Length, 0, layout);
             }
 
             public void Dispose()
             {
-                if (loadedByThisTest)
-                    UnloadKeyboardLayout(Handle);
             }
 
             [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
             static extern IntPtr LoadKeyboardLayout(string layoutId, uint flags);
 
-            [DllImport("user32.dll", SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            static extern bool UnloadKeyboardLayout(IntPtr layout);
-
             [DllImport("user32.dll")]
-            static extern int GetKeyboardLayoutList(int size, [Out] IntPtr[] layouts);
+            static extern uint MapVirtualKeyEx(uint code, uint mapType, IntPtr layout);
+
+            [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+            static extern int ToUnicodeEx(uint virtualKey, uint scanCode, byte[] keyState, [Out] char[] buffer, int bufferSize, uint flags, IntPtr layout);
         }
     }
 
@@ -292,15 +418,16 @@ namespace Carnac.Tests
         }
 
         [Fact]
-        public async Task shortcuts_name_punctuation_by_the_layout_but_letters_by_their_latin_name()
+        public async Task shortcuts_name_punctuation_by_the_layout_but_letters_and_digits_by_their_latin_name()
         {
             layout.Set(Keys.Oem1, false, false, "ü");
             layout.Set(Keys.L, false, false, "д");
-            layout.Set(Keys.L, true, false, "Д");
+            layout.Set(Keys.D1, false, false, "&");
 
             Assert.Equal(new[] { "Ctrl", "ü" }, await Input(Press(Keys.Oem1, control: true)));
             Assert.Equal(new[] { "Ctrl", "Shift", "ü" }, await Input(Press(Keys.Oem1, control: true, shift: true)));
             Assert.Equal(new[] { "Alt", "L" }, await Input(Press(Keys.L, alt: true)));
+            Assert.Equal(new[] { "Ctrl", "1" }, await Input(Press(Keys.D1, control: true)));
         }
 
         [Fact]
@@ -312,21 +439,45 @@ namespace Carnac.Tests
         }
 
         [Fact]
-        public async Task ctrl_alt_is_a_shortcut_when_the_layout_has_no_altgr_character()
+        public async Task a_character_typed_with_altgr_is_text_that_merges_with_the_text_around_it()
+        {
+            layout.Set(Keys.Q, false, true, "@");
+            var keys = new KeyPlayer();
+            keys.AddRange(Press(Keys.A));
+            keys.AddRange(Press(Keys.Q, control: true, alt: true));
+            keys.AddRange(Press(Keys.B));
+
+            var keyPresses = await new KeyProvider(keys, passwordModeService, desktopLockEventService, settingsProvider, layout).GetKeyStream().ToList();
+            Assert.NotEmpty(keyPresses);
+            var process = new ProcessInfo("FakeProcess");
+            var messages = keyPresses.Select(k => new Message(new KeyPress(process, k.InterceptKeyEventArgs, false, k.Input))).ToList();
+
+            Assert.False(keyPresses[1].HasModifierPressed);
+            Assert.True(messages[1].CanBeMerged);
+            Assert.False(messages[1].IsModifier);
+            var text = messages.Aggregate((merged, next) => merged.Merge(next));
+            Assert.Equal("a@b", string.Join(string.Empty, text.Text));
+        }
+
+        [Fact]
+        public async Task ctrl_and_alt_are_a_shortcut_when_the_layout_has_no_altgr_character()
         {
             Assert.Equal(new[] { "Ctrl", "Alt", "Q" }, await Input(Press(Keys.Q, control: true, alt: true)));
         }
 
         [Fact]
-        public async Task the_layout_is_not_consulted_for_the_windows_key()
+        public async Task win_and_a_punctuation_key_are_named_by_the_layout()
         {
+            layout.Set(Keys.Oem1, false, false, "ü");
+            layout.Set(Keys.D7, true, false, "/");
+            layout.Set(Keys.D1, false, false, "&");
             layout.Set(Keys.E, false, false, "x");
-            var player = KeyStreams.WinkeyE();
-            var provider = new KeyProvider(player, passwordModeService, desktopLockEventService, settingsProvider, layout);
 
-            var keyPress = (await provider.GetKeyStream().ToList()).Single();
-
-            Assert.Equal(new[] { "Win", "e" }, keyPress.Input);
+            Assert.Equal(new[] { "Win", "ü" }, await Input(WinPress(Keys.Oem1)));
+            Assert.Equal(new[] { "Win", "/" }, await Input(WinPress(Keys.D7, shift: true)));
+            // the digit and the letter are named as in the shortcut lists
+            Assert.Equal(new[] { "Win", "1" }, await Input(WinPress(Keys.D1)));
+            Assert.Equal(new[] { "Win", "e" }, await Input(WinPress(Keys.E)));
         }
 
         [Fact]
@@ -356,24 +507,32 @@ namespace Carnac.Tests
             };
         }
 
+        static KeyPlayer WinPress(Keys key, bool shift = false)
+        {
+            var keys = new KeyPlayer { new InterceptKeyEventArgs(Keys.LWin, KeyDirection.Down, false, false, false) };
+            keys.AddRange(Press(key, shift));
+            keys.Add(new InterceptKeyEventArgs(Keys.LWin, KeyDirection.Up, false, false, false));
+            return keys;
+        }
+
         class FakeKeyboardLayoutTranslator : IKeyboardLayoutTranslator
         {
             readonly Dictionary<string, string> texts = new Dictionary<string, string>();
 
-            public void Set(Keys key, bool shift, bool altGr, string text)
+            public void Set(Keys key, bool shift, bool controlAlt, string text)
             {
-                texts[Name(key, shift, altGr)] = text;
+                texts[Name(key, shift, controlAlt)] = text;
             }
 
-            public string GetText(Keys key, bool shift, bool altGr)
+            public string GetText(Keys key, bool shift, bool controlAlt)
             {
                 string text;
-                return texts.TryGetValue(Name(key, shift, altGr), out text) ? text : null;
+                return texts.TryGetValue(Name(key, shift, controlAlt), out text) ? text : null;
             }
 
-            static string Name(Keys key, bool shift, bool altGr)
+            static string Name(Keys key, bool shift, bool controlAlt)
             {
-                return key + "|" + shift + "|" + altGr;
+                return key + "|" + shift + "|" + controlAlt;
             }
         }
     }

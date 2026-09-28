@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -11,8 +12,10 @@ namespace Carnac.Logic
     /// <remarks>
     /// This runs inside the low-level keyboard hook, so it must never disturb what the user is typing:
     /// ToUnicodeEx normally changes the kernel's dead-key state, which would swallow or alter accents typed in
-    /// other applications. The "do not change the keyboard state" flag avoids that, but only exists from
+    /// other applications. The "do not change keyboard state" flag avoids that, but only exists from
     /// Windows 10 version 1607; on older systems nothing is translated and the US names are used.
+    /// The flag stops Carnac from changing the state, not from seeing it: when a dead key was typed in the
+    /// application just before, the translation of the next key includes the accent, as it does for the application.
     /// </remarks>
     public class KeyboardLayoutTranslator : IKeyboardLayoutTranslator
     {
@@ -31,22 +34,41 @@ namespace Carnac.Logic
 
         static readonly bool isSupported = IsWindows10Version1607OrLater();
 
+        // the hook calls from one thread, so the buffers of a call can be reused by the next one
+        [ThreadStatic]
+        static byte[] keyStateBuffer;
+        [ThreadStatic]
+        static char[] textBuffer;
+
         readonly Func<IntPtr> layoutProvider;
+        readonly Func<bool> isRightAltDown;
 
         /// <summary>Translates with the layout of the window that has the focus.</summary>
         public KeyboardLayoutTranslator()
-            : this(GetForegroundWindowLayout)
+            : this(GetFocusedWindowLayout)
         {
         }
 
         public KeyboardLayoutTranslator(Func<IntPtr> layoutProvider)
+            : this(layoutProvider, IsRightAltPhysicallyDown)
+        {
+        }
+
+        /// <param name="layoutProvider">The layout to translate with, or <see cref="IntPtr.Zero"/> when it is not known.</param>
+        /// <param name="isRightAltDown">Whether the right Alt key is down, which is what makes Ctrl+Alt AltGr.</param>
+        public KeyboardLayoutTranslator(Func<IntPtr> layoutProvider, Func<bool> isRightAltDown)
         {
             if (layoutProvider == null)
             {
                 throw new ArgumentNullException("layoutProvider");
             }
+            if (isRightAltDown == null)
+            {
+                throw new ArgumentNullException("isRightAltDown");
+            }
 
             this.layoutProvider = layoutProvider;
+            this.isRightAltDown = isRightAltDown;
         }
 
         public static bool IsSupported
@@ -63,10 +85,15 @@ namespace Carnac.Logic
                 || (code >= 186 && code <= 192)     // VK_OEM_1 .. VK_OEM_3: ; = , - . / `  (on a US layout)
                 || (code >= 219 && code <= 223)     // VK_OEM_4 .. VK_OEM_8: [ \ ] '  (on a US layout)
                 || code == 226                      // VK_OEM_102
+                || code == 193 || code == 194       // VK_ABNT_C1, VK_ABNT_C2: the extra keys of Brazilian keyboards
                 || key == Keys.Decimal;
         }
 
-        public string GetText(Keys key, bool shift, bool altGr)
+        /// <param name="controlAlt">
+        /// Ctrl and Alt are both down. That is how Windows reports AltGr, and also what a Ctrl+Alt shortcut is, so it
+        /// counts as AltGr when the right Alt key is down.
+        /// </param>
+        public string GetText(Keys key, bool shift, bool controlAlt)
         {
             if (!isSupported || !IsCharacterKey(key))
             {
@@ -75,7 +102,13 @@ namespace Carnac.Logic
 
             try
             {
-                return Translate(key, shift, altGr, layoutProvider());
+                if (controlAlt && !isRightAltDown())
+                {
+                    return null;
+                }
+
+                var layout = layoutProvider();
+                return layout == IntPtr.Zero ? null : Translate(key, shift, controlAlt, layout);
             }
             catch (Exception)
             {
@@ -84,7 +117,7 @@ namespace Carnac.Logic
             }
         }
 
-        /// <summary>Translates with an explicit layout. Also usable directly by callers that hold a layout handle.</summary>
+        /// <summary>Translates with an explicit layout.</summary>
         public static string Translate(Keys key, bool shift, bool altGr, IntPtr layout)
         {
             if (!isSupported || !IsCharacterKey(key))
@@ -97,7 +130,8 @@ namespace Carnac.Logic
 
             // Not GetKeyboardState: inside a low-level hook it does not reflect the key being processed.
             // CapsLock is left out on purpose, Carnac has always ignored it.
-            var keyState = new byte[256];
+            var keyState = keyStateBuffer ?? (keyStateBuffer = new byte[256]);
+            Array.Clear(keyState, 0, keyState.Length);
             if (shift)
             {
                 keyState[VkShift] = KeyDown;
@@ -111,7 +145,7 @@ namespace Carnac.Logic
                 keyState[VkRMenu] = KeyDown;
             }
 
-            var buffer = new char[8];
+            var buffer = textBuffer ?? (textBuffer = new char[8]);
             var count = ToUnicodeEx(virtualKey, scanCode, keyState, buffer, buffer.Length, DoNotChangeKeyboardState, layout);
 
             // 0: no translation. Negative: a dead key, whose accent is in the buffer.
@@ -121,22 +155,53 @@ namespace Carnac.Logic
                 return null;
             }
 
-            if (char.IsControl(buffer[0]))
-            {
-                return null;
-            }
-
-            return new string(buffer, 0, length);
+            var text = new string(buffer, 0, length);
+            return IsVisible(text) ? text : null;
         }
 
-        static IntPtr GetForegroundWindowLayout()
+        // Some layouts type control characters, joiners, direction marks or a no-break space on a key: nothing to show
+        static bool IsVisible(string text)
         {
-            var foregroundWindow = GetForegroundWindow();
-            uint processId;
-            var threadId = foregroundWindow == IntPtr.Zero ? 0 : GetWindowThreadProcessId(foregroundWindow, out processId);
+            foreach (var character in text)
+            {
+                switch (CharUnicodeInfo.GetUnicodeCategory(character))
+                {
+                    case UnicodeCategory.Control:
+                    case UnicodeCategory.Format:
+                    case UnicodeCategory.SpaceSeparator:
+                    case UnicodeCategory.LineSeparator:
+                    case UnicodeCategory.ParagraphSeparator:
+                        return false;
+                }
+            }
 
-            // thread 0 is the calling thread
-            return GetKeyboardLayout(threadId);
+            return true;
+        }
+
+        // The layout belongs to the thread that has the focus, which is not always the thread of the foreground window
+        // (a child window of another thread). Without a window there is no layout to name keys with.
+        public static IntPtr GetFocusedWindowLayout()
+        {
+            var info = new GuiThreadInfo { Size = (uint)Marshal.SizeOf(typeof(GuiThreadInfo)) };
+            if (!GetGUIThreadInfo(0, ref info))
+            {
+                return IntPtr.Zero;
+            }
+
+            var window = info.FocusWindow != IntPtr.Zero ? info.FocusWindow : info.ActiveWindow;
+            if (window == IntPtr.Zero)
+            {
+                return IntPtr.Zero;
+            }
+
+            uint processId;
+            var threadId = GetWindowThreadProcessId(window, out processId);
+            return threadId == 0 ? IntPtr.Zero : GetKeyboardLayout(threadId);
+        }
+
+        static bool IsRightAltPhysicallyDown()
+        {
+            return (GetAsyncKeyState(VkRMenu) & 0x8000) != 0;
         }
 
         static bool IsWindows10Version1607OrLater()
@@ -170,11 +235,29 @@ namespace Carnac.Logic
             public string ServicePack;
         }
 
+        // GUITHREADINFO
+        [StructLayout(LayoutKind.Sequential)]
+        struct GuiThreadInfo
+        {
+            public uint Size;
+            public uint Flags;
+            public IntPtr ActiveWindow;
+            public IntPtr FocusWindow;
+            public IntPtr CaptureWindow;
+            public IntPtr MenuOwnerWindow;
+            public IntPtr MoveSizeWindow;
+            public IntPtr CaretWindow;
+            public int CaretLeft;
+            public int CaretTop;
+            public int CaretRight;
+            public int CaretBottom;
+        }
+
         [DllImport("ntdll.dll")]
         static extern int RtlGetVersion(ref OsVersionInfo versionInfo);
 
         [DllImport("user32.dll")]
-        static extern IntPtr GetForegroundWindow();
+        static extern bool GetGUIThreadInfo(uint threadId, ref GuiThreadInfo info);
 
         [DllImport("user32.dll")]
         static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
@@ -184,6 +267,9 @@ namespace Carnac.Logic
 
         [DllImport("user32.dll")]
         static extern uint MapVirtualKeyEx(uint code, uint mapType, IntPtr layout);
+
+        [DllImport("user32.dll")]
+        static extern short GetAsyncKeyState(int virtualKey);
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         static extern int ToUnicodeEx(uint virtualKey, uint scanCode, byte[] keyState, [Out] char[] buffer, int bufferSize, uint flags, IntPtr layout);
