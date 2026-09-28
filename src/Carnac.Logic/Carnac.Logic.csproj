@@ -119,6 +119,7 @@
     <Compile Include="ShortcutProvider.cs" />
     <Compile Include="SpecialKeys.cs" />
     <Compile Include="Win32Methods.cs" />
+    <Compile Include="WindowBoundsClamper.cs" />
     <Compile Include="Native\DetailedScreen.cs" />
     <Compile Include="Native\DEVMODE.cs" />
     <Compile Include="Native\DisplayDeviceStateFlags.cs" />

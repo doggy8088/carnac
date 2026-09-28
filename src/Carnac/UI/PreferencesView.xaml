@@ -12,6 +12,7 @@
                       d:DataContext="{d:DesignInstance ui:PreferencesViewModel}" mc:Ignorable="d"
                       ShowTitleBar="False" ShowMinButton="False" ShowMaxRestoreButton="False"
                       SaveWindowPosition="True" utilities:DesignTimeHelper.Background="Black"
+                      MouseLeftButtonDown="OnMouseLeftButtonDown"
                       Name="PreferencesViewWindow">
     <Window.Resources>
         <ResourceDictionary>
@@ -279,6 +280,7 @@
                 </Grid>
             </TabItem>
             <TabItem Header="About">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                 <StackPanel Margin="20,40,0,0" Orientation="Horizontal">
                     <StackPanel Width="340">
                         <TextBlock Margin="0,-7,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom"
@@ -309,6 +311,7 @@
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
     </Grid>
