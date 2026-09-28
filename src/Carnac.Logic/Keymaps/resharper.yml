@@ -140,7 +140,7 @@ shortcuts:
 
     - name:      Go to previous edit
       keys:
-      - Ctrl+Shift+Backspace
+      - Ctrl+Shift+Back
 
     - name:      Go to related files
       keys:
@@ -152,11 +152,29 @@ shortcuts:
 
     - name:      Go to bookmark
       keys:
-      - Ctrl+[numeric+key]
+      - Ctrl+0
+      - Ctrl+1
+      - Ctrl+2
+      - Ctrl+3
+      - Ctrl+4
+      - Ctrl+5
+      - Ctrl+6
+      - Ctrl+7
+      - Ctrl+8
+      - Ctrl+9
 
     - name:      Set/remove bookmark
       keys:
-      - Ctrl+Shift+[numeric+key]
+      - Ctrl+Shift+0
+      - Ctrl+Shift+1
+      - Ctrl+Shift+2
+      - Ctrl+Shift+3
+      - Ctrl+Shift+4
+      - Ctrl+Shift+5
+      - Ctrl+Shift+6
+      - Ctrl+Shift+7
+      - Ctrl+Shift+8
+      - Ctrl+Shift+9
 
     - name:      Go to type
       keys:
@@ -320,4 +338,4 @@ shortcuts:
 
     - name:      Activate recent tool
       keys:
-      - Ctrl+Alt+Backspace
+      - Ctrl+Alt+Back
