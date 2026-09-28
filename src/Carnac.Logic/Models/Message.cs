@@ -210,7 +210,7 @@ namespace Carnac.Logic.Models
 
                 // the numpad operators are padded with spaces (" + ") to read well in a sentence
                 var text = input[0] == " " ? input[0] : input[0].Trim();
-                if (text.Length == 0 || new StringInfo(text).LengthInTextElements != 1)
+                if (text.Length == 0 || (text.Length > 1 && new StringInfo(text).LengthInTextElements != 1))
                     return null;
 
                 var isTypedCharacter = text == " "
@@ -230,7 +230,9 @@ namespace Carnac.Logic.Models
 
             public bool IsRepeatedBy(KeyPress nextKeyPress)
             {
-                return textParts.SequenceEqual(nextKeyPress.GetTextParts());
+                // the modifier state decides how a run is summarised, so a run must not mix the two
+                return keyPress.HasModifierPressed == nextKeyPress.HasModifierPressed
+                    && textParts.SequenceEqual(nextKeyPress.GetTextParts());
             }
 
             public IEnumerable<string> GetTextParts()

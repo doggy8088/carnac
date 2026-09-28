@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
@@ -189,7 +190,7 @@ namespace Carnac.Tests
 
             // act
             var processedKeys = await provider.GetKeyStream().ToList();
-            var message = processedKeys.Select(k => new Message(k)).Aggregate((merged, next) => merged.Merge(next));
+            var message = MergeIntoOneMessage(processedKeys);
 
             // assert
             Assert.Equal("10000 +  + 55", string.Join(string.Empty, message.Text));
@@ -209,12 +210,22 @@ namespace Carnac.Tests
 
             // act
             var processedKeys = await provider.GetKeyStream().ToList();
-            var first3 = processedKeys.Take(3).Select(k => new Message(k)).Aggregate((merged, next) => merged.Merge(next));
-            var all = processedKeys.Select(k => new Message(k)).Aggregate((merged, next) => merged.Merge(next));
+            var first3 = MergeIntoOneMessage(processedKeys.Take(3));
+            var all = MergeIntoOneMessage(processedKeys);
 
             // assert
             Assert.Equal("!!!", string.Join(string.Empty, first3.Text));
             Assert.Equal("! x 5 ", string.Join(string.Empty, all.Text));
+        }
+
+        // The provider reads the live foreground window, so pin the process to keep the messages mergeable
+        // whatever has the focus while the tests run.
+        static Message MergeIntoOneMessage(IEnumerable<KeyPress> keyPresses)
+        {
+            var process = new ProcessInfo("FakeProcess");
+            return keyPresses
+                .Select(k => new Message(new KeyPress(process, k.InterceptKeyEventArgs, false, k.Input)))
+                .Aggregate((merged, next) => merged.Merge(next));
         }
     }
 }
