@@ -304,6 +304,7 @@ namespace Carnac.Tests
 
             using (Subscribe(scheduler: scheduler))
             {
+                scheduler.Start();
                 mouse.Click(1, 1, MouseButtons.Left);
 
                 // the hook has what it needs and is free to go on; nothing was placed or made yet
@@ -314,6 +315,24 @@ namespace Carnac.Tests
                 Assert.Equal(1, placed);
                 Assert.Equal(1, highlights.Count);
             }
+        }
+
+        [Fact]
+        public void the_mouse_is_hooked_and_unhooked_on_the_scheduler_that_handles_messages()
+        {
+            var scheduler = new TestScheduler();
+
+            var subscription = Subscribe(scheduler: scheduler);
+            Assert.Equal(0, mouse.TotalSubscriptions);
+
+            scheduler.Start();
+            Assert.Equal(1, mouse.ActiveSubscriptions);
+
+            subscription.Dispose();
+            Assert.Equal(1, mouse.ActiveSubscriptions);
+
+            scheduler.Start();
+            Assert.Equal(0, mouse.ActiveSubscriptions);
         }
 
         [Fact]

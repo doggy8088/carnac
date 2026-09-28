@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using Carnac.Logic;
@@ -43,16 +45,19 @@ namespace Carnac.UI
                 AvailableColors.Add(availableColor);
             }
 
-            // the mouse colours are the ones in the settings, also after they were reset to their defaults
-            Settings.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName == "LeftClickColor" || e.PropertyName == "MiddleClickColor" || e.PropertyName == "RightClickColor")
-                    OnPropertyChanged(e.PropertyName);
-            };
+            // The mouse colors are the ones in the settings, also after they were reset to their defaults. Weak, because
+            // the settings live as long as the application and this view model as long as the Preferences window.
+            WeakEventManager<PopupSettings, PropertyChangedEventArgs>.AddHandler(Settings, "PropertyChanged", OnSettingsPropertyChanged);
 
             SaveCommand = new DelegateCommand(SaveSettings);
             ResetToDefaultsCommand = new DelegateCommand(() => settingsProvider.ResetToDefaults<PopupSettings>());
             VisitCommand = new DelegateCommand(Visit);
+        }
+
+        void OnSettingsPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "LeftClickColor" || e.PropertyName == "MiddleClickColor" || e.PropertyName == "RightClickColor")
+                OnPropertyChanged(e.PropertyName);
         }
 
         public ICommand VisitCommand { get; private set; }

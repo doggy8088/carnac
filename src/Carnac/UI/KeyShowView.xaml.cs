@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
@@ -23,7 +24,7 @@ namespace Carnac.UI
             Loaded += (sender, e) =>
             {
                 if (clickHighlights.Disposable == null)
-                    clickHighlights.Disposable = highlighter.GetHighlightStream().Subscribe(ShowClickRing, exception => { });
+                    clickHighlights.Disposable = highlighter.GetHighlightStream().Subscribe(ShowClickRing, exception => Debug.WriteLine("The click highlight has ended: " + exception));
             };
             Closed += (sender, e) => clickHighlights.Dispose();
         }

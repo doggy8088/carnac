@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Windows.Forms;
@@ -60,11 +61,18 @@ namespace Carnac.Logic
             });
         }
 
-        // A mouse that cannot be listened to only means there is nothing to highlight
+        // A hook only gets its calls on a thread that handles messages, so it is installed (and removed again) on the
+        // thread of the scheduler, whichever thread switches the setting. A mouse that cannot be listened to only means
+        // there is nothing to highlight.
         IObservable<MouseClick> GetClicks()
         {
             return interceptMouse.GetClickStream()
-                .Catch<MouseClick, Exception>(exception => Observable.Never<MouseClick>())
+                .SubscribeOn(scheduler)
+                .Catch<MouseClick, Exception>(exception =>
+                {
+                    Debug.WriteLine("Carnac cannot listen to the mouse: " + exception.Message);
+                    return Observable.Never<MouseClick>();
+                })
                 .ObserveOn(scheduler);
         }
 

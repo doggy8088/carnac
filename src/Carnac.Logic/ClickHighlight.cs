@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Media;
 
@@ -64,17 +66,15 @@ namespace Carnac.Logic
             return TimeSpan.FromMilliseconds(Math.Max(MinimumDurationMilliseconds, Math.Min(MaximumDurationMilliseconds, milliseconds)));
         }
 
-        /// <summary>The name of the color if it is one of the <see cref="Colors"/>, otherwise the fallback.</summary>
+        static readonly Dictionary<string, string> ColorNames = typeof(Colors)
+            .GetProperties(BindingFlags.Static | BindingFlags.Public)
+            .ToDictionary(color => color.Name, color => color.Name, StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>The name of the color if it is one of the <see cref="Colors"/> (in any casing), otherwise the fallback.</summary>
         public static string GetColorName(string colorName, string fallback)
         {
-            if (!string.IsNullOrEmpty(colorName))
-            {
-                var color = typeof(Colors).GetProperty(colorName, BindingFlags.Static | BindingFlags.Public | BindingFlags.IgnoreCase);
-                if (color != null)
-                    return color.Name;
-            }
-
-            return fallback;
+            string name;
+            return colorName != null && ColorNames.TryGetValue(colorName, out name) ? name : fallback;
         }
     }
 }
