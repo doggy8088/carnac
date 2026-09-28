@@ -55,7 +55,8 @@ namespace Carnac.Tests
         public void keys_are_labelled_as_on_the_keyboard()
         {
             Assert.Equal("ScrollLock", Keys.Scroll.Sanitise());
-            Assert.Equal("Menu", Keys.Apps.Sanitise());
+            Assert.Equal("Break", Keys.Cancel.Sanitise());
+            Assert.Equal("ContextMenu", Keys.Apps.Sanitise());
         }
 
         [Fact]
@@ -67,6 +68,10 @@ namespace Carnac.Tests
             Assert.Equal(Keys.PrintScreen, ReplaceKey.ToKey("PrintScreen"));
             Assert.Equal(Keys.Capital, ReplaceKey.ToKey("Capital"));
             Assert.Equal(Keys.Return, ReplaceKey.ToKey("Return"));
+            Assert.Equal(Keys.Cancel, ReplaceKey.ToKey("Break"));
+            Assert.Equal(Keys.Apps, ReplaceKey.ToKey("ContextMenu"));
+            // "Menu" is the Alt key (VK_MENU); the context-menu key must not take its name
+            Assert.Equal(Keys.Menu, ReplaceKey.ToKey("Menu"));
         }
 
         [Fact]
@@ -81,16 +86,32 @@ namespace Carnac.Tests
         [Fact]
         public void space_in_a_shortcut_is_drawn_as_a_key_cap()
         {
+            // Ctrl+Space, and Shift+Space (HasModifierPressed does not cover Shift)
+            foreach (var modifier in new[] { "Ctrl", "Shift" })
+            {
+                var keyPress = new KeyPress(
+                    new ProcessInfo("FakeProcess"),
+                    new InterceptKeyEventArgs(Keys.Space, KeyDirection.Down, false, modifier == "Ctrl", modifier == "Shift"),
+                    false,
+                    new[] { modifier, " " });
+
+                var textParts = keyPress.GetTextParts().ToArray();
+
+                Assert.Equal(new[] { modifier, " + ", "Space" }, textParts);
+                Assert.True(SpecialKeys.IsSpecialKey(textParts[2]));
+            }
+        }
+
+        [Fact]
+        public void a_typed_space_is_not_a_key_cap()
+        {
             var keyPress = new KeyPress(
                 new ProcessInfo("FakeProcess"),
-                new InterceptKeyEventArgs(Keys.Space, KeyDirection.Down, false, true, false),
+                new InterceptKeyEventArgs(Keys.Space, KeyDirection.Down, false, false, false),
                 false,
-                new[] { "Ctrl", " " });
+                new[] { " " });
 
-            var textParts = keyPress.GetTextParts().ToArray();
-
-            Assert.Equal(new[] { "Ctrl", " + ", "Space" }, textParts);
-            Assert.True(SpecialKeys.IsSpecialKey(textParts[2]));
+            Assert.Equal(new[] { " " }, keyPress.GetTextParts().ToArray());
             Assert.False(SpecialKeys.IsSpecialKey(" "));
         }
 

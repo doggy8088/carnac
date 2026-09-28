@@ -32,6 +32,8 @@ namespace Carnac.Logic.Models
 
         public IEnumerable<string> GetTextParts()
         {
+            // Shift+Space has more than one input but HasModifierPressed does not cover Shift
+            var isShortcut = HasModifierPressed || Input.Count() > 1;
             var isFirst = true;
             foreach (var text in Input)
             {
@@ -43,7 +45,7 @@ namespace Carnac.Logic.Models
                 {
                     isFirst = false;
                 }
-                yield return Format(text, HasModifierPressed);
+                yield return Format(text, isShortcut);
             }
         }
         

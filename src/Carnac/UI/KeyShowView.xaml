@@ -160,6 +160,7 @@
                                         </MultiDataTrigger.Conditions>
                                         <Setter TargetName="regular" Property="Control.MinWidth" Value="10"/>
                                     </MultiDataTrigger>
+                                    <!-- Return and Win are drawn differently, so they are not in SpecialKeys -->
                                     <DataTrigger Value="Return" Binding="{Binding .}">
                                         <Setter TargetName="KeyCapBorder" Property="Control.Visibility" Value="Visible" />
                                         <Setter TargetName="KeyCap" Property="Text" Value="↵" />
