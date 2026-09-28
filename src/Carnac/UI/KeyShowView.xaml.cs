@@ -4,15 +4,47 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Interop;
 using Carnac.Logic;
+using Carnac.Logic.MouseMonitor;
 
 namespace Carnac.UI
 {
     public partial class KeyShowView
     {
+        IDisposable clickHighlights;
+
         public KeyShowView(KeyShowViewModel keyShowViewModel)
+            : this(keyShowViewModel, new InterceptMouse())
+        {
+        }
+
+        public KeyShowView(KeyShowViewModel keyShowViewModel, IInterceptMouse interceptMouse)
         {
             DataContext = keyShowViewModel;
             InitializeComponent();
+
+            var highlighter = new MouseClickHighlighter(interceptMouse, keyShowViewModel.Settings, ToOverlayLocation);
+            Loaded += (sender, e) =>
+            {
+                if (clickHighlights == null)
+                    clickHighlights = highlighter.GetHighlightStream().Subscribe(highlight => ClickRing.Show(ClickLayer, highlight));
+            };
+            Closed += (sender, e) =>
+            {
+                if (clickHighlights != null)
+                    clickHighlights.Dispose();
+                clickHighlights = null;
+            };
+        }
+
+        // The overlay covers the monitor that was picked in the preferences: clicks elsewhere are not highlighted
+        OverlayLocation ToOverlayLocation(MouseClick click)
+        {
+            if (PresentationSource.FromVisual(ClickLayer) == null)
+                return null;
+
+            var location = ClickLayer.PointFromScreen(new Point(click.X, click.Y));
+            var isOnOverlay = location.X >= 0 && location.Y >= 0 && location.X < ClickLayer.ActualWidth && location.Y < ClickLayer.ActualHeight;
+            return isOnOverlay ? new OverlayLocation(location.X, location.Y) : null;
         }
 
         protected override void OnSourceInitialized(EventArgs e)

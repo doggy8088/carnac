@@ -39,6 +39,12 @@ namespace Carnac.UI
                     FontColor = availableColor;
                 if (Settings.ItemBackgroundColor == name)
                     ItemBackgroundColor = availableColor;
+                if (Settings.LeftClickColor == name)
+                    LeftClickColor = availableColor;
+                if (Settings.MiddleClickColor == name)
+                    MiddleClickColor = availableColor;
+                if (Settings.RightClickColor == name)
+                    RightClickColor = availableColor;
 
                 AvailableColors.Add(availableColor);
             }
@@ -101,6 +107,12 @@ namespace Carnac.UI
 
         public AvailableColor ItemBackgroundColor { get; set; }
 
+        public AvailableColor LeftClickColor { get; set; }
+
+        public AvailableColor MiddleClickColor { get; set; }
+
+        public AvailableColor RightClickColor { get; set; }
+
         void Visit()
         {
             try
@@ -139,6 +151,12 @@ namespace Carnac.UI
             Settings.SettingsConfigured = true;
             Settings.FontColor = FontColor.Name;
             Settings.ItemBackgroundColor = ItemBackgroundColor.Name;
+            if (LeftClickColor != null)
+                Settings.LeftClickColor = LeftClickColor.Name;
+            if (MiddleClickColor != null)
+                Settings.MiddleClickColor = MiddleClickColor.Name;
+            if (RightClickColor != null)
+                Settings.RightClickColor = RightClickColor.Name;
             settingsProvider.SaveSettings(Settings);
         }
 

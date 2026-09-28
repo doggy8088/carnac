@@ -113,6 +113,11 @@
     <Compile Include="Native\DisplayDeviceStateFlags.cs" />
     <Compile Include="Native\DISPLAY_DEVICE.cs" />
     <Compile Include="Native\POINTL.cs" />
+    <Compile Include="ClickHighlight.cs" />
+    <Compile Include="MouseClickHighlighter.cs" />
+    <Compile Include="MouseMonitor\IInterceptMouse.cs" />
+    <Compile Include="MouseMonitor\InterceptMouse.cs" />
+    <Compile Include="MouseMonitor\MouseClick.cs" />
     <Compile Include="NotifyProperty.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
