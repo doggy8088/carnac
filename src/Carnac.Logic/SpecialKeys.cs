@@ -5,7 +5,8 @@ namespace Carnac.Logic
 {
     /// <summary>
     /// The keys which are drawn as a key cap in the overlay instead of as plain text.
-    /// The names are the strings the key stream produces for these keys (see <see cref="ReplaceKey.Sanitise"/>).
+    /// The names are the strings the key stream produces for these keys (see <see cref="ReplaceKey.Sanitise"/>);
+    /// keys whose enum members share a value (CapsLock/Capital, PrintScreen/Snapshot, ...) are pinned there.
     /// </summary>
     public static class SpecialKeys
     {
@@ -18,7 +19,7 @@ namespace Carnac.Logic
                 "Alt", "Ctrl", "Shift",
                 "Back", "Escape", "Tab",
                 "Insert", "Delete", "Home", "End", "PageUp", "PageDown",
-                "Capital", "NumLock", "Scroll", "PrintScreen", "Pause", "Apps"
+                "CapsLock", "NumLock", "ScrollLock", "PrintScreen", "Pause", "Apps"
             };
 
             for (var i = 1; i <= 24; i++)

@@ -191,9 +191,9 @@
     </Compile>
     <Compile Include="UI\DelegateCommand.cs" />
     <Compile Include="UI\PreferencesField.cs" />
-    <Compile Include="UI\SpecialKeyConverter.cs" />
     <Compile Include="Utilities\DesignTimeHelper.cs" />
     <Compile Include="Utilities\ConcurrencyService.cs" />
+    <Compile Include="Utilities\SpecialKeyConverter.cs" />
     <Compile Include="UI\AvailableColor.cs" />
     <Compile Include="Utilities\ProcessUtilities.cs" />
     <Compile Include="UI\KeyShowViewModel.cs" />
