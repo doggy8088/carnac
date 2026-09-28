@@ -15,7 +15,8 @@ namespace Carnac.Tests
             return new KeyPress(new ProcessInfo(processName), args, win, ToInput(key, control, shift, alt, win));
         }
 
-        // Mirrors KeyProvider.ToInputs.
+        // Mirrors KeyProvider.ToInputs; KeyProviderTests.the_key_press_helper_builds_the_same_input_as_the_key_provider
+        // compares the two so that this copy cannot drift from production again.
         static IEnumerable<string> ToInput(Keys key, bool control, bool shift, bool alt, bool win)
         {
             var input = new List<string>();
@@ -36,7 +37,7 @@ namespace Carnac.Tests
 
             var isLetter = key >= Keys.A && key <= Keys.Z;
             string shifted;
-            var shiftModifiesInput = key.SanitiseShift(out shifted);
+            var shiftModifiesInput = key.SanitiseShift(out shifted) && key.ProducesCharacter();
             if (!isLetter && !shiftModifiesInput && shift)
                 input.Add("Shift");
 
