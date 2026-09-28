@@ -133,6 +133,40 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public async Task shift_insert_and_shift_delete_keep_the_shift()
+        {
+            Assert.Equal(new[] { "Shift", "Insert" }, await InputOf(ShiftPressedWith(Keys.Insert)));
+            Assert.Equal(new[] { "Shift", "Delete" }, await InputOf(ShiftPressedWith(Keys.Delete)));
+        }
+
+        [Fact]
+        public async Task insert_and_delete_without_shift_are_unchanged()
+        {
+            Assert.Equal(new[] { "Insert" }, await InputOf(KeyPressedAlone(Keys.Insert)));
+            Assert.Equal(new[] { "Delete" }, await InputOf(KeyPressedAlone(Keys.Delete)));
+        }
+
+        static KeyPlayer ShiftPressedWith(Keys key)
+        {
+            return new KeyPlayer
+            {
+                new InterceptKeyEventArgs(Keys.LShiftKey, KeyDirection.Down, false, false, false),
+                new InterceptKeyEventArgs(key, KeyDirection.Down, false, false, true),
+                new InterceptKeyEventArgs(key, KeyDirection.Up, false, false, true),
+                new InterceptKeyEventArgs(Keys.LShiftKey, KeyDirection.Up, false, false, true),
+            };
+        }
+
+        static KeyPlayer KeyPressedAlone(Keys key)
+        {
+            return new KeyPlayer
+            {
+                new InterceptKeyEventArgs(key, KeyDirection.Down, false, false, false),
+                new InterceptKeyEventArgs(key, KeyDirection.Up, false, false, false),
+            };
+        }
+
+        [Fact]
         public async Task windows_key_with_a_letter_is_shown_as_a_shortcut_with_a_capital_letter()
         {
             Assert.Equal(new[] { "Win", "Q" }, await InputOf(KeyStreams.Combination(Keys.Q, win: true)));

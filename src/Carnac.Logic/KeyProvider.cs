@@ -185,7 +185,10 @@ namespace Carnac.Logic
             else
             {
                 string input;
-                var shiftModifiesInput = interceptKeyEventArgs.Key.SanitiseShift(out input);
+                // Shift only turns a key into another character when the key types one. Shift+Insert and Shift+Delete
+                // are shortcuts: their Shift must stay visible (the "ins"/"del" shift entries are only keymap aliases).
+                var shiftModifiesInput = interceptKeyEventArgs.Key.SanitiseShift(out input)
+                    && interceptKeyEventArgs.Key.ProducesCharacter();
 
                 if (!isLetter && !shiftModifiesInput && shiftPressed)
                     yield return "Shift";
