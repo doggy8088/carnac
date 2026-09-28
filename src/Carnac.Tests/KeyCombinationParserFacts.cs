@@ -158,6 +158,16 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void physical_modifier_keys_are_rejected_because_they_can_never_match()
+        {
+            foreach (var name in new[] { "LControlKey", "RControlKey", "ControlKey", "LShiftKey", "RShiftKey", "ShiftKey", "LMenu", "RMenu", "Menu", "LWin", "RWin" })
+            {
+                Assert.Contains("modifier", ParseError(name));
+                Assert.Contains("modifier", ParseError("Ctrl+" + name));
+            }
+        }
+
+        [Fact]
         public void numbers_other_than_single_digits_are_not_key_codes()
         {
             // Enum parsing reads "112" as the key code of F1 and "1" as the left mouse button.
