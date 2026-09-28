@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Carnac.Logic.Native;
+using Carnac.Logic.Overlay;
 
 namespace Carnac.Logic
 {
@@ -16,9 +17,13 @@ namespace Carnac.Logic
 
         public IEnumerable<DetailedScreen> GetScreens()
         {
-            var screens = new List<DetailedScreen>();
+            return ScreenList.Build(GetDisplays(), GetMonitorBounds());
+        }
 
-            int index = 1;
+        static List<DisplayInfo> GetDisplays()
+        {
+            var displays = new List<DisplayInfo>();
+
             var d = new DISPLAY_DEVICE();
             d.cb = Marshal.SizeOf(d);
             try
@@ -36,46 +41,59 @@ namespace Carnac.Logic
                     if (string.IsNullOrEmpty(x.DeviceName) || string.IsNullOrEmpty(x.DeviceString))
                         continue;
 
-                    var screen = new DetailedScreen { FriendlyName = x.DeviceString, Index = index++ };
+                    var display = new DisplayInfo
+                    {
+                        DeviceName = d.DeviceName,
+                        MonitorName = x.DeviceString,
+                        IsPrimary = (d.StateFlags & DisplayDeviceStateFlags.PrimaryDevice) != 0
+                    };
 
                     var mode = new DEVMODE();
                     mode.dmSize = (ushort)Marshal.SizeOf(mode);
                     if (EnumDisplaySettings(d.DeviceName, -1, ref mode))
                     {
-                        screen.Width = (int)mode.dmPelsWidth;
-                        screen.Height = (int)mode.dmPelsHeight;
-                        screen.Top = mode.dmPosition.y;
-                        screen.Left = mode.dmPosition.x;
+                        display.Width = (int)mode.dmPelsWidth;
+                        display.Height = (int)mode.dmPelsHeight;
+                        display.Top = mode.dmPosition.y;
+                        display.Left = mode.dmPosition.x;
                     }
 
-                    // skip this value if it doesn't appear to be a valid screen
-                    if (screen.Width == 0 || screen.Height == 0)
-                    {
-                        continue;
-                    }
-
-                    screens.Add(screen);
+                    displays.Add(display);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //log this
+                Trace.TraceWarning("Carnac: could not enumerate all displays: {0}", ex);
             }
 
-            var biggestScreen = screens.OrderByDescending(s => s.Width).FirstOrDefault();
-            if (biggestScreen != null)
+            return displays;
+        }
+
+        /// <summary>
+        /// The monitor rectangles by device name, in the coordinate space of the window APIs of this process.
+        /// The display driver reports physical pixels, but a process that is not per-monitor DPI aware gets scaled
+        /// coordinates for monitors that do not have the scale factor of the system, and <c>SetWindowPos</c> expects those.
+        /// </summary>
+        static List<KeyValuePair<string, PixelRect>> GetMonitorBounds()
+        {
+            var bounds = new List<KeyValuePair<string, PixelRect>>();
+            try
             {
-                var maxWidth = biggestScreen.Width;
-                foreach (var s in screens)
+                foreach (var screen in System.Windows.Forms.Screen.AllScreens)
                 {
-                    s.RelativeWidth = 200 * (s.Width / maxWidth);
-                    s.RelativeHeight = s.RelativeWidth * (s.Height / s.Width);
+                    var rectangle = screen.Bounds;
+                    bounds.Add(new KeyValuePair<string, PixelRect>(
+                        screen.DeviceName,
+                        new PixelRect(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height)));
                 }
             }
+            catch (Exception ex)
+            {
+                // Without them the physical rectangles are used, which is right as long as all monitors scale alike.
+                Trace.TraceWarning("Carnac: could not read the monitor rectangles: {0}", ex);
+            }
 
-            screens = screens.OrderBy(s => s.Left).ToList();
-
-            return screens;
+            return bounds;
         }
     }
 }
