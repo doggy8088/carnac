@@ -381,6 +381,7 @@
   document.querySelectorAll('[data-keymap]').forEach(function (btn) {
     btn.setAttribute('aria-pressed', String(btn.getAttribute('data-keymap') === state.keymap));
     btn.addEventListener('click', function () {
+      autoplay.stop();
       state.keymap = btn.getAttribute('data-keymap');
       store.set('keymap', state.keymap);
       document.querySelectorAll('[data-keymap]').forEach(function (b) {

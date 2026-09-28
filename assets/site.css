@@ -133,7 +133,7 @@ h1 .grad { background: linear-gradient(100deg, #e9d5ff 0%, var(--accent) 45%, #f
 .hero-meta span::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: .8; }
 
 .try {
-  margin-top: clamp(40px, 7vw, 84px); max-width: 860px;
+  margin-top: clamp(40px, 7vw, 84px); max-width: 800px;
   display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px;
   padding: 14px 16px 14px 20px; border-radius: 16px;
   background: rgba(21, 17, 30, 0.72); border: 1px solid var(--line-2);
