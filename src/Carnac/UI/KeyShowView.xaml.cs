@@ -7,7 +7,7 @@ using Carnac.Logic.Overlay;
 
 namespace Carnac.UI
 {
-    public partial class KeyShowView : IOverlayWindow
+    public partial class KeyShowView : IOverlayWindow, IOverlayStyle
     {
         // How often the overlay is put back on top of other topmost windows.
         static readonly TimeSpan TopmostRefreshInterval = TimeSpan.FromSeconds(1);
@@ -18,6 +18,7 @@ namespace Carnac.UI
         IntPtr hwnd;
         DispatcherTimer topmostTimer;
         OverlayPlacementController placement;
+        OverlayStyleController styles;
 
         public KeyShowView(
             KeyShowViewModel keyShowViewModel,
@@ -36,6 +37,7 @@ namespace Carnac.UI
             DataContext = keyShowViewModel;
             ShowActivated = false;
             InitializeComponent();
+            Title = OverlayWindowStyles.WindowTitle;
         }
 
         double IOverlayWindow.DpiScale
@@ -55,24 +57,36 @@ namespace Carnac.UI
             return hwnd != IntPtr.Zero && Win32Methods.SetWindowRect(hwnd, bounds);
         }
 
+        void IOverlayStyle.SetCaptureFriendly(bool captureFriendly)
+        {
+            if (hwnd != IntPtr.Zero)
+                Win32Methods.ApplyOverlayWindowStyles(hwnd, captureFriendly);
+        }
+
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
 
             hwnd = new WindowInteropHelper(this).Handle;
-            Win32Methods.ApplyOverlayWindowStyles(hwnd);
+            var settings = ((KeyShowViewModel)DataContext).Settings;
+            styles = new OverlayStyleController(this, settings);
+            styles.Apply();
 
             topmostTimer = new DispatcherTimer { Interval = TopmostRefreshInterval };
             topmostTimer.Tick += TopmostTimerTick;
             topmostTimer.Start();
 
-            var settings = ((KeyShowViewModel)DataContext).Settings;
             placement = new OverlayPlacementController(this, screenManager, settings, displaySettingsMonitor, concurrencyService);
             placement.Apply();
         }
 
         protected override void OnClosed(EventArgs e)
         {
+            if (styles != null)
+            {
+                styles.Dispose();
+                styles = null;
+            }
             if (placement != null)
             {
                 placement.Dispose();

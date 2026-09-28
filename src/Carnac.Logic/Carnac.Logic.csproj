@@ -104,9 +104,11 @@
     <Compile Include="Models\PopupSettings.cs" />
     <Compile Include="NotifyPropertyChanged.cs" />
     <Compile Include="Overlay\IDisplaySettingsMonitor.cs" />
+    <Compile Include="Overlay\IOverlayStyle.cs" />
     <Compile Include="Overlay\IOverlayWindow.cs" />
     <Compile Include="Overlay\OverlayPlacement.cs" />
     <Compile Include="Overlay\OverlayPlacementController.cs" />
+    <Compile Include="Overlay\OverlayStyleController.cs" />
     <Compile Include="Overlay\OverlayWindowStyles.cs" />
     <Compile Include="Overlay\PixelRect.cs" />
     <Compile Include="Overlay\SystemEventsDisplaySettingsMonitor.cs" />

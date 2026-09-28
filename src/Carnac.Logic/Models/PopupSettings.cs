@@ -40,6 +40,13 @@ namespace Carnac.Logic.Models
         [DefaultValue(false)]
         public bool AutoUpdate { get; set; }
 
+        /// <summary>
+        /// Lists the overlay window in window lists so that capture tools such as OBS can select it
+        /// (a tool window, which is what the overlay is otherwise, is not listed).
+        /// </summary>
+        [DefaultValue(false)]
+        public bool CaptureFriendlyWindow { get; set; }
+
         [NotifyProperty(AlsoNotifyFor = new[] { "Margins" })]
         public int TopOffset { get; set; }
 

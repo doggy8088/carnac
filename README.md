@@ -44,6 +44,22 @@ The application will check for updates in the background, if a new version has b
 
 If you want to stop `Carnac` from recording certain key strokes, you can enter _silent mode_ by pressing `Ctrl+Alt+P`. To exit _silent mode_ you simply press `Ctrl+Alt+P` again.
 
+#### Capturing the popups in OBS or XSplit
+
+The popups are drawn by a transparent, click-through overlay window that is hidden from window lists, so the *Window Capture* source of OBS (and the window pickers of other tools) cannot select it by default. To capture it as a window:
+
+1. Open the Preferences (click the tray icon), tick **Capture for OBS** on the *General* tab (it applies immediately) and press **Save** to keep it. The overlay now shows up in window lists; it stays click-through and never takes the keyboard focus. Untick it again to hide the overlay from window lists.
+2. In OBS add a *Window Capture* source and select `[Carnac.exe]: Carnac Overlay`. The title of the overlay window is always `Carnac Overlay`.
+3. Set *Capture Method* to *Windows 10 (1903 and up)*. If your version of OBS has an *Allow Transparency* option, enable it, otherwise the transparent area around the popups may be captured as black. (The option names are those of recent OBS versions and may differ slightly in yours.)
+4. The overlay window is as wide as the popups (*Popup Text Width* plus the left and right offsets) and as high as the monitor it is on, so crop the source in the scene to the area you want.
+5. The class name of a WPF window contains a new random id with every start of Carnac. If OBS does not find the window again after restarting Carnac, set *Window Match Priority* to *Window title must match*.
+
+Things to know:
+
+- **Recorded but not shown on your own screen** is not possible with the overlay window itself. The Windows call that hides a window from screen captures (`SetWindowDisplayAffinity`) does the opposite of what is needed: it removes the window from the capture. The practical way is to show the popups on a dedicated monitor or virtual display (choose it in the Preferences) and capture that display or the overlay window.
+- **Windows Game Bar** (`Win+G`) only records the game window, not overlays of other applications, so the popups do not appear in Game Bar recordings. Use OBS or another tool that captures the desktop or a window.
+- While **Capture for OBS** is on, other tools that list windows (for example the window picker of ShareX) list the overlay as well.
+
 ### Contributing
 
 #### Getting started with Git and GitHub
