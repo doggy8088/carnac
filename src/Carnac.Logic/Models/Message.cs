@@ -202,7 +202,8 @@ namespace Carnac.Logic.Models
             // The single visible character (or a space) this key press types, otherwise null. The raw input is
             // used rather than the formatted text ("Left" is drawn as an arrow glyph, which is not typing), and
             // not the modifier flags: a shortcut has its modifiers in the input ("Ctrl", "L"), while a character
-            // typed with AltGr, which Windows reports as Ctrl+Alt, is a single character.
+            // that is typed with AltGr (which Windows reports as Ctrl+Alt) is given as a single character once
+            // the keys are named after the keyboard layout. With the US names it is still "Ctrl", "Alt", "7".
             static string GetTypedCharacter(KeyPress keyPress)
             {
                 var input = keyPress.Input.ToArray();
