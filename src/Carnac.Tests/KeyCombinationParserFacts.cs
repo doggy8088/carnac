@@ -363,6 +363,93 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void list_entries_are_independent_combinations()
+        {
+            IList<KeyPressDefinition> combinations;
+            IList<string> errors;
+
+            Assert.True(KeyCombinationParser.TryParseList("W,A,S,D", out combinations, out errors));
+
+            Assert.Empty(errors);
+            Assert.Equal(
+                new[] { new KeyPressDefinition(Keys.W), new KeyPressDefinition(Keys.A), new KeyPressDefinition(Keys.S), new KeyPressDefinition(Keys.D) },
+                combinations.ToArray());
+        }
+
+        [Fact]
+        public void list_entries_may_be_separated_by_line_breaks_and_empty_entries_are_skipped()
+        {
+            IList<KeyPressDefinition> combinations;
+            IList<string> errors;
+
+            Assert.True(KeyCombinationParser.TryParseList("W\r\nCtrl+Alt+Delete\n\n , F5,", out combinations, out errors));
+
+            Assert.Equal(
+                new[]
+                {
+                    new KeyPressDefinition(Keys.W),
+                    new KeyPressDefinition(Keys.Delete, altPressed: true, controlPressed: true),
+                    new KeyPressDefinition(Keys.F5)
+                },
+                combinations.ToArray());
+        }
+
+        [Fact]
+        public void list_of_nothing_is_valid_and_empty()
+        {
+            IList<KeyPressDefinition> combinations;
+            IList<string> errors;
+
+            Assert.True(KeyCombinationParser.TryParseList(null, out combinations, out errors));
+            Assert.Empty(combinations);
+            Assert.True(KeyCombinationParser.TryParseList("  \r\n ", out combinations, out errors));
+            Assert.Empty(combinations);
+            Assert.Empty(errors);
+        }
+
+        [Fact]
+        public void list_keeps_the_valid_entries_and_reports_each_bad_one()
+        {
+            IList<KeyPressDefinition> combinations;
+            IList<string> errors;
+
+            Assert.False(KeyCombinationParser.TryParseList("W,Bogus,Ctrl+K Ctrl+C,A", out combinations, out errors));
+
+            Assert.Equal(new[] { new KeyPressDefinition(Keys.W), new KeyPressDefinition(Keys.A) }, combinations.ToArray());
+            Assert.Equal(2, errors.Count);
+            Assert.Contains("'Bogus'", errors[0]);
+            Assert.Contains("'Ctrl+K Ctrl+C'", errors[1]);
+        }
+
+        [Fact]
+        public void list_treats_a_comma_after_a_plus_as_the_comma_key()
+        {
+            IList<KeyPressDefinition> combinations;
+            IList<string> errors;
+
+            Assert.True(KeyCombinationParser.TryParseList("Ctrl+,,W", out combinations, out errors));
+
+            Assert.Equal(
+                new[] { new KeyPressDefinition(Keys.Oemcomma, controlPressed: true), new KeyPressDefinition(Keys.W) },
+                combinations.ToArray());
+        }
+
+        [Fact]
+        public void instance_list_reports_every_bad_entry_with_context()
+        {
+            var warnings = new List<string>();
+            var parser = new KeyCombinationParser(warnings.Add);
+
+            var combinations = parser.ParseList("W,Bogus,Nonsense", "Ignored keys");
+
+            Assert.Equal(1, combinations.Count);
+            Assert.Equal(2, warnings.Count);
+            Assert.True(warnings.All(warning => warning.StartsWith("Ignored keys: ")));
+            Assert.Contains("Bogus", warnings[0]);
+            Assert.Contains("Nonsense", warnings[1]);
+        }
+
+        [Fact]
         public void instance_reports_a_warning_with_context_and_returns_null()
         {
             var warnings = new List<string>();

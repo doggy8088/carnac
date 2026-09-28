@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using Carnac.Logic.Enums;
 
 namespace Carnac.Logic
 {
@@ -141,18 +142,11 @@ namespace Carnac.Logic
         /// </summary>
         public static bool ProducesCharacter(this Keys key)
         {
-            if (key >= Keys.A && key <= Keys.Z)
+            if ((key & Keys.KeyCode) == Keys.Space)
                 return true;
-            if (key >= Keys.D0 && key <= Keys.D9)
-                return true;
-            if (key >= Keys.NumPad0 && key <= Keys.Divide)
-                return true;   // NumPad0-9, Multiply, Add, Separator, Subtract, Decimal, Divide
-            if (key == Keys.Space)
-                return true;
-            // Oem1 (;) .. Oem3 (`) contains Oemplus, Oemcomma, OemMinus, OemPeriod; Oem4 ([) .. Oem8 are the bracket, backslash and quote keys
-            return (key >= Keys.Oem1 && key <= Keys.Oem3)
-                || (key >= Keys.Oem4 && key <= Keys.Oem8)
-                || key == Keys.Oem102;
+
+            var category = KeyCategories.For(key);
+            return category == KeyCategory.Letters || category == KeyCategory.Digits || category == KeyCategory.Punctuation;
         }
 
         public static string Sanitise(this Keys key)

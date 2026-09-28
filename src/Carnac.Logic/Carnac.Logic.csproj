@@ -76,6 +76,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums\KeyCategory.cs" />
     <Compile Include="Enums\NotificationPlacement.cs" />
     <Compile Include="Enums\RepeatedKeyGrouping.cs" />
     <Compile Include="IConcurrencyService.cs" />
@@ -91,7 +92,10 @@
     <Compile Include="KeyMonitor\InterceptKeyEventArgs.cs" />
     <Compile Include="KeyMonitor\InterceptKeys.cs" />
     <Compile Include="KeyMonitor\KeyDirection.cs" />
+    <Compile Include="KeyCategories.cs" />
     <Compile Include="KeyCombinationParser.cs" />
+    <Compile Include="KeyIgnoreList.cs" />
+    <Compile Include="KeyVisibilityFilter.cs" />
     <Compile Include="KeysController.cs" />
     <Compile Include="Models\Processinfo.cs" />
     <Compile Include="AssociatedProcessUtilities.cs" />

@@ -96,6 +96,15 @@ To find a process name, open Task Manager, go to the **Details** tab and take th
 - `^(notepad|calc)$` shows keys from exactly these two.
 - `^(?!ZoomIt64$)` shows everything except ZoomIt. Do not write `^(?!ZoomIt64\.exe$)`: process names have no `.exe`, so that expression excludes nothing.
 
+#### Choosing which keys are shown
+
+Everything you type is shown by default. *Preferences*, *Appearance* has four ways to show less:
+
+- **Shortcuts Only** shows only the shortcuts listed in your keymaps.
+- **Only keys with Modifiers** shows only key presses made with Ctrl, Alt or Windows, or with Shift when the key does not type a character (Enter, Tab, arrows, F-keys).
+- **Keys to show** switches whole groups of keys off: letters, digits, punctuation, Space/Enter/Tab, editing keys (Backspace, Delete, Insert, Esc), navigation keys (arrows, Home, End, Page Up/Down), function keys and all other keys. Tick only *Function keys* and *Navigation* to see F5 or the up arrow but not the text you type. Key presses made with Ctrl, Alt or Windows, and shortcuts recognised from your keymaps, are always shown by these boxes. The two options above are applied in addition, so they can only hide more.
+- **Ignored Keys** lists keys that are never shown, separated by commas or new lines and written like keymap keys, for example `W,A,S,D` or `Ctrl+Alt+Delete`. Modifiers must match, so `W` does not hide `Ctrl+W` or `Shift+W`. Ignored keys still count for the shortcuts in your keymaps (for a chord such as `Ctrl+K,S` the `S` can be ignored and the chord is still recognised). Entries Carnac cannot understand are skipped and reported to the Windows debug output.
+
 ### Contributing
 
 #### Getting started with Git and GitHub

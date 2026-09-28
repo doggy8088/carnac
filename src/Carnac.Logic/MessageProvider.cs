@@ -19,8 +19,10 @@ namespace Carnac.Logic
         readonly IKeyProvider keyProvider;
         readonly PopupSettings settings;
         readonly IConcurrencyService concurrencyService;
+        readonly KeyVisibilityFilter visibilityFilter;
 
-        public MessageProvider(IShortcutProvider shortcutProvider, IKeyProvider keyProvider, PopupSettings settings, IConcurrencyService concurrencyService)
+        /// <param name="warn">Receives a message for every entry of the ignored keys setting that is not understood; null writes to the trace listeners.</param>
+        public MessageProvider(IShortcutProvider shortcutProvider, IKeyProvider keyProvider, PopupSettings settings, IConcurrencyService concurrencyService, Action<string> warn = null)
         {
             if (shortcutProvider == null)
                 throw new ArgumentNullException("shortcutProvider");
@@ -35,6 +37,7 @@ namespace Carnac.Logic
             this.keyProvider = keyProvider;
             this.settings = settings;
             this.concurrencyService = concurrencyService;
+            visibilityFilter = new KeyVisibilityFilter(settings, warn);
         }
 
         public IObservable<Message> GetMessageStream()
@@ -46,6 +49,9 @@ namespace Carnac.Logic
                - a pending accumulator is completed by the next key, or flushed (each held key becomes its own message) when
                  ChordTimeout passes without another key; only completed accumulators leave GetCompletedShortcuts
 
+            visibility filter (before the merger, so chords are resolved first and every key press is judged on its own):
+               - hides key presses of hidden key categories and the ignored keys, see KeyVisibilityFilter
+
             message merger:
                - * before items indicates the previous message has been modified (key has been merged into acc), otherwise new acc is created
 
@@ -56,6 +62,7 @@ namespace Carnac.Logic
             */
             return GetCompletedShortcuts()
                 .SelectMany(c => c.GetMessages())
+                .Where(visibilityFilter.IsVisible)
                 .Scan(new Message(), (acc, key) => Message.MergeIfNeeded(acc, key, GetRepeatedKeyPolicy()))
                 .Where(m =>
                 {
