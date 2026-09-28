@@ -106,6 +106,17 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void zoom_in_is_recognised_with_and_without_shift_on_the_plus_key()
+        {
+            // "Ctrl++" on a standard keyboard is Ctrl+Shift+= (Oemplus), so both forms have to name the shortcut
+            var provider = new ShortcutProvider(FindShippedKeymapsFolder(), warnings.Add);
+
+            Assert.Equal("Make everything on the page bigger", provider.GetShortcutsStartingWith(Press("chrome", Keys.Oemplus, control: true)).Single().Name);
+            Assert.Equal("Make everything on the page bigger", provider.GetShortcutsStartingWith(Press("chrome", Keys.Oemplus, control: true, shift: true)).Single().Name);
+            Assert.Equal("Zoom in", provider.GetShortcutsStartingWith(Press("Code", Keys.Oemplus, control: true, shift: true)).Single().Name);
+        }
+
+        [Fact]
         public void vscode_chords_keep_every_key_press()
         {
             var provider = new ShortcutProvider(FindShippedKeymapsFolder(), warnings.Add);

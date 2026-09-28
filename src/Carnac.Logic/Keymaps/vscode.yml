@@ -334,6 +334,7 @@ shortcuts:
     - name: Zoom in
       keys:
       - Ctrl+=
+      - Ctrl+Shift+=
     - name: Zoom out
       keys:
       - Ctrl+-

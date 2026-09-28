@@ -196,6 +196,7 @@ shortcuts:
   - name: Make everything on the page bigger
     keys:
       - Ctrl+Oemplus
+      - Ctrl+Shift+Oemplus
       - Ctrl+Add
   - name: Make everything on the page smaller
     keys:
