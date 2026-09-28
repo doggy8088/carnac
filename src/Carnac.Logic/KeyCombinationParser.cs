@@ -273,6 +273,14 @@ namespace Carnac.Logic
                 return false;
             }
 
+            // Enum parsing treats commas as flag separators and ORs the values ("A,B" would become the key C). Commas belong
+            // between the steps of a chord, which TryParseSequence splits before it gets here; only the comma key is a comma.
+            if (keyText.IndexOf(',') >= 0 && keyText != ",")
+            {
+                error = "a key cannot contain a comma; commas only separate the steps of a chord (Ctrl+K,Ctrl+C) and the comma key is written Ctrl+, or Oemcomma";
+                return false;
+            }
+
             // Enum parsing would read "1" as the numeric key code 1 (the left mouse button) instead of the '1' key.
             if (keyText.Length == 1 && keyText[0] >= '0' && keyText[0] <= '9')
             {

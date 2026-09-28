@@ -168,6 +168,20 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void a_single_combination_cannot_contain_a_comma_separated_list_of_key_names()
+        {
+            // Enum.TryParse would OR "A,B" into the key C; the single-combination API has to reject it.
+            Assert.Contains("comma", ParseError("A,B"));
+            Assert.Contains("comma", ParseError("Ctrl+A,B"));
+            Assert.Contains("comma", ParseError("Ctrl+A, Shift"));
+            Assert.Contains("comma", ParseError("1,2"));
+            // the comma key itself, and a chord, still work
+            Assert.Equal(new KeyPressDefinition(Keys.Oemcomma, controlPressed: true), Parse("Ctrl+,"));
+            Assert.Equal(new KeyPressDefinition(Keys.Oemcomma), Parse("Oemcomma"));
+            Assert.Equal(2, ParseSequence("A,B").Count);
+        }
+
+        [Fact]
         public void numbers_other_than_single_digits_are_not_key_codes()
         {
             // Enum parsing reads "112" as the key code of F1 and "1" as the left mouse button.
