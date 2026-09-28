@@ -158,6 +158,44 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void typed_punctuation_and_symbols_follow_the_same_rule()
+        {
+            Assert.Equal("foo((x))", TextOf(Typed("f", "o", "o", "(", "(", "x", ")", ")")));
+            Assert.Equal("a == b", TextOf(Typed("a", " ", "=", "=", " ", "b")));
+            Assert.Equal("===", TextOf(Typed("=", "=", "=")));
+            Assert.Equal("= x 4 ", TextOf(Typed("=", "=", "=", "=")));
+            Assert.Equal("&&", TextOf(Typed("&", "&")));
+        }
+
+        [Fact]
+        public void typed_uppercase_letters_follow_the_same_rule()
+        {
+            Assert.Equal("AAA", TextOf(Typed("A", "A", "A")));
+            Assert.Equal("A x 4 ", TextOf(Typed("A", "A", "A", "A")));
+        }
+
+        [Fact]
+        public void typed_characters_outside_ascii_follow_the_same_rule()
+        {
+            var surrogatePairLetter = "𝒜";
+            var decomposedAccent = "é";
+
+            Assert.Equal("üü", TextOf(Typed("ü", "ü")));
+            Assert.Equal(surrogatePairLetter + surrogatePairLetter, TextOf(Typed(surrogatePairLetter, surrogatePairLetter)));
+            Assert.Equal(decomposedAccent + decomposedAccent, TextOf(Typed(decomposedAccent, decomposedAccent)));
+            Assert.Equal(decomposedAccent + " x 4 ", TextOf(Typed(decomposedAccent, decomposedAccent, decomposedAccent, decomposedAccent)));
+        }
+
+        [Fact]
+        public void named_keys_are_still_summarised_from_two()
+        {
+            Assert.Equal("Return x 2 ", TextOf(Typed("Return", "Return")));
+            Assert.Equal("Tab x 2 ", TextOf(Typed("Tab", "Tab")));
+            Assert.Equal("F5 x 2 ", TextOf(Typed("F5", "F5")));
+            Assert.Equal("del x 2 ", TextOf(Typed("del", "del")));
+        }
+
+        [Fact]
         public void repeated_spaces_are_still_summarised()
         {
             Assert.Equal("  x 2 ", TextOf(Typed(" ", " ")));
@@ -183,6 +221,18 @@ namespace Carnac.Tests
             Assert.Equal("Control + L x 2 ", TextOf(result));
         }
 
+        [Fact]
+        public void a_single_typed_character_with_a_modifier_flag_is_still_summarised_from_two()
+        {
+            // however the input was produced, a key pressed with Ctrl held is a shortcut, not typing
+            var press = new KeyPress(fakeProcess, new InterceptKeyEventArgs(Keys.L, KeyDirection.Down, false, true, false), false, new[] { "l" });
+
+            var result = new Message(press).Merge(new Message(press));
+
+            Assert.Equal("l x 2 ", TextOf(result));
+        }
+
+        // The key is irrelevant to the display text here, only the text of the input matters.
         Message Typed(params string[] texts)
         {
             return texts

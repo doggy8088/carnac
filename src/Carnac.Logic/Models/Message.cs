@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Media;
 
@@ -162,7 +163,7 @@ namespace Carnac.Logic.Models
 
         private sealed class RepeatedKeyPress
         {
-            // Repeated typed characters ("ll" in "hello", "www", "1000") read naturally as typed,
+            // Repeated typed characters ("ll" in "hello", "((", "www", "1000") read naturally as typed,
             // so they are only summarised as "x N" once the repeat is clearly deliberate.
             const int MinimumTypedCharacterRepeatToSummarise = 4;
 
@@ -176,18 +177,51 @@ namespace Carnac.Logic.Models
             {
                 nextRequiresSeperator = keyPress.HasModifierPressed;
                 textParts = keyPress.GetTextParts().ToArray();
-                isTypedCharacter = !keyPress.HasModifierPressed && IsTypedCharacter(textParts);
+                isTypedCharacter = IsTypedCharacter(keyPress);
                 this.requiresPrefix = requiresPrefix;
                 repeatCount = 1;
             }
 
-            static bool IsTypedCharacter(string[] textParts)
+            // A single visible character, pressed on its own. Named keys ("Back", "Left"), spaces and
+            // anything pressed with a modifier are not typed characters, so they keep collapsing at two.
+            static bool IsTypedCharacter(KeyPress keyPress)
             {
-                if (textParts.Length != 1 || textParts[0].Length != 1)
+                if (keyPress.HasModifierPressed)
                     return false;
 
-                var character = textParts[0][0];
-                return char.IsLetterOrDigit(character) || character == '.';
+                var input = keyPress.Input.ToArray();
+                if (input.Length != 1 || string.IsNullOrEmpty(input[0]))
+                    return false;
+
+                var text = input[0];
+                if (new StringInfo(text).LengthInTextElements != 1)
+                    return false;
+
+                switch (CharUnicodeInfo.GetUnicodeCategory(text, 0))
+                {
+                    case UnicodeCategory.UppercaseLetter:
+                    case UnicodeCategory.LowercaseLetter:
+                    case UnicodeCategory.TitlecaseLetter:
+                    case UnicodeCategory.ModifierLetter:
+                    case UnicodeCategory.OtherLetter:
+                    case UnicodeCategory.DecimalDigitNumber:
+                    case UnicodeCategory.LetterNumber:
+                    case UnicodeCategory.OtherNumber:
+                    case UnicodeCategory.ConnectorPunctuation:
+                    case UnicodeCategory.DashPunctuation:
+                    case UnicodeCategory.OpenPunctuation:
+                    case UnicodeCategory.ClosePunctuation:
+                    case UnicodeCategory.InitialQuotePunctuation:
+                    case UnicodeCategory.FinalQuotePunctuation:
+                    case UnicodeCategory.OtherPunctuation:
+                    case UnicodeCategory.MathSymbol:
+                    case UnicodeCategory.CurrencySymbol:
+                    case UnicodeCategory.ModifierSymbol:
+                    case UnicodeCategory.OtherSymbol:
+                        return true;
+                    default:
+                        return false;
+                }
             }
 
             public bool NextRequiresSeperator { get { return nextRequiresSeperator; } }
