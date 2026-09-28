@@ -117,5 +117,99 @@ namespace Carnac.Tests.ViewModels
                 Assert.False(screens[0].NotificationPlacementTopRight);
             }
         }
+
+        public class when_the_screens_are_arranged_on_the_desk
+        {
+            static PreferencesViewModel Create(PopupSettings popupSettings, out ISettingsProvider settingsService, params DetailedScreen[] screens)
+            {
+                settingsService = Substitute.For<ISettingsProvider>();
+                var screenManager = Substitute.For<IScreenManager>();
+                settingsService.GetSettings<PopupSettings>().Returns(popupSettings);
+                screenManager.GetScreens().Returns(new List<DetailedScreen>(screens));
+                return new PreferencesViewModel(settingsService, screenManager);
+            }
+
+            static DetailedScreen Screen(int index, string deviceName, int left, int top, int width, int height, bool primary = false)
+            {
+                return new DetailedScreen { Index = index, DeviceName = deviceName, IsPrimary = primary, Left = left, Top = top, Width = width, Height = height };
+            }
+
+            [Fact]
+            public void the_screens_are_drawn_in_their_real_arrangement()
+            {
+                ISettingsProvider settingsService;
+                var below = Screen(2, @"\\.\DISPLAY2", 0, 1080, 1920, 1080);
+                var subject = Create(new PopupSettings(), out settingsService, Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080, true), below);
+
+                Assert.True(subject.ScreenLayoutWidth > 0);
+                Assert.True(subject.ScreenLayoutHeight > 0);
+                Assert.Equal(0, below.LayoutLeft);
+                Assert.Equal(below.RelativeHeight, below.LayoutTop, 6);
+                Assert.Equal(subject.ScreenLayoutHeight, below.LayoutTop + below.RelativeHeight, 6);
+            }
+
+            [Fact]
+            public void the_configured_device_name_selects_the_screen_even_when_the_number_points_elsewhere()
+            {
+                ISettingsProvider settingsService;
+                var second = Screen(2, @"\\.\DISPLAY2", 1920, 0, 1920, 1080);
+                var subject = Create(
+                    new PopupSettings { Screen = 1, ScreenDeviceName = @"\\.\DISPLAY2" },
+                    out settingsService,
+                    Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080, true),
+                    second);
+
+                Assert.Same(second, subject.SelectedScreen);
+            }
+
+            [Fact]
+            public void a_screen_that_is_gone_selects_the_primary_screen()
+            {
+                ISettingsProvider settingsService;
+                var primary = Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080, true);
+                var subject = Create(
+                    new PopupSettings { Screen = 2, ScreenDeviceName = @"\\.\DISPLAY9" },
+                    out settingsService,
+                    primary,
+                    Screen(2, @"\\.\DISPLAY2", 1920, 0, 1920, 1080));
+
+                Assert.Same(primary, subject.SelectedScreen);
+            }
+
+            [Fact]
+            public void saving_stores_the_device_name_and_the_number_of_the_selected_screen()
+            {
+                ISettingsProvider settingsService;
+                var popupSettings = new PopupSettings { FontColor = "White", ItemBackgroundColor = "Black" };
+                var second = Screen(2, @"\\.\DISPLAY2", 1920, 0, 1920, 1080);
+                var subject = Create(popupSettings, out settingsService, Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080, true), second);
+                second.NotificationPlacementTopRight = true;
+                subject.SelectedScreen = second;
+
+                subject.SaveCommand.Execute(null);
+
+                Assert.Equal(@"\\.\DISPLAY2", popupSettings.ScreenDeviceName);
+                Assert.Equal(2, popupSettings.Screen);
+                Assert.Equal(NotificationPlacement.TopRight, popupSettings.Placement);
+                settingsService.Received().SaveSettings(popupSettings);
+            }
+
+            [Fact]
+            public void saving_sets_the_device_name_before_the_number_so_the_overlay_never_lands_on_the_wrong_screen_in_between()
+            {
+                ISettingsProvider settingsService;
+                var popupSettings = new PopupSettings { FontColor = "White", ItemBackgroundColor = "Black" };
+                var second = Screen(2, @"\\.\DISPLAY2", 1920, 0, 1920, 1080);
+                var subject = Create(popupSettings, out settingsService, Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080, true), second);
+                subject.SelectedScreen = second;
+                var raised = new List<string>();
+                popupSettings.PropertyChanged += (sender, e) => raised.Add(e.PropertyName);
+
+                subject.SaveCommand.Execute(null);
+
+                Assert.True(raised.IndexOf("ScreenDeviceName") >= 0, "no notification for ScreenDeviceName");
+                Assert.True(raised.IndexOf("Screen") > raised.IndexOf("ScreenDeviceName"));
+            }
+        }
     }
 }

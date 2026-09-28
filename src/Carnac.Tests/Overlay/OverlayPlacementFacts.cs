@@ -26,6 +26,11 @@ namespace Carnac.Tests.Overlay
             return new DetailedScreen { Index = index, Left = left, Top = top, Width = width, Height = height };
         }
 
+        static DetailedScreen Screen(int index, string deviceName, int left, int top, int width, int height, bool primary = false)
+        {
+            return new DetailedScreen { Index = index, DeviceName = deviceName, IsPrimary = primary, Left = left, Top = top, Width = width, Height = height };
+        }
+
         public class when_calculating_the_window_rectangle
         {
             [Fact]
@@ -227,34 +232,81 @@ namespace Carnac.Tests.Overlay
         public class when_selecting_the_screen
         {
             [Fact]
-            public void the_screen_with_the_configured_index_wins()
+            public void the_screen_with_the_configured_index_wins_when_there_is_no_device_name()
             {
                 var screens = new[] { Screen(1, 0, 0, 1920, 1080), Screen(2, 1920, 0, 1920, 1080), Screen(3, 0, 1080, 1920, 1080) };
 
-                Assert.Same(screens[2], OverlayPlacement.SelectScreen(screens, 3));
+                Assert.Same(screens[2], OverlayPlacement.SelectScreen(screens, null, 3));
+                Assert.Same(screens[1], OverlayPlacement.SelectScreen(screens, string.Empty, 2));
             }
 
             [Fact]
-            public void an_unknown_index_falls_back_to_the_primary_screen()
+            public void the_device_name_wins_over_the_index()
+            {
+                var screens = new[] { Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080), Screen(2, @"\\.\DISPLAY2", 1920, 0, 1920, 1080) };
+
+                Assert.Same(screens[1], OverlayPlacement.SelectScreen(screens, @"\\.\DISPLAY2", 1));
+            }
+
+            [Fact]
+            public void the_device_name_is_found_when_the_numbers_changed_because_a_monitor_was_plugged_in()
+            {
+                // DISPLAY3 used to be number 2; another monitor was plugged in and took that number.
+                var screens = new[]
+                {
+                    Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080),
+                    Screen(2, @"\\.\DISPLAY2", 1920, 0, 1920, 1080),
+                    Screen(3, @"\\.\DISPLAY3", 3840, 0, 1920, 1080)
+                };
+
+                Assert.Same(screens[2], OverlayPlacement.SelectScreen(screens, @"\\.\DISPLAY3", 2));
+            }
+
+            [Fact]
+            public void the_device_name_is_compared_ignoring_case()
+            {
+                var screens = new[] { Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080), Screen(2, @"\\.\DISPLAY2", 1920, 0, 1920, 1080) };
+
+                Assert.Same(screens[1], OverlayPlacement.SelectScreen(screens, @"\\.\display2", 1));
+            }
+
+            [Fact]
+            public void a_missing_device_name_falls_back_to_the_primary_screen_not_to_the_index()
+            {
+                var screens = new[] { Screen(1, @"\\.\DISPLAY1", -1920, 0, 1920, 1080), Screen(2, @"\\.\DISPLAY2", 0, 0, 1920, 1080, true) };
+
+                Assert.Same(screens[1], OverlayPlacement.SelectScreen(screens, @"\\.\DISPLAY7", 1));
+            }
+
+            [Fact]
+            public void the_screen_flagged_as_primary_wins_over_the_one_at_the_origin()
+            {
+                var screens = new[] { Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080), Screen(2, @"\\.\DISPLAY2", 1920, 0, 1920, 1080, true) };
+
+                Assert.Same(screens[1], OverlayPlacement.SelectScreen(screens, null, 9));
+            }
+
+            [Fact]
+            public void an_unknown_index_falls_back_to_the_screen_at_the_origin_when_none_is_flagged_as_primary()
             {
                 var screens = new[] { Screen(1, -1920, 0, 1920, 1080), Screen(2, 0, 0, 2560, 1440), Screen(3, 2560, 0, 1920, 1080) };
 
-                Assert.Same(screens[1], OverlayPlacement.SelectScreen(screens, 0));
-                Assert.Same(screens[1], OverlayPlacement.SelectScreen(screens, 9));
+                Assert.Same(screens[1], OverlayPlacement.SelectScreen(screens, null, 0));
+                Assert.Same(screens[1], OverlayPlacement.SelectScreen(screens, null, 9));
             }
 
             [Fact]
-            public void without_a_screen_at_the_origin_the_first_screen_is_used()
+            public void without_a_primary_screen_the_first_screen_is_used()
             {
                 var screens = new[] { Screen(1, 100, 100, 800, 600), Screen(2, 900, 100, 800, 600) };
 
-                Assert.Same(screens[0], OverlayPlacement.SelectScreen(screens, 7));
+                Assert.Same(screens[0], OverlayPlacement.SelectScreen(screens, null, 7));
             }
 
             [Fact]
             public void no_screens_means_no_screen()
             {
-                Assert.Null(OverlayPlacement.SelectScreen(new DetailedScreen[0], 1));
+                Assert.Null(OverlayPlacement.SelectScreen(new DetailedScreen[0], @"\\.\DISPLAY1", 1));
             }
 
             [Fact]
@@ -262,13 +314,13 @@ namespace Carnac.Tests.Overlay
             {
                 var screens = new[] { null, Screen(1, 0, 0, 800, 600) };
 
-                Assert.Same(screens[1], OverlayPlacement.SelectScreen(screens, 4));
+                Assert.Same(screens[1], OverlayPlacement.SelectScreen(screens, null, 4));
             }
 
             [Fact]
             public void a_null_list_is_rejected()
             {
-                Assert.Throws<ArgumentNullException>(() => OverlayPlacement.SelectScreen(null, 1));
+                Assert.Throws<ArgumentNullException>(() => OverlayPlacement.SelectScreen(null, null, 1));
             }
         }
 
@@ -329,6 +381,40 @@ namespace Carnac.Tests.Overlay
             }
 
             [Fact]
+            public void the_device_name_of_the_settings_selects_the_screen()
+            {
+                var screens = new[]
+                {
+                    Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080, true),
+                    Screen(2, @"\\.\DISPLAY2", 1920, 0, 1920, 1080),
+                    Screen(3, @"\\.\DISPLAY3", 0, 1080, 1920, 1080)
+                };
+                var settings = new PopupSettings { Screen = 1, ScreenDeviceName = @"\\.\DISPLAY3", Placement = NotificationPlacement.TopLeft, ItemMaxWidth = 350 };
+
+                var rect = OverlayPlacement.Resolve(screens, settings, 1.0).Value;
+
+                Assert.Equal(1, rect.X);
+                Assert.Equal(1081, rect.Y);
+            }
+
+            [Fact]
+            public void the_window_is_placed_in_the_coordinates_of_the_window_apis_when_the_monitors_scale_differently()
+            {
+                // A 4K primary monitor at 150 % and a full HD monitor at 100 % to its right. A process that is not per-monitor
+                // DPI aware sees the second one scaled to 2880 x 1620 at x = 3840, while the display driver says 1920 x 1080.
+                var primary = Screen(1, @"\\.\DISPLAY1", 0, 0, 3840, 2160, true);
+                var secondary = Screen(2, @"\\.\DISPLAY2", 3840, 0, 1920, 1080);
+                secondary.Bounds = new PixelRect(3840, 0, 2880, 1620);
+                var settings = new PopupSettings { ScreenDeviceName = @"\\.\DISPLAY2", Placement = NotificationPlacement.TopRight, ItemMaxWidth = 350 };
+                var contentWidth = OverlayPlacement.GetContentWidth(350, 0, 0);
+
+                var rect = OverlayPlacement.Resolve(new[] { primary, secondary }, settings, 1.5).Value;
+
+                var width = (int)Math.Ceiling(contentWidth * 1.5);
+                Assert.Equal(new PixelRect(3840 + 2880 - 1 - width, 1, width, 1618), rect);
+            }
+
+            [Fact]
             public void without_any_screen_there_is_no_window_rectangle()
             {
                 Assert.False(OverlayPlacement.Resolve(new DetailedScreen[0], new PopupSettings(), 1.0).HasValue);
@@ -350,6 +436,14 @@ namespace Carnac.Tests.Overlay
                 var rect = OverlayPlacement.ToPixelRect(new DetailedScreen { Left = -1920.4, Top = 1079.6, Width = 1920.2, Height = 1080.6 });
 
                 Assert.Equal(new PixelRect(-1920, 1080, 1920, 1081), rect);
+            }
+
+            [Fact]
+            public void the_monitor_rectangle_of_the_window_apis_is_used_when_it_is_known()
+            {
+                var screen = new DetailedScreen { Left = 3840, Top = 0, Width = 1920, Height = 1080, Bounds = new PixelRect(2560, 0, 1920, 1080) };
+
+                Assert.Equal(new PixelRect(2560, 0, 1920, 1080), OverlayPlacement.ToPixelRect(screen));
             }
 
             [Fact]
@@ -404,7 +498,7 @@ namespace Carnac.Tests.Overlay
             [Fact]
             public void the_settings_that_decide_the_window_place_it_again()
             {
-                foreach (var name in new[] { "Screen", "Placement", "ItemMaxWidth", "LeftOffset", "RightOffset" })
+                foreach (var name in new[] { "Screen", "ScreenDeviceName", "Placement", "ItemMaxWidth", "LeftOffset", "RightOffset" })
                     Assert.True(OverlayPlacement.AffectsPlacement(name), name);
             }
 
@@ -416,12 +510,13 @@ namespace Carnac.Tests.Overlay
                 settings.PropertyChanged += (sender, e) => raised.Add(e.PropertyName);
 
                 settings.Screen = 2;
+                settings.ScreenDeviceName = @"\\.\DISPLAY2";
                 settings.Placement = NotificationPlacement.TopRight;
                 settings.ItemMaxWidth = 500;
                 settings.LeftOffset = 30;
                 settings.RightOffset = 40;
 
-                foreach (var name in new[] { "Screen", "Placement", "ItemMaxWidth", "LeftOffset", "RightOffset" })
+                foreach (var name in new[] { "Screen", "ScreenDeviceName", "Placement", "ItemMaxWidth", "LeftOffset", "RightOffset" })
                 {
                     Assert.True(raised.Contains(name), name + " raised no change notification");
                     Assert.True(OverlayPlacement.AffectsPlacement(name), name);
@@ -433,6 +528,17 @@ namespace Carnac.Tests.Overlay
             {
                 Assert.True(OverlayPlacement.AffectsPlacement(null));
                 Assert.True(OverlayPlacement.AffectsPlacement(string.Empty));
+            }
+
+            [Fact]
+            public void only_the_screen_settings_and_a_change_of_everything_read_the_screens_again()
+            {
+                Assert.True(OverlayPlacement.AffectsScreenSelection("Screen"));
+                Assert.True(OverlayPlacement.AffectsScreenSelection("ScreenDeviceName"));
+                Assert.True(OverlayPlacement.AffectsScreenSelection(null));
+                Assert.True(OverlayPlacement.AffectsScreenSelection(string.Empty));
+                foreach (var name in new[] { "Placement", "ItemMaxWidth", "LeftOffset", "RightOffset", "FontSize", "screen" })
+                    Assert.False(OverlayPlacement.AffectsScreenSelection(name), name);
             }
 
             [Fact]

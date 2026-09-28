@@ -86,7 +86,7 @@ namespace Carnac.Logic.Overlay
             if (screens == null) throw new ArgumentNullException("screens");
             if (settings == null) throw new ArgumentNullException("settings");
 
-            var screen = SelectScreen(screens, settings.Screen);
+            var screen = SelectScreen(screens, settings.ScreenDeviceName, settings.Screen);
             if (screen == null)
                 return null;
 
@@ -95,22 +95,35 @@ namespace Carnac.Logic.Overlay
         }
 
         /// <summary>
-        /// The screen with the given index, else the primary screen (the one whose origin is the virtual desktop origin),
-        /// else the first screen; null when there are no screens.
+        /// The screen that is selected by its device name (case insensitive); by its number only when there is no device name
+        /// (settings saved by an earlier version). A screen that cannot be found, for example because its monitor is unplugged,
+        /// is replaced by the primary screen, else by the first screen. Null when there are no screens.
         /// </summary>
-        public static DetailedScreen SelectScreen(IEnumerable<DetailedScreen> screens, int index)
+        public static DetailedScreen SelectScreen(IEnumerable<DetailedScreen> screens, string deviceName, int index)
         {
             if (screens == null) throw new ArgumentNullException("screens");
 
             var all = screens.Where(s => s != null).ToList();
-            return all.FirstOrDefault(s => s.Index == index)
+            var selected = string.IsNullOrEmpty(deviceName)
+                ? all.FirstOrDefault(s => s.Index == index)
+                : all.FirstOrDefault(s => string.Equals(s.DeviceName, deviceName, StringComparison.OrdinalIgnoreCase));
+
+            return selected
+                ?? all.FirstOrDefault(s => s.IsPrimary)
                 ?? all.FirstOrDefault(s => s.Left == 0 && s.Top == 0)
                 ?? all.FirstOrDefault();
         }
 
+        /// <summary>
+        /// The screen rectangle in the coordinate space of <c>SetWindowPos</c>: the monitor bounds of the window APIs when
+        /// they are known, else the physical rectangle of the display driver (the same thing unless the monitors scale differently).
+        /// </summary>
         public static PixelRect ToPixelRect(DetailedScreen screen)
         {
             if (screen == null) throw new ArgumentNullException("screen");
+
+            if (screen.Bounds.HasValue)
+                return screen.Bounds.Value;
 
             return new PixelRect(
                 (int)Math.Round(screen.Left),
@@ -128,11 +141,22 @@ namespace Carnac.Logic.Overlay
             if (string.IsNullOrEmpty(propertyName))
                 return true;
 
-            return string.Equals(propertyName, "Screen", StringComparison.Ordinal)
+            return AffectsScreenSelection(propertyName)
                 || string.Equals(propertyName, "Placement", StringComparison.Ordinal)
                 || string.Equals(propertyName, "ItemMaxWidth", StringComparison.Ordinal)
                 || string.Equals(propertyName, "LeftOffset", StringComparison.Ordinal)
                 || string.Equals(propertyName, "RightOffset", StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Whether a change of the named <see cref="PopupSettings"/> property can select another screen, so the list of
+        /// screens has to be read again. A null or empty name means that every property changed.
+        /// </summary>
+        public static bool AffectsScreenSelection(string propertyName)
+        {
+            return string.IsNullOrEmpty(propertyName)
+                || string.Equals(propertyName, "Screen", StringComparison.Ordinal)
+                || string.Equals(propertyName, "ScreenDeviceName", StringComparison.Ordinal);
         }
     }
 }

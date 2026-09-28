@@ -6,6 +6,7 @@ using System.Windows;
 using Carnac.Logic;
 using Carnac.Logic.KeyMonitor;
 using Carnac.Logic.Models;
+using Carnac.Logic.Overlay;
 using Carnac.UI;
 using Carnac.Utilities;
 using SettingsProviderNet;
@@ -49,11 +50,12 @@ namespace Carnac
             trayIcon = new CarnacTrayIcon();
             trayIcon.OpenPreferences += TrayIconOnOpenPreferences;
 
+            var concurrencyService = new ConcurrencyService();
             var keyShowViewModel = new KeyShowViewModel(settings);
-            keyShowView = new KeyShowView(keyShowViewModel, screenManager);
+            keyShowView = new KeyShowView(keyShowViewModel, screenManager, new SystemEventsDisplaySettingsMonitor(), concurrencyService);
             keyShowView.Show();
 
-            carnac = new KeysController(keyShowViewModel.Messages, messageProvider, new ConcurrencyService(), settingsProvider);
+            carnac = new KeysController(keyShowViewModel.Messages, messageProvider, concurrencyService, settingsProvider);
             carnac.Start();
 
 #if !DEBUG

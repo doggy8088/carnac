@@ -51,94 +51,109 @@
                 </Setter>
             </Style>
     </UserControl.Resources>
-	<ItemsControl VerticalAlignment="Top" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="White"
-	              ItemsSource="{Binding Screens}">
-		<ItemsControl.Style>
-			<Style>
-				<Style.Resources>
-					<SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
-					<SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent" />
-				</Style.Resources>
-			</Style>
-		</ItemsControl.Style>
-		<ItemsControl.ItemsPanel>
-			<ItemsPanelTemplate>
-				<StackPanel IsItemsHost="True" Orientation="Horizontal" />
-			</ItemsPanelTemplate>
-		</ItemsControl.ItemsPanel>
-		<ItemsControl.ItemTemplate>
-			<DataTemplate>
-				<StackPanel Margin="5,5,5,5" VerticalAlignment="Bottom">
-					<Grid Width="{Binding RelativeWidth}" Height="{Binding RelativeHeight}" Margin="0"
-					      HorizontalAlignment="Left">
-						<Rectangle Fill="{DynamicResource AccentColorBrush}" />
-						<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="96"
-						           FontWeight="SemiBold" Text="{Binding Index}" TextWrapping="Wrap" />
-						<RadioButton x:Name="rbTL" HorizontalAlignment="Left" VerticalAlignment="Top"
-						             Checked="RadioChecked" Content="" GroupName="Placement"
-						             IsChecked="{Binding NotificationPlacementTopLeft}"
-						             Style="{StaticResource PlacementButton}" Tag="{Binding}">
-							<RadioButton.Margin>
-								<MultiBinding Converter="{StaticResource PlacementMarginConverter}">
-									<Binding Path="DataContext.Settings.Margins"
-									         Source="{x:Reference ScreenSelector}" />
-									<Binding Path="DataContext.SelectedScreen"
-									         Source="{x:Reference ScreenSelector}" />
-									<Binding Path="IsChecked" RelativeSource="{RelativeSource Self}" />
-								</MultiBinding>
-							</RadioButton.Margin>
-						</RadioButton>
-						<RadioButton x:Name="rbBL" HorizontalAlignment="Left" VerticalAlignment="Bottom"
-						             Checked="RadioChecked" Content="" GroupName="Placement"
-						             IsChecked="{Binding NotificationPlacementBottomLeft}"
-						             Style="{StaticResource PlacementButton}" Tag="{Binding}">
-							<RadioButton.Margin>
-								<MultiBinding Converter="{StaticResource PlacementMarginConverter}">
-									<Binding Path="DataContext.Settings.Margins"
-									         Source="{x:Reference ScreenSelector}" />
-									<Binding Path="DataContext.SelectedScreen"
-									         Source="{x:Reference ScreenSelector}" />
-									<Binding Path="IsChecked" RelativeSource="{RelativeSource Self}" />
-								</MultiBinding>
-							</RadioButton.Margin>
-						</RadioButton>
-						<RadioButton x:Name="rbTR" HorizontalAlignment="Right" VerticalAlignment="Top"
-						             Checked="RadioChecked" Content="" GroupName="Placement"
-						             IsChecked="{Binding NotificationPlacementTopRight}"
-						             Style="{StaticResource PlacementButton}" Tag="{Binding}">
-							<RadioButton.Margin>
-								<MultiBinding Converter="{StaticResource PlacementMarginConverter}">
-									<Binding Path="DataContext.Settings.Margins"
-									         Source="{x:Reference ScreenSelector}" />
-									<Binding Path="DataContext.SelectedScreen"
-									         Source="{x:Reference ScreenSelector}" />
-									<Binding Path="IsChecked" RelativeSource="{RelativeSource Self}" />
-								</MultiBinding>
-							</RadioButton.Margin>
-						</RadioButton>
-						<RadioButton x:Name="rbBR" HorizontalAlignment="Right" VerticalAlignment="Bottom"
-						             Checked="RadioChecked" Content="" GroupName="Placement"
-						             IsChecked="{Binding NotificationPlacementBottomRight}"
-						             Style="{StaticResource PlacementButton}" Tag="{Binding}">
-							<RadioButton.Margin>
-								<MultiBinding Converter="{StaticResource PlacementMarginConverter}">
-									<Binding Path="DataContext.Settings.Margins"
-									         Source="{x:Reference ScreenSelector}" />
-									<Binding Path="DataContext.SelectedScreen"
-									         Source="{x:Reference ScreenSelector}" />
-									<Binding Path="IsChecked" RelativeSource="{RelativeSource Self}" />
-								</MultiBinding>
-							</RadioButton.Margin>
-						</RadioButton>
-					</Grid>
-					<TextBlock HorizontalAlignment="Left" FontSize="18.667" FontWeight="SemiBold"
-					           Text="{Binding FriendlyName}" TextWrapping="Wrap" />
-					<TextBlock HorizontalAlignment="Left" FontSize="14" TextWrapping="Wrap">
-						<Run Text="{Binding Width}" />
-						x<Run Text="{Binding Height}" />
-					</TextBlock>
-				</StackPanel>
-			</DataTemplate>
-		</ItemsControl.ItemTemplate>
-	</ItemsControl>
+    <StackPanel>
+        <!-- The screens are drawn where they are on the desk: a canvas with a tile at the position of each screen. -->
+        <ItemsControl HorizontalAlignment="Left" VerticalAlignment="Top" Background="{x:Null}" BorderBrush="{x:Null}"
+                      Foreground="White" ItemsSource="{Binding Screens}"
+                      Width="{Binding ScreenLayoutWidth}" Height="{Binding ScreenLayoutHeight}">
+            <ItemsControl.Style>
+                <Style>
+                    <Style.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent" />
+                    </Style.Resources>
+                </Style>
+            </ItemsControl.Style>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas IsItemsHost="True" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemContainerStyle>
+                <Style TargetType="{x:Type ContentPresenter}">
+                    <Setter Property="Canvas.Left" Value="{Binding LayoutLeft}" />
+                    <Setter Property="Canvas.Top" Value="{Binding LayoutTop}" />
+                </Style>
+            </ItemsControl.ItemContainerStyle>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid Width="{Binding RelativeWidth}" Height="{Binding RelativeHeight}" Margin="0">
+                        <Rectangle Margin="1" Fill="{DynamicResource AccentColorBrush}" />
+                        <Viewbox Margin="6" StretchDirection="DownOnly">
+                            <TextBlock FontSize="96" FontWeight="SemiBold" Text="{Binding Index, Mode=OneWay}" />
+                        </Viewbox>
+                        <RadioButton x:Name="rbTL" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                     Checked="RadioChecked" Content="" GroupName="Placement"
+                                     IsChecked="{Binding NotificationPlacementTopLeft}"
+                                     Style="{StaticResource PlacementButton}" Tag="{Binding}">
+                            <RadioButton.Margin>
+                                <MultiBinding Converter="{StaticResource PlacementMarginConverter}">
+                                    <Binding Path="DataContext.Settings.Margins"
+                                             Source="{x:Reference ScreenSelector}" />
+                                    <Binding Path="DataContext.SelectedScreen"
+                                             Source="{x:Reference ScreenSelector}" />
+                                    <Binding Path="IsChecked" RelativeSource="{RelativeSource Self}" />
+                                </MultiBinding>
+                            </RadioButton.Margin>
+                        </RadioButton>
+                        <RadioButton x:Name="rbBL" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                     Checked="RadioChecked" Content="" GroupName="Placement"
+                                     IsChecked="{Binding NotificationPlacementBottomLeft}"
+                                     Style="{StaticResource PlacementButton}" Tag="{Binding}">
+                            <RadioButton.Margin>
+                                <MultiBinding Converter="{StaticResource PlacementMarginConverter}">
+                                    <Binding Path="DataContext.Settings.Margins"
+                                             Source="{x:Reference ScreenSelector}" />
+                                    <Binding Path="DataContext.SelectedScreen"
+                                             Source="{x:Reference ScreenSelector}" />
+                                    <Binding Path="IsChecked" RelativeSource="{RelativeSource Self}" />
+                                </MultiBinding>
+                            </RadioButton.Margin>
+                        </RadioButton>
+                        <RadioButton x:Name="rbTR" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                     Checked="RadioChecked" Content="" GroupName="Placement"
+                                     IsChecked="{Binding NotificationPlacementTopRight}"
+                                     Style="{StaticResource PlacementButton}" Tag="{Binding}">
+                            <RadioButton.Margin>
+                                <MultiBinding Converter="{StaticResource PlacementMarginConverter}">
+                                    <Binding Path="DataContext.Settings.Margins"
+                                             Source="{x:Reference ScreenSelector}" />
+                                    <Binding Path="DataContext.SelectedScreen"
+                                             Source="{x:Reference ScreenSelector}" />
+                                    <Binding Path="IsChecked" RelativeSource="{RelativeSource Self}" />
+                                </MultiBinding>
+                            </RadioButton.Margin>
+                        </RadioButton>
+                        <RadioButton x:Name="rbBR" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                     Checked="RadioChecked" Content="" GroupName="Placement"
+                                     IsChecked="{Binding NotificationPlacementBottomRight}"
+                                     Style="{StaticResource PlacementButton}" Tag="{Binding}">
+                            <RadioButton.Margin>
+                                <MultiBinding Converter="{StaticResource PlacementMarginConverter}">
+                                    <Binding Path="DataContext.Settings.Margins"
+                                             Source="{x:Reference ScreenSelector}" />
+                                    <Binding Path="DataContext.SelectedScreen"
+                                             Source="{x:Reference ScreenSelector}" />
+                                    <Binding Path="IsChecked" RelativeSource="{RelativeSource Self}" />
+                                </MultiBinding>
+                            </RadioButton.Margin>
+                        </RadioButton>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <!-- One line per screen with the number that is drawn on its tile. -->
+        <ItemsControl Margin="0,6,0,0" Foreground="White" ItemsSource="{Binding Screens}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel IsItemsHost="True" Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Margin="0,0,16,0" FontSize="14" Text="{Binding Description, Mode=OneWay}" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </StackPanel>
 </UserControl>
