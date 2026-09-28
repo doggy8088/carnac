@@ -35,7 +35,9 @@ namespace Carnac.Logic
             parser = new KeyCombinationParser(this.warn);
 
             shortcuts = Directory.Exists(keymapFolder)
+                // "*.yml" also matches longer extensions such as ".ymlx" on .NET Framework, so filter the extension exactly.
                 ? Directory.GetFiles(keymapFolder, "*.yml")
+                    .Where(file => string.Equals(Path.GetExtension(file), ".yml", StringComparison.OrdinalIgnoreCase))
                     .OrderBy(file => file, StringComparer.OrdinalIgnoreCase)
                     .Select(LoadShortcuts)
                     .Where(collection => collection != null)

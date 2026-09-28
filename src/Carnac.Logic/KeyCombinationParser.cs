@@ -12,7 +12,9 @@ namespace Carnac.Logic
     /// <item>A combination is modifiers joined with '+' followed by exactly one key: <c>Ctrl+Shift+N</c>.
     /// Modifiers are <c>Ctrl</c> (or <c>Control</c>), <c>Alt</c>, <c>Shift</c> and <c>Win</c> (or <c>Windows</c>).
     /// The key is a <see cref="Keys"/> name (<c>Enter</c>, <c>F5</c>, <c>PageDown</c>), a single digit,
-    /// or a character such as <c>,</c> <c>.</c> <c>-</c> <c>/</c>. Use <c>Ctrl++</c> for the plus key.</item>
+    /// or a character such as <c>,</c> <c>.</c> <c>-</c> <c>/</c>. A character that is typed with Shift on a US keyboard
+    /// (<c>+</c> <c>!</c> <c>?</c> <c>_</c> <c>{</c> ...) means that shifted key: <c>Ctrl++</c> is Ctrl+Shift+Oemplus, while
+    /// <c>Ctrl+=</c> and <c>Ctrl+Oemplus</c> are the unshifted key.</item>
     /// <item>A sequence ("chord") is combinations separated by commas: <c>Ctrl+K,Ctrl+C</c>. Whitespace around the
     /// commas is ignored. A comma that directly follows a '+' is the comma key itself (<c>Ctrl+,</c>); on its own
     /// the comma key is written <c>Oemcomma</c>.</item>
@@ -188,10 +190,11 @@ namespace Carnac.Logic
             }
 
             Keys key;
-            if (!TryResolveKey(keyText, out key, out error))
+            bool impliesShift;
+            if (!TryResolveKey(keyText, out key, out impliesShift, out error))
                 return false;
 
-            definition = new KeyPressDefinition(key, winkeyPressed: win, shiftPressed: shift, altPressed: alt, controlPressed: ctrl);
+            definition = new KeyPressDefinition(key, winkeyPressed: win, shiftPressed: shift || impliesShift, altPressed: alt, controlPressed: ctrl);
             return true;
         }
 
@@ -262,9 +265,10 @@ namespace Carnac.Logic
             return i >= 0 && currentCombination[i] != '+';
         }
 
-        static bool TryResolveKey(string keyText, out Keys key, out string error)
+        static bool TryResolveKey(string keyText, out Keys key, out bool impliesShift, out string error)
         {
             key = Keys.None;
+            impliesShift = false;
             error = null;
 
             if (string.IsNullOrEmpty(keyText))
@@ -314,6 +318,7 @@ namespace Carnac.Logic
             }
 
             key = resolved.Value;
+            impliesShift = ReplaceKey.IsShiftedCharacter(keyText);
             if (key == Keys.None || (key & Keys.Modifiers) != Keys.None || ModifierKeys.Contains(key))
             {
                 error = "'" + keyText + "' is a modifier, not a key; add the key after it (for example 'Ctrl+S')";

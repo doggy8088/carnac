@@ -81,6 +81,22 @@ namespace Carnac.Logic
             {Keys.PageDown, "PageDown"}
         };
 
+        /// <summary>
+        /// True when the text is a character that is typed with Shift held on a US keyboard ("+", "!", "?", "_", "{" ...),
+        /// as opposed to the key aliases in the same table ("ins", "del"). <see cref="ToKey"/> resolves such a character
+        /// to its physical key; the key press only matches when Shift is held as well.
+        /// </summary>
+        public static bool IsShiftedCharacter(string keyText)
+        {
+            foreach (var shiftReplacement in ShiftReplacements)
+            {
+                if (shiftReplacement.Value.Equals(keyText, StringComparison.OrdinalIgnoreCase))
+                    // Insert and Delete are key-name aliases ("ins", "del"), not characters typed with Shift
+                    return shiftReplacement.Key != Keys.Insert && shiftReplacement.Key != Keys.Delete;
+            }
+            return false;
+        }
+
         public static Keys? ToKey(string keyText)
         {
             foreach (var shiftReplacement in ShiftReplacements)
