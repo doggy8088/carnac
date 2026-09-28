@@ -22,7 +22,7 @@ namespace Carnac.Logic
                 "Alt", "Ctrl", "Shift",
                 "Back", "Escape", "Tab", "Space",
                 "Insert", "Delete", "Home", "End", "PageUp", "PageDown",
-                "CapsLock", "NumLock", "ScrollLock", "PrintScreen", "Pause", "Break", "Clear", "ContextMenu"
+                "CapsLock", "NumLock", "ScrollLock", "PrintScreen", "Pause", "Break", "ContextMenu"
             };
 
             for (var i = 1; i <= 24; i++)
