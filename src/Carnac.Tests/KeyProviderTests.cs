@@ -171,6 +171,14 @@ namespace Carnac.Tests
             return AssociatedProcessUtilities.GetAssociatedProcess().ProcessName;
         }
 
+        // A process name that cannot match the current process: longer than the current name and containing it only as a
+        // suffix, so even an unanchored expression built from it never matches the observed name. Tests must not assume
+        // which application owns the foreground window (a runner, an IDE, Notepad ...).
+        static string OtherProcessName(string suffix = "")
+        {
+            return "zzz-other-" + CurrentProcessName().ToLowerInvariant() + suffix;
+        }
+
         [Fact]
         public async Task filter_is_matched_case_insensitively()
         {
@@ -181,15 +189,17 @@ namespace Carnac.Tests
         [Fact]
         public async Task filter_with_alternatives_shows_only_the_listed_processes()
         {
-            // "notepad|calc": only these applications
-            Assert.Equal(0, await KeysShownWithFilter("notepad|calc"));
-            Assert.Equal(1, await KeysShownWithFilter("notepad|calc|" + Regex.Escape(CurrentProcessName())));
+            // alternatives that do not name the current process show nothing, listing it as well shows it
+            var others = Regex.Escape(OtherProcessName("-1")) + "|" + Regex.Escape(OtherProcessName("-2"));
+
+            Assert.Equal(0, await KeysShownWithFilter(others));
+            Assert.Equal(1, await KeysShownWithFilter(others + "|" + Regex.Escape(CurrentProcessName())));
         }
 
         [Fact]
         public async Task exclusion_filter_hides_the_excluded_process()
         {
-            // "^(?!ZoomIt64$)": everything except ZoomIt64, here with the process the test runs in
+            // "^(?!ZoomIt64$)" excludes ZoomIt64; here the excluded name is the process the test runs in
             var excludeCurrentProcess = "^(?!" + Regex.Escape(CurrentProcessName()) + "$)";
 
             Assert.Equal(0, await KeysShownWithFilter(excludeCurrentProcess));
@@ -198,7 +208,8 @@ namespace Carnac.Tests
         [Fact]
         public async Task exclusion_filter_shows_other_processes()
         {
-            Assert.Equal(1, await KeysShownWithFilter("^(?!ZoomIt64$)"));
+            // excluding some other process leaves the current one visible
+            Assert.Equal(1, await KeysShownWithFilter("^(?!" + Regex.Escape(OtherProcessName()) + "$)"));
         }
 
         [Fact]
