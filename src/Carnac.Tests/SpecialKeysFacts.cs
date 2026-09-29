@@ -107,6 +107,32 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void text_is_not_a_special_key()
+        {
+            var texts = new[]
+            {
+                null, string.Empty, "a", "A", "1", " ", ".", " + ", ", ", " x 3 ", " [Copy]",
+                "back", "f1", "F0", "F25", "Clear", "Left", "Up", "Right", "Down"
+            };
+
+            foreach (var text in texts)
+                Assert.False(SpecialKeys.IsSpecialKey(text), text ?? "<null>");
+        }
+
+        [Fact]
+        public void a_typed_space_is_not_a_key_cap()
+        {
+            var keyPress = new KeyPress(
+                new ProcessInfo("FakeProcess"),
+                new InterceptKeyEventArgs(Keys.Space, KeyDirection.Down, false, false, false),
+                false,
+                new[] { " " });
+
+            Assert.Equal(new[] { " " }, keyPress.GetTextParts().ToArray());
+            Assert.False(SpecialKeys.IsSpecialKey(" "));
+        }
+
+        [Fact]
         public void converter_reports_whether_the_text_is_a_special_key()
         {
             var converter = new SpecialKeyConverter();
