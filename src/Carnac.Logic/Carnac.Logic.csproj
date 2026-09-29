@@ -76,14 +76,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BoundedCache.cs" />
     <Compile Include="ConfiguredHotkeys.cs" />
+    <Compile Include="ErrorNotifyingLogger.cs" />
+    <Compile Include="FileLogger.cs" />
     <Compile Include="Enums\NotificationPlacement.cs" />
     <Compile Include="IConcurrencyService.cs" />
     <Compile Include="IKeyDisplayState.cs" />
     <Compile Include="IMessageProvider.cs" />
     <Compile Include="HotkeyParser.cs" />
     <Compile Include="IKeyProvider.cs" />
+    <Compile Include="ILogger.cs" />
     <Compile Include="IPasswordModeService.cs" />
+    <Compile Include="IProcessProvider.cs" />
     <Compile Include="IScreenManager.cs" />
     <Compile Include="IShortcutProvider.cs" />
     <Compile Include="ITrayNotifier.cs" />
@@ -106,8 +111,10 @@
     <Compile Include="Models\Message.cs" />
     <Compile Include="Models\PopupSettings.cs" />
     <Compile Include="NotifyPropertyChanged.cs" />
+    <Compile Include="NullLogger.cs" />
     <Compile Include="PasswordModeService.cs" />
     <Compile Include="ReplaceKey.cs" />
+    <Compile Include="RetryWithDelayExtensions.cs" />
     <Compile Include="ScreenManager.cs" />
     <Compile Include="ShortcutCollection.cs" />
     <Compile Include="ShortcutProvider.cs" />

@@ -14,6 +14,7 @@ namespace Carnac.Logic.KeyMonitor
     {
         public static readonly InterceptKeys Current = new InterceptKeys();
         readonly IObservable<InterceptKeyEventArgs> keyStream;
+        volatile ILogger logger = NullLogger.Instance;
         // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         Win32Methods.LowLevelKeyboardProc callback;
 
@@ -28,10 +29,19 @@ namespace Carnac.Logic.KeyMonitor
                 {
                     if (nCode >= 0)
                     {
-                        var eventArgs = CreateEventArgs(wParam, lParam);
-                        observer.OnNext(eventArgs);
-                        if (eventArgs.Handled)
-                            return (IntPtr)1;
+                        try
+                        {
+                            var eventArgs = CreateEventArgs(wParam, lParam);
+                            observer.OnNext(eventArgs);
+                            if (eventArgs.Handled)
+                                return (IntPtr)1;
+                        }
+                        catch (Exception ex)
+                        {
+                            // An exception that escapes into the native hook procedure takes the whole process down
+                            // (the "silent crash"). Log it and let the key through to the application as usual.
+                            Logger.Error("An exception was thrown while handling a key press in the keyboard hook", ex);
+                        }
                     }
 
                     // ReSharper disable once AccessToModifiedClosure
@@ -46,6 +56,13 @@ namespace Carnac.Logic.KeyMonitor
                 });
             })
             .Publish().RefCount();
+        }
+
+        /// <summary>Where exceptions from the hook procedure are reported. Set once at startup; nothing is logged until then.</summary>
+        public ILogger Logger
+        {
+            get { return logger; }
+            set { logger = value ?? NullLogger.Instance; }
         }
 
         public IObservable<InterceptKeyEventArgs> GetKeyStream()

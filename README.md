@@ -64,6 +64,16 @@ Hover over the Carnac icon in the notification area to see whether Carnac is act
 
 The menu shows the current hotkeys next to the items. Pause and silent mode are not remembered, Carnac always starts with both switched off.
 
+### Troubleshooting
+
+#### Carnac stopped showing keys or closed by itself
+
+Carnac writes a log file to `%APPDATA%\Carnac\logs`, one file per day: `carnac-YYYYMMDD.log` (paste that path into the Windows Explorer address bar). When errors keep happening, Carnac also shows a notice at the tray icon; click it to open the folder.
+
+The log contains error messages with their stack trace, never the keys you type, but it can mention program names (for example when Carnac cannot read a program's icon). A log file is limited to 1 MB (the previous part is kept as `carnac-YYYYMMDD.old.log`), repeated identical entries are written once, and files older than 14 days are deleted automatically.
+
+If you [open an issue](https://github.com/doggy8088/carnac/issues), please attach the newest entries of the log.
+
 ### Contributing
 
 #### Getting started with Git and GitHub
