@@ -112,6 +112,11 @@ namespace Carnac.Logic
 
         public static Keys? ToKey(string keyText)
         {
+            // "|" is listed for two keys; the US backslash/pipe key (Oem5) is the one the key names refer to, the ISO
+            // OemBackslash key is only reachable by that name.
+            if (keyText == "|")
+                return Keys.Oem5;
+
             foreach (var shiftReplacement in ShiftReplacements)
             {
                 if (shiftReplacement.Value.Equals(keyText, StringComparison.OrdinalIgnoreCase))

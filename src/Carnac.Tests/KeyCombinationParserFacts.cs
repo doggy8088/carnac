@@ -146,6 +146,7 @@ namespace Carnac.Tests
             ParseError("Ctrl+");
             ParseError("+Ctrl+A");
             ParseError("Ctrl++A");
+            Assert.Contains("modifier", ParseError("++"));
             ParseError("Ctrl+Ctrl+A");
         }
 
@@ -178,6 +179,15 @@ namespace Carnac.Tests
             Assert.Equal(new KeyPressDefinition(Keys.Oemplus, controlPressed: true), Parse("Ctrl+="));
             Assert.Equal(new KeyPressDefinition(Keys.OemQuestion, controlPressed: true), Parse("Ctrl+/"));
             Assert.Equal(new KeyPressDefinition(Keys.Oemplus, controlPressed: true), Parse("Ctrl+Oemplus"));
+        }
+
+        [Fact]
+        public void the_pipe_character_is_the_shifted_us_backslash_key()
+        {
+            // Oem5 is the key a US keyboard reports for backslash and pipe; OemBackslash is the extra ISO key
+            Assert.Equal(new KeyPressDefinition(Keys.Oem5, controlPressed: true, shiftPressed: true), Parse("Ctrl+|"));
+            Assert.Equal(new KeyPressDefinition(Keys.Oem5, controlPressed: true), Parse("Ctrl+\\"));
+            Assert.Equal(new KeyPressDefinition(Keys.OemBackslash, controlPressed: true), Parse("Ctrl+OemBackslash"));
         }
 
         [Fact]
