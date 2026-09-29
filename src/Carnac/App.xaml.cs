@@ -32,7 +32,7 @@ namespace Carnac
         {
             settingsProvider = new SettingsProvider(new RoamingAppDataStorage("Carnac"));
             settings = settingsProvider.GetSettings<PopupSettings>();
-            var keyProvider = new KeyProvider(InterceptKeys.Current, new PasswordModeService(displayState), new DesktopLockEventService(), settingsProvider);
+            var keyProvider = new KeyProvider(InterceptKeys.Current, new PasswordModeService(displayState, settings), new DesktopLockEventService(), settingsProvider);
             messageProvider = new MessageProvider(new ShortcutProvider(), keyProvider, settings, displayState);
         }
 
@@ -47,7 +47,7 @@ namespace Carnac
                 return;
             }
 
-            trayIcon = new CarnacTrayIcon(displayState);
+            trayIcon = new CarnacTrayIcon(displayState, settings);
             trayIcon.OpenPreferences += TrayIconOnOpenPreferences;
 
             // Settings saved before Top was persisted load it as 0, so refresh the

@@ -70,6 +70,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfiguredHotkeysFacts.cs" />
+    <Compile Include="HotkeyParserFacts.cs" />
+    <Compile Include="HotkeyPipelineFacts.cs" />
+    <Compile Include="HotkeySettingsFacts.cs" />
+    <Compile Include="InMemoryStorage.cs" />
     <Compile Include="KeyDisplayStateFacts.cs" />
     <Compile Include="KeyPlayer.cs" />
     <Compile Include="KeysControllerFacts.cs" />
@@ -84,6 +89,7 @@
     <Compile Include="TrayStatusTextFacts.cs" />
     <Compile Include="KeyProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\PreferencesViewModelHotkeyFacts.cs" />
     <Compile Include="ViewModels\ShellViewModelFacts.cs" />
   </ItemGroup>
   <ItemGroup>
