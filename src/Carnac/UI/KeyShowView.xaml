@@ -4,10 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="clr-namespace:Carnac.UI"
+        xmlns:utilities="clr-namespace:Carnac.Utilities"
         mc:Ignorable="d"
         x:Class="Carnac.UI.KeyShowView" Title="KeyShowView" ShowInTaskbar="False" AllowsTransparency="True"
         Background="Transparent" BorderBrush="Transparent" WindowStartupLocation="Manual" Top="0" Loaded="WindowLoaded"
         WindowStyle="None" SnapsToDevicePixels="True" FontSize="{Binding Settings.FontSize}" Focusable="False"
+        FontFamily="{Binding Settings.FontFamily, Converter={x:Static utilities:FontFamilyNameConverter.Instance}}"
         Topmost="True" x:Name="This" d:DataContext="{d:DesignInstance ui:KeyShowViewModel}">
     <Window.Resources>
         <CollectionViewSource x:Key="KeysViewSource" Source="{Binding Messages}">
@@ -70,7 +72,9 @@
             <DataTemplate>
                 <Border x:Name="Border" Margin="0, 0, 0, 3" HorizontalAlignment="Stretch"
                         Opacity="{Binding DataContext.Settings.ItemOpacity, Source={x:Reference This}}"
-                        IsHitTestVisible="True" Focusable="True" BorderThickness="4" CornerRadius="15" Padding="3">
+                        IsHitTestVisible="True" Focusable="True" BorderThickness="4"
+                        CornerRadius="{Binding DataContext.Settings.ItemBorderCornerRadius, Source={x:Reference This}}"
+                        Padding="{Binding DataContext.Settings.ItemBorderPadding, Source={x:Reference This}}">
                     <Border.Background>
                         <SolidColorBrush Color="{Binding DataContext.Settings.ItemBackgroundColor, Source={x:Reference This}}" />
                     </Border.Background>
