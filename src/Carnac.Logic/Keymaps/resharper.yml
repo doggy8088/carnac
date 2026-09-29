@@ -140,7 +140,7 @@ shortcuts:
 
     - name:      Go to previous edit
       keys:
-      - Ctrl+Shift+Backspace
+      - Ctrl+Shift+Back
 
     - name:      Go to related files
       keys:
@@ -150,13 +150,9 @@ shortcuts:
       keys:
       - Ctrl+`
 
-    - name:      Go to bookmark
-      keys:
-      - Ctrl+[numeric+key]
-
-    - name:      Set/remove bookmark
-      keys:
-      - Ctrl+Shift+[numeric+key]
+    # The bookmark shortcuts (Ctrl+0..9 to go to a bookmark, Ctrl+Shift+0..9 to set one) are not listed: the digit
+    # keys collide with Visual Studio's own Ctrl+5..9 and Ctrl+Shift+1/2/7/8 entries (visual-studio.yml, same process),
+    # and only one keymap can name a key press.
 
     - name:      Go to type
       keys:
@@ -320,4 +316,4 @@ shortcuts:
 
     - name:      Activate recent tool
       keys:
-      - Ctrl+Alt+Backspace
+      - Ctrl+Alt+Back

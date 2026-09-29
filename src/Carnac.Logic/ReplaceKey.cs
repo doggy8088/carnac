@@ -81,11 +81,32 @@ namespace Carnac.Logic
             {Keys.PageDown, "PageDown"}
         };
 
-        public static Keys? ToKey(string keyText)
+        /// <summary>
+        /// True when the text is a character that is typed with Shift held on a US keyboard ("+", "!", "?", "_", "{" ...),
+        /// as opposed to the key aliases in the same table ("ins", "del"). <see cref="ToKey"/> resolves such a character
+        /// to its physical key; the key press only matches when Shift is held as well.
+        /// </summary>
+        public static bool IsShiftedCharacter(string keyText)
         {
             foreach (var shiftReplacement in ShiftReplacements)
             {
-                if (shiftReplacement.Value.Equals(keyText, StringComparison.CurrentCultureIgnoreCase))
+                if (shiftReplacement.Value.Equals(keyText, StringComparison.OrdinalIgnoreCase))
+                    // Insert and Delete are key-name aliases ("ins", "del"), not characters typed with Shift
+                    return shiftReplacement.Key != Keys.Insert && shiftReplacement.Key != Keys.Delete;
+            }
+            return false;
+        }
+
+        public static Keys? ToKey(string keyText)
+        {
+            // "|" is listed for two keys; the US backslash/pipe key (Oem5) is the one the key names refer to, the ISO
+            // OemBackslash key is only reachable by that name.
+            if (keyText == "|")
+                return Keys.Oem5;
+
+            foreach (var shiftReplacement in ShiftReplacements)
+            {
+                if (shiftReplacement.Value.Equals(keyText, StringComparison.OrdinalIgnoreCase))
                     return shiftReplacement.Key;
             }
             Keys parsedKey;
@@ -94,7 +115,7 @@ namespace Carnac.Logic
 
             foreach (var replacement in Replacements)
             {
-                if (replacement.Value.Equals(keyText, StringComparison.CurrentCultureIgnoreCase))
+                if (replacement.Value.Equals(keyText, StringComparison.OrdinalIgnoreCase))
                     return replacement.Key;
             }
             return null;

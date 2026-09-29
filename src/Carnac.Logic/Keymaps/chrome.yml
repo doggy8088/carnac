@@ -63,10 +63,10 @@ shortcuts:
       - Alt+Home
   - name: Open the previous page from your browsing history in the current tab
     keys:
-      - Alt+Left arrow
+      - Alt+Left
   - name: Open the next page from your browsing history in the current tab
     keys:
-      - Alt+Right arrow
+      - Alt+Right
   - name: Close the current tab
     keys:
       - Ctrl+w
@@ -76,10 +76,10 @@ shortcuts:
       - Ctrl+Shift+w
   - name: Minimize the current window
     keys:
-      - Alt+Space+n
+      - Alt+Space,N
   - name: Maximize the current window
     keys:
-      - Alt+Space+x
+      - Alt+Space,X
   - name: Close the current window
     keys:
       - Alt+F4
@@ -92,7 +92,6 @@ shortcuts:
     keys:
       - Alt+f
       - Alt+e
-      - F10+Enter
   - name: Show or hide the Bookmarks bar
     keys:
       - Ctrl+Shift+b
@@ -107,7 +106,7 @@ shortcuts:
       - Ctrl+j
   - name: Open the Chrome Task Manager
     keys:
-      - Shift+Esc
+      - Shift+Escape
   - name: Set focus on the first item in the Chrome toolbar
     keys:
       - Shift+Alt+t
@@ -172,7 +171,7 @@ shortcuts:
       - Ctrl+Shift+r
   - name: Stop the page loading
     keys:
-      - Esc
+      - Escape
   - name: Browse clickable items moving forward
     keys:
       - Tab
@@ -196,10 +195,13 @@ shortcuts:
       - F11
   - name: Make everything on the page bigger
     keys:
-      - Ctrl and +
+      - Ctrl+Oemplus
+      - Ctrl+Shift+Oemplus
+      - Ctrl+Add
   - name: Make everything on the page smaller
     keys:
-      - Ctrl and -
+      - Ctrl+OemMinus
+      - Ctrl+Subtract
   - name: Return everything on the page to default size
     keys:
       - Ctrl+0
@@ -218,13 +220,13 @@ shortcuts:
       - End
   - name: Move your cursor to the front of the previous word in a text field
     keys:
-      - Ctrl+Left arrow
+      - Ctrl+Left
   - name: Move your cursor to the back of the next word in a text field
     keys:
-      - Ctrl+Right arrow
+      - Ctrl+Right
   - name: Delete the previous word in a text field
     keys:
-      - Ctrl+Backspace
+      - Ctrl+Back
   - name: Open the Home page in the current tab
     keys:
       - Alt+Home
