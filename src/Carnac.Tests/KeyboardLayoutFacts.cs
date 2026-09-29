@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Carnac.Logic;
 using Carnac.Logic.KeyMonitor;
 using Carnac.Logic.Models;
+using Carnac.UI;
 using Microsoft.Win32;
 using NSubstitute;
 using SettingsProviderNet;
@@ -62,7 +63,7 @@ namespace Carnac.Tests
 
                 foreach (var key in LetterKeys)
                 {
-                    Assert.Equal(key.ToString().ToLower(), Translate(key, false, false, layout));
+                    Assert.Equal(key.ToString().ToLowerInvariant(), Translate(key, false, false, layout));
                     Assert.Equal(key.Sanitise(), Translate(key, true, false, layout));
                 }
 
@@ -218,8 +219,10 @@ namespace Carnac.Tests
 
             if (german != null)
             {
-                // Carnac has always shown letters without the capitals of Caps Lock
+                // Carnac has always shown letters without the capitals of Caps Lock, also the ones on the punctuation keys
                 Assert.Equal("q", KeyboardLayoutTranslator.Translate(Keys.Q, false, false, german.Handle, capsLock: true));
+                Assert.Equal("\u00fc", KeyboardLayoutTranslator.Translate(Keys.Oem1, false, false, german.Handle, capsLock: true));
+                Assert.Equal("\u00d6", KeyboardLayoutTranslator.Translate(Keys.Oemtilde, true, false, german.Handle, capsLock: true));
             }
 
             if (us != null)
@@ -552,7 +555,6 @@ namespace Carnac.Tests
         public async Task the_layout_can_be_switched_off_in_the_settings()
         {
             layout.Set(Keys.Oem1, false, false, "\u00fc");
-            layout.Set(Keys.Oem1, false, false, "\u00fc");
             var settings = new PopupSettings { UseKeyboardLayoutNames = false };
             settingsProvider.GetSettings<PopupSettings>().Returns(settings);
 
@@ -561,6 +563,28 @@ namespace Carnac.Tests
 
             settings.UseKeyboardLayoutNames = true;
             Assert.Equal(new[] { "\u00fc" }, await Input(Press(Keys.Oem1)));
+        }
+
+        [Fact]
+        public async Task a_shortcut_with_a_dead_key_keeps_the_name_the_key_always_had()
+        {
+            // a dead key types nothing on its own: as a key of a shortcut it has no name on the layout
+            layout.Set(Keys.Oem6, false, false, string.Empty);
+
+            Assert.Equal(new[] { "Ctrl", "]" }, await Input(Press(Keys.Oem6, control: true)));
+            Assert.Equal(new[] { "Ctrl", "Shift", "]" }, await Input(Press(Keys.Oem6, control: true, shift: true)));
+            Assert.Equal(new[] { "Win", "]" }, await Input(WinPress(Keys.Oem6)));
+        }
+
+        [Fact]
+        public void the_preferences_know_whether_the_keyboard_layout_can_be_used()
+        {
+            var preferencesSettings = Substitute.For<ISettingsProvider>();
+            preferencesSettings.GetSettings<PopupSettings>().Returns(new PopupSettings());
+
+            var viewModel = new PreferencesViewModel(preferencesSettings, Substitute.For<IScreenManager>());
+
+            Assert.Equal(KeyboardLayoutTranslator.IsSupported, viewModel.IsKeyboardLayoutSupported);
         }
 
         [Fact]

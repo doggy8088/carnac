@@ -48,6 +48,12 @@ namespace Carnac.UI
             VisitCommand = new DelegateCommand(Visit);
         }
 
+        /// <summary>The keys can only be named after the keyboard layout on Windows 10 version 1607 or later.</summary>
+        public bool IsKeyboardLayoutSupported
+        {
+            get { return KeyboardLayoutTranslator.IsSupported; }
+        }
+
         public ICommand VisitCommand { get; private set; }
 
         public ICommand ResetToDefaultsCommand { get; private set; }

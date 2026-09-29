@@ -192,7 +192,7 @@ namespace Carnac.Logic
             if (isWinKeyPressed && !controlPressed && !altPressed && !IsNamedLikeItsLatinLetter(interceptKeyEventArgs.Key))
             {
                 var winText = GetLayoutText(interceptKeyEventArgs.Key, shiftPressed, false);
-                if (winText != null)
+                if (!string.IsNullOrEmpty(winText))
                 {
                     yield return winText;
                     yield break;
@@ -269,8 +269,9 @@ namespace Carnac.Logic
 
         string GetShortcutKeyName(Keys key)
         {
+            // a key that types nothing on its own (a dead key) has no name on the layout: the one it always had
             var layoutText = IsNamedLikeItsLatinLetter(key) ? null : GetLayoutText(key, false, false);
-            return layoutText ?? key.Sanitise();
+            return string.IsNullOrEmpty(layoutText) ? key.Sanitise() : layoutText;
         }
     }
 }

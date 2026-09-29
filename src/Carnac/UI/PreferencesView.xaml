@@ -150,7 +150,10 @@
                             <CheckBox IsChecked="{Binding Settings.ShowSpaceAsUnicode}" Content="Show Space as Unicode character '␣'" />
                         </ui:PreferencesField>
                         <ui:PreferencesField Header="Keyboard Layout">
-                            <CheckBox IsChecked="{Binding Settings.UseKeyboardLayoutNames}" Content="Show the keys as they are on my keyboard layout (Windows 10 version 1607 or later)" />
+                            <StackPanel Orientation="Vertical">
+                                <CheckBox IsChecked="{Binding Settings.UseKeyboardLayoutNames}" IsEnabled="{Binding IsKeyboardLayoutSupported, Mode=OneTime}" Content="Show keys as on my keyboard layout" />
+                                <TextBlock TextWrapping="Wrap">Needs Windows 10 version 1607 or later.</TextBlock>
+                            </StackPanel>
                         </ui:PreferencesField>
                         <ui:PreferencesField Header="Show Application Icon">
                             <CheckBox IsChecked="{Binding Settings.ShowApplicationIcon}" Content="Display the active application's icon" />

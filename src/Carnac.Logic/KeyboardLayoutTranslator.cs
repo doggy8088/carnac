@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
@@ -36,6 +37,7 @@ namespace Carnac.Logic
         const uint Windows10Version1607Build = 14393;
 
         static readonly bool isSupported = IsWindows10Version1607OrLater();
+        static readonly uint GuiThreadInfoSize = (uint)Marshal.SizeOf(typeof(GuiThreadInfo));
 
         // the hook calls from one thread, so the buffers of a call can be reused by the next one
         [ThreadStatic]
@@ -139,10 +141,24 @@ namespace Carnac.Logic
 
         /// <summary>Translates with an explicit layout.</summary>
         /// <param name="capsLock">
-        /// Caps Lock is on. It only counts for the keys that are not letters: Carnac shows letters without the capitals
-        /// of Caps Lock, but on some layouts (French, Belgian) the digit row types digits with it.
+        /// Caps Lock is on. It only counts for what is not a letter: Carnac shows letters without the capitals of Caps
+        /// Lock (also the letters on the punctuation keys of a layout), but on some layouts (French, Belgian) the digit
+        /// row types digits with it.
         /// </param>
         public static string Translate(Keys key, bool shift, bool altGr, IntPtr layout, bool capsLock = false)
+        {
+            var text = TranslateWith(key, shift, altGr, layout, capsLock && !(key >= Keys.A && key <= Keys.Z));
+
+            // Caps Lock made a letter of a punctuation key a capital: it is not to count, as for the other letters
+            if (capsLock && !string.IsNullOrEmpty(text) && text.Any(char.IsLetter))
+            {
+                return TranslateWith(key, shift, altGr, layout, false);
+            }
+
+            return text;
+        }
+
+        static string TranslateWith(Keys key, bool shift, bool altGr, IntPtr layout, bool capsLock)
         {
             if (!isSupported || !IsCharacterKey(key))
             {
@@ -161,7 +177,7 @@ namespace Carnac.Logic
                 keyState[VkShift] = KeyDown;
                 keyState[VkLShift] = KeyDown;
             }
-            if (capsLock && !(key >= Keys.A && key <= Keys.Z))
+            if (capsLock)
             {
                 keyState[VkCapital] = 0x01;
             }
@@ -227,7 +243,7 @@ namespace Carnac.Logic
         // (a child window of another thread). Without a window there is no layout to name keys with.
         public static IntPtr GetFocusedWindowLayout()
         {
-            var info = new GuiThreadInfo { Size = (uint)Marshal.SizeOf(typeof(GuiThreadInfo)) };
+            var info = new GuiThreadInfo { Size = GuiThreadInfoSize };
             if (!GetGUIThreadInfo(0, ref info))
             {
                 return IntPtr.Zero;
