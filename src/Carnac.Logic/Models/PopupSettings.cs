@@ -87,6 +87,29 @@ namespace Carnac.Logic.Models
         [DefaultValue("")]
         public string ProcessFilterExpression { get; set;  }
 
+        // A new PopupSettings has to show every key, so the field starts at All instead of relying on [DefaultValue]
+        // (which only the settings provider applies).
+        KeyCategory visibleKeyCategories = KeyCategory.All;
+
+        /// <summary>
+        /// The key groups that are shown. Keys pressed with Ctrl, Alt or the Windows key, and shortcuts recognised from
+        /// the keymaps, are always shown; this only decides about the other key presses. It is applied in addition to
+        /// <see cref="DetectShortcutsOnly"/> and <see cref="ShowOnlyModifiers"/>, which can only hide more.
+        /// </summary>
+        [DefaultValue(KeyCategory.All)]
+        public KeyCategory VisibleKeyCategories
+        {
+            get { return visibleKeyCategories; }
+            set { visibleKeyCategories = value; }
+        }
+
+        /// <summary>
+        /// Keys that are never shown, separated by commas or line breaks, in the keymap key syntax: "W,A,S,D" or
+        /// "Ctrl+Alt+Delete". Modifiers must match exactly.
+        /// </summary>
+        [DefaultValue("")]
+        public string IgnoredKeys { get; set; }
+
         public double ScaleTransform
         {
             get { return Placement == NotificationPlacement.TopLeft || Placement == NotificationPlacement.TopRight ? 1 : -1; }
