@@ -120,14 +120,19 @@ namespace Carnac.Logic
             string keyText;
             if (combination.EndsWith("+", StringComparison.Ordinal))
             {
-                // Only "+" itself ("+", "Ctrl++") can end with a plus; it is the plus key, not a separator.
+                // Only "+" itself ("+", "Ctrl++", "Ctrl + +") can end with a plus; it is the plus key, not a separator.
+                // Whitespace around the parts is ignored, so look for the separator before the last plus past any spaces.
+                var separator = combination.Length - 2;
+                while (separator >= 0 && char.IsWhiteSpace(combination[separator]))
+                    separator--;
+
                 if (combination.Length == 1)
                 {
                     modifierText = string.Empty;
                 }
-                else if (combination[combination.Length - 2] == '+')
+                else if (separator >= 0 && combination[separator] == '+')
                 {
-                    modifierText = combination.Substring(0, combination.Length - 2);
+                    modifierText = combination.Substring(0, separator);
                     if (modifierText.Trim().Length == 0)
                     {
                         error = "a modifier is missing before the first '+' (the plus key on its own is written '+')";

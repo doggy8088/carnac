@@ -191,6 +191,24 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void whitespace_around_the_plus_key_is_ignored()
+        {
+            var expected = new KeyPressDefinition(Keys.Oemplus, controlPressed: true, shiftPressed: true);
+            Assert.Equal(expected, Parse("Ctrl++"));
+            Assert.Equal(expected, Parse("Ctrl + +"));
+            Assert.Equal(expected, Parse("Ctrl+ +"));
+            Assert.Equal(expected, Parse("  Ctrl +  +  "));
+            Assert.Equal(new KeyPressDefinition(Keys.Oemplus, controlPressed: true, altPressed: true, shiftPressed: true), Parse("Ctrl + Alt + +"));
+            Assert.Equal(
+                new[] { expected, new KeyPressDefinition(Keys.A) },
+                ParseSequence("Ctrl + +, A").ToArray());
+            // a plus that still waits for its key is an error, with or without spaces
+            Assert.Contains("key is missing", ParseError("Ctrl +"));
+            Assert.Contains("key is missing", ParseError("Ctrl+ "));
+            Assert.Contains("modifier", ParseError("+ +"));
+        }
+
+        [Fact]
         public void the_ins_and_del_aliases_do_not_imply_shift()
         {
             Assert.Equal(new KeyPressDefinition(Keys.Insert, controlPressed: true), Parse("Ctrl+ins"));
