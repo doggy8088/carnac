@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -7,6 +8,8 @@ using System.Windows.Forms;
 using Carnac.Logic;
 using Carnac.Logic.KeyMonitor;
 using Carnac.Logic.Models;
+using Carnac.Logic.Native;
+using Carnac.UI;
 using Microsoft.Reactive.Testing;
 using NSubstitute;
 using Shouldly;
@@ -24,24 +27,29 @@ namespace Carnac.Tests
         readonly ObservableCollection<Message> messages = new ObservableCollection<Message>();
         readonly TestScheduler testScheduler;
         readonly Message messageA = new Message(A);
+        readonly PopupSettings popupSettings = new PopupSettings();
 
         public KeysControllerFacts()
         {
             testScheduler = new TestScheduler();
+            popupSettings.ItemFadeDelay = GetDefaultFadeDelay(popupSettings);
         }
 
         KeysController CreateKeysController(IObservable<Message> messageStream)
+        {
+            var settingsService = Substitute.For<ISettingsProvider>();
+            settingsService.GetSettings<PopupSettings>().Returns(popupSettings);
+
+            return CreateKeysController(messageStream, settingsService);
+        }
+
+        KeysController CreateKeysController(IObservable<Message> messageStream, ISettingsProvider settingsService)
         {
             var messageProvider = Substitute.For<IMessageProvider>();
             messageProvider.GetMessageStream().Returns(_ => messageStream);
             var concurrencyService = Substitute.For<IConcurrencyService>();
             concurrencyService.MainThreadScheduler.Returns(testScheduler);
             concurrencyService.Default.Returns(testScheduler);
-
-            var settingsService = Substitute.For<ISettingsProvider>();
-            var popupSettings = new PopupSettings();
-            popupSettings.ItemFadeDelay = GetDefaultFadeDelay(popupSettings);
-            settingsService.GetSettings<PopupSettings>().Returns(popupSettings);
 
             return new KeysController(messages, messageProvider, concurrencyService, settingsService);
         }
@@ -119,6 +127,202 @@ namespace Carnac.Tests
 
             messages.Single().IsDeleting.ShouldBe(false);
             messages.Single().ShouldBe(expected);
+        }
+
+        [Fact]
+        public void FadeDelayChangedAfterStartIsUsedForTheNextMessage()
+        {
+            var messageB = new Message(Down);
+            var messageSequence = testScheduler.CreateColdObservable(
+                ReactiveTest.OnNext(MessageAOnNextTick, messageA),
+                ReactiveTest.OnNext(10.Seconds(), messageB)
+                );
+            var sut = CreateKeysController(messageSequence);
+            sut.Start();
+            testScheduler.AdvanceBy(1.Seconds());
+
+            popupSettings.ItemFadeDelay = 2;
+
+            // Message A is already on screen and keeps the schedule of the old delay (5 seconds).
+            testScheduler.AdvanceTo(4.Seconds());
+            messages.Single().IsDeleting.ShouldBe(false);
+            testScheduler.AdvanceTo(5.5.Seconds());
+            messages.Single().IsDeleting.ShouldBe(true);
+            testScheduler.AdvanceTo(9.Seconds());
+            messages.ShouldBeEmpty();
+
+            // Message B arrives at 10 seconds and fades after the new delay (2 seconds), not after the old one.
+            testScheduler.AdvanceTo(10.Seconds() + 10);
+            messages.Single().IsDeleting.ShouldBe(false);
+            testScheduler.AdvanceTo(11.5.Seconds());
+            messages.Single().IsDeleting.ShouldBe(false);
+            testScheduler.AdvanceTo(12.5.Seconds());
+            messages.Single().IsDeleting.ShouldBe(true);
+        }
+
+        [Fact]
+        public void FadeDelayIsReadAgainForEveryMessage()
+        {
+            var messageB = new Message(Down);
+            var messageC = new Message(A);
+            var messageSequence = testScheduler.CreateColdObservable(
+                ReactiveTest.OnNext(1.Seconds(), messageA),
+                ReactiveTest.OnNext(20.Seconds(), messageB),
+                ReactiveTest.OnNext(40.Seconds(), messageC)
+                );
+            var sut = CreateKeysController(messageSequence);
+            sut.Start();
+
+            // Message A arrives at 1 second and gets a delay of 10 seconds.
+            popupSettings.ItemFadeDelay = 10;
+            testScheduler.AdvanceTo(10.5.Seconds());
+            messages.Single().IsDeleting.ShouldBe(false);
+            testScheduler.AdvanceTo(11.5.Seconds());
+            messages.Single().IsDeleting.ShouldBe(true);
+
+            // Message B arrives at 20 seconds and gets a delay of 3 seconds.
+            popupSettings.ItemFadeDelay = 3;
+            testScheduler.AdvanceTo(22.5.Seconds());
+            messages.Single().IsDeleting.ShouldBe(false);
+            testScheduler.AdvanceTo(23.5.Seconds());
+            messages.Single().IsDeleting.ShouldBe(true);
+
+            // Message C arrives at 40 seconds and gets a delay of 8 seconds.
+            popupSettings.ItemFadeDelay = 8;
+            testScheduler.AdvanceTo(47.Seconds());
+            messages.Single().IsDeleting.ShouldBe(false);
+            testScheduler.AdvanceTo(48.5.Seconds());
+            messages.Single().IsDeleting.ShouldBe(true);
+        }
+
+        [Fact]
+        public void FadeDelaySavedThroughTheSharedSettingsProviderIsUsedForTheNextMessage()
+        {
+            var settingsProvider = new SettingsProvider(new InMemorySettingsStorage());
+            var sut = CreateKeysController(SingleMessageAt100Ticks(), settingsProvider);
+            sut.Start();
+
+            // This is what the Preferences window does: edit the settings it got from the same provider and save them.
+            var preferences = CreatePreferencesViewModel(settingsProvider);
+            preferences.Settings.ItemFadeDelay = 2;
+            preferences.SaveCommand.Execute(null);
+
+            testScheduler.AdvanceTo(MessageAOnNextTick + 1);
+            messages.Single().IsDeleting.ShouldBe(false);
+            testScheduler.AdvanceTo(2.5.Seconds());
+            messages.Single().IsDeleting.ShouldBe(true);
+        }
+
+        [Fact]
+        public void FadeDelayResetToDefaultsInPreferencesIsUsedForTheNextMessage()
+        {
+            var settingsProvider = new SettingsProvider(new InMemorySettingsStorage());
+            var sut = CreateKeysController(SingleMessageAt100Ticks(), settingsProvider);
+            sut.Start();
+
+            var preferences = CreatePreferencesViewModel(settingsProvider);
+            preferences.Settings.ItemFadeDelay = 2;
+            preferences.SaveCommand.Execute(null);
+            preferences.ResetToDefaultsCommand.Execute(null);
+
+            testScheduler.AdvanceTo(3.Seconds());
+            messages.Single().IsDeleting.ShouldBe(false);
+            testScheduler.AdvanceTo(5.5.Seconds());
+            messages.Single().IsDeleting.ShouldBe(true);
+        }
+
+        [Fact]
+        public void FadeDelayOfZeroIsRaisedToOneSecond()
+        {
+            AssertMessageFadesAfter(configuredSeconds: 0, expectedSeconds: 1);
+        }
+
+        [Fact]
+        public void NegativeFadeDelayIsRaisedToOneSecond()
+        {
+            AssertMessageFadesAfter(configuredSeconds: -5, expectedSeconds: 1);
+        }
+
+        [Fact]
+        public void FadeDelayAboveTheSliderRangeIsLimitedToFiftySeconds()
+        {
+            AssertMessageFadesAfter(configuredSeconds: 1000, expectedSeconds: 50);
+        }
+
+        [Fact]
+        public void InfiniteFadeDelayIsLimitedToFiftySeconds()
+        {
+            AssertMessageFadesAfter(configuredSeconds: double.PositiveInfinity, expectedSeconds: 50);
+        }
+
+        [Fact]
+        public void FadeDelayThatIsNotANumberFallsBackToTheDefault()
+        {
+            AssertMessageFadesAfter(configuredSeconds: double.NaN, expectedSeconds: 5);
+        }
+
+        [Fact]
+        public void FadeDelayInsideTheSliderRangeIsUsedAsIs()
+        {
+            AssertMessageFadesAfter(configuredSeconds: 12, expectedSeconds: 12);
+        }
+
+        [Fact]
+        public void FadeOutDelayIsClampedToTheSliderRange()
+        {
+            KeysController.GetFadeOutDelay(0).ShouldBe(TimeSpan.FromSeconds(1));
+            KeysController.GetFadeOutDelay(0.5).ShouldBe(TimeSpan.FromSeconds(1));
+            KeysController.GetFadeOutDelay(1).ShouldBe(TimeSpan.FromSeconds(1));
+            KeysController.GetFadeOutDelay(7.5).ShouldBe(TimeSpan.FromSeconds(7.5));
+            KeysController.GetFadeOutDelay(50).ShouldBe(TimeSpan.FromSeconds(50));
+            KeysController.GetFadeOutDelay(50.5).ShouldBe(TimeSpan.FromSeconds(50));
+            KeysController.GetFadeOutDelay(double.NegativeInfinity).ShouldBe(TimeSpan.FromSeconds(1));
+            KeysController.GetFadeOutDelay(double.PositiveInfinity).ShouldBe(TimeSpan.FromSeconds(50));
+        }
+
+        [Fact]
+        public void FallbackFadeDelayIsTheDefaultOfTheSetting()
+        {
+            KeysController.DefaultFadeDelaySeconds.ShouldBe(GetDefaultFadeDelay(new PopupSettings()));
+            KeysController.GetFadeOutDelay(double.NaN).ShouldBe(TimeSpan.FromSeconds(KeysController.DefaultFadeDelaySeconds));
+        }
+
+        void AssertMessageFadesAfter(double configuredSeconds, double expectedSeconds)
+        {
+            popupSettings.ItemFadeDelay = configuredSeconds;
+            var sut = CreateKeysController(SingleMessageAt100Ticks());
+            sut.Start();
+
+            testScheduler.AdvanceTo(expectedSeconds.Seconds());
+            messages.Single().IsDeleting.ShouldBe(false);
+
+            testScheduler.AdvanceTo(expectedSeconds.Seconds() + MessageAOnNextTick + 10);
+            messages.Single().IsDeleting.ShouldBe(true);
+        }
+
+        PreferencesViewModel CreatePreferencesViewModel(ISettingsProvider settingsProvider)
+        {
+            var screenManager = Substitute.For<IScreenManager>();
+            screenManager.GetScreens().Returns(new[] { new DetailedScreen { Index = 1, Width = 1920, Height = 1080 } });
+            return new PreferencesViewModel(settingsProvider, screenManager);
+        }
+
+        class InMemorySettingsStorage : ISettingsStorage
+        {
+            readonly Dictionary<string, Dictionary<string, string>> stored = new Dictionary<string, Dictionary<string, string>>();
+
+            public void Save(string key, Dictionary<string, string> settings)
+            {
+                stored[key] = new Dictionary<string, string>(settings);
+            }
+
+            public Dictionary<string, string> Load(string key)
+            {
+                Dictionary<string, string> settings;
+                return stored.TryGetValue(key, out settings)
+                    ? new Dictionary<string, string>(settings)
+                    : new Dictionary<string, string>();
+            }
         }
 
         static KeyPress A
