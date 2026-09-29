@@ -16,6 +16,7 @@ namespace Carnac.Logic.Models
         readonly bool canBeMerged;
         readonly bool isShortcut;
         readonly bool isModifier;
+        readonly bool isModifierOnly;
         readonly bool isDeleting;
         readonly DateTime lastMessage;
         readonly Message previous;
@@ -30,8 +31,9 @@ namespace Carnac.Logic.Models
         {
             processName = key.Process.ProcessName;
             processIcon = key.Process.ProcessIcon;
-            canBeMerged = !key.HasModifierPressed;
-            isModifier = key.HasModifierPressed;
+            isModifierOnly = key.IsModifierOnly;
+            canBeMerged = !key.HasModifierPressed && !isModifierOnly;
+            isModifier = key.HasModifierPressed || isModifierOnly;
 
             keys = new ReadOnlyCollection<KeyPress>(new[] { key });
             textCollection = new ReadOnlyCollection<string>(CreateTextSequence(key).ToArray());
@@ -51,7 +53,8 @@ namespace Carnac.Logic.Models
             processIcon = allKeys.First().Process.ProcessIcon;
             shortcutName = shortcut.Name;
             this.isShortcut = isShortcut;
-            this.isModifier = allKeys.Any(k => k.HasModifierPressed);
+            this.isModifier = allKeys.Any(k => k.HasModifierPressed || k.IsModifierOnly);
+            this.isModifierOnly = allKeys.All(k => k.IsModifierOnly);
             canBeMerged = false;
 
             this.keys = new ReadOnlyCollection<KeyPress>(allKeys);
@@ -67,6 +70,14 @@ namespace Carnac.Logic.Models
         {
             previous = initial;
             canBeMerged = true;
+        }
+
+        // the flag only tells this constructor from the one that merges
+        private Message(Message initial, Message replacement, bool replace)
+            : this(replacement.keys, new KeyShortcut(replacement.ShortcutName), replacement.isShortcut)
+        {
+            previous = initial;
+            canBeMerged = replacement.canBeMerged;
         }
 
         private Message(Message initial, bool isDeleting)
@@ -97,6 +108,9 @@ namespace Carnac.Logic.Models
 
         public bool IsModifier { get { return isModifier; } }
 
+        /// <summary>Only modifier keys, pressed on their own (Ctrl, Ctrl + Alt, ...).</summary>
+        public bool IsModifierOnly { get { return isModifierOnly; } }
+
         public Message Merge(Message other)
         {
             return new Message(this, other);
@@ -104,11 +118,37 @@ namespace Carnac.Logic.Models
 
         static readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
 
+        public Message Replace(Message replacement)
+        {
+            return new Message(this, replacement, true);
+        }
+
         public static Message MergeIfNeeded(Message previousMessage, Message newMessage)
         {
+            // Ctrl on its own is taken over by the key or chord it is held for ("Ctrl + C"), not by unrelated typing
+            if (previousMessage.IsModifierOnly && IsHeldFor(previousMessage, newMessage))
+            {
+                return previousMessage.Replace(newMessage);
+            }
+
             return ShouldCreateNewMessage(previousMessage, newMessage)
                 ? newMessage
                 : previousMessage.Merge(newMessage);
+        }
+
+        // Is the message the outcome of holding the modifiers of the one before it, in the same process? That is so when
+        // they have Ctrl, Alt or Win in common: the names of the modifiers in front of a key say too little for it (Shift
+        // is left out of "Win + S" when Win+Shift+S is pressed), and Shift alone is what capital letters are typed with.
+        static bool IsHeldFor(Message modifiers, Message next)
+        {
+            if (modifiers.ProcessName != next.ProcessName)
+                return false;
+
+            var held = modifiers.keys.Last();
+            var pressed = next.keys.First();
+            return (held.InterceptKeyEventArgs.ControlPressed && pressed.InterceptKeyEventArgs.ControlPressed)
+                || (held.InterceptKeyEventArgs.AltPressed && pressed.InterceptKeyEventArgs.AltPressed)
+                || (held.WinkeyPressed && pressed.WinkeyPressed);
         }
 
         static bool ShouldCreateNewMessage(Message previous, Message current)

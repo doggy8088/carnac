@@ -89,6 +89,7 @@
     <Compile Include="KeyMonitor\IDesktopLockEventService.cs" />
     <Compile Include="KeyMonitor\InterceptKeyEventArgs.cs" />
     <Compile Include="KeyMonitor\InterceptKeys.cs" />
+    <Compile Include="KeyMonitor\HeldModifierKeys.cs" />
     <Compile Include="KeyMonitor\KeyDirection.cs" />
     <Compile Include="KeysController.cs" />
     <Compile Include="Models\Processinfo.cs" />

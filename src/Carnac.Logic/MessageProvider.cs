@@ -32,10 +32,15 @@ namespace Carnac.Logic
             sel many    :  a---b-------------ctrl+r,ctrl+r-------------ctrl+r---a-----↓---↓
             msg merger  :  a---*ab-----------ctrl+r,ctrl+r-------------ctrl+r---a-----↓---*'↓ x2'
             */
+            // Modifiers pressed on their own go around the shortcut accumulator: they are not part of a shortcut and
+            // pressing Ctrl again between the chords of "Ctrl+K, Ctrl+C" must not break the sequence.
             return keyProvider.GetKeyStream()
-                .Scan(new ShortcutAccumulator(), (acc, key) => acc.ProcessKey(shortcutProvider, key))
-                .Where(c => c.HasCompletedValue)
-                .SelectMany(c => c.GetMessages())
+                .Publish(keys => keys
+                    .Where(key => !key.IsModifierOnly)
+                    .Scan(new ShortcutAccumulator(), (acc, key) => acc.ProcessKey(shortcutProvider, key))
+                    .Where(c => c.HasCompletedValue)
+                    .SelectMany(c => c.GetMessages())
+                    .Merge(keys.Where(key => key.IsModifierOnly).Select(key => new Message(key))))
                 .Scan(new Message(), (acc, key) => Message.MergeIfNeeded(acc, key))
                 .Where(m =>
                 {
