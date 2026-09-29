@@ -191,10 +191,12 @@
     </Compile>
     <Compile Include="UI\DelegateCommand.cs" />
     <Compile Include="UI\FontFamilyOption.cs" />
+    <Compile Include="UI\LanguageOption.cs" />
     <Compile Include="UI\PreferencesField.cs" />
     <Compile Include="Utilities\DesignTimeHelper.cs" />
     <Compile Include="Utilities\FontFamilyNameConverter.cs" />
     <Compile Include="Utilities\InstalledFonts.cs" />
+    <Compile Include="Utilities\UiLanguage.cs" />
     <Compile Include="Utilities\ConcurrencyService.cs" />
     <Compile Include="UI\AvailableColor.cs" />
     <Compile Include="Utilities\ProcessUtilities.cs" />
@@ -239,20 +241,22 @@
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
+    <Compile Include="Properties\EmbeddedResourceManager.cs" />
+    <!-- Resources.cs is written by hand, not generated from Resources.resx: see EmbeddedResourceManager. -->
+    <Compile Include="Properties\Resources.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <!--
+      The translations are embedded in Carnac.exe as culture-neutral resources (Carnac.Properties.Resources_<culture>.resources).
+      The file names deliberately do not have the form Resources.<culture>.resx: MSBuild would turn those into satellite
+      assemblies, which need AL.exe and are not embedded by Costura.
+    -->
+    <EmbeddedResource Include="Properties\Resources.resx" />
+    <EmbeddedResource Include="Properties\Resources_zh-CN.resx" />
+    <EmbeddedResource Include="Properties\Resources_zh-TW.resx" />
     <None Include="app.config" />
     <None Include="Carnac_TemporaryKey.pfx" />
     <None Include="packages.config">

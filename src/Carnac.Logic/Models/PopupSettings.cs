@@ -69,6 +69,13 @@ namespace Carnac.Logic.Models
         [DefaultValue(false)]
         public bool AutoUpdate { get; set; }
 
+        /// <summary>
+        /// Language of the user interface: one of <see cref="UiLanguages.Codes"/>, or empty (the default) to follow
+        /// the display language of Windows.
+        /// </summary>
+        [DefaultValue("")]
+        public string Language { get; set; }
+
         //Used to determine which from it's leftmost co-ord
         double left;
         public double Left

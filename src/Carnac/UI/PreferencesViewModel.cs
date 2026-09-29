@@ -46,7 +46,9 @@ namespace Carnac.UI
             }
 
             AvailableFontFamilies = FontFamilyOption.CreateList(
-                Fonts.SystemFontFamilies, SystemFonts.MessageFontFamily, "System default", CultureInfo.CurrentUICulture);
+                Fonts.SystemFontFamilies, SystemFonts.MessageFontFamily, Properties.Resources.Preferences_SystemDefaultFont, CultureInfo.CurrentUICulture);
+
+            AvailableLanguages = LanguageOption.CreateList();
 
             SaveCommand = new DelegateCommand(SaveSettings);
             ResetToDefaultsCommand = new DelegateCommand(() => settingsProvider.ResetToDefaults<PopupSettings>());
@@ -62,6 +64,8 @@ namespace Carnac.UI
         public ObservableCollection<AvailableColor> AvailableColors { get; private set; }
 
         public IList<FontFamilyOption> AvailableFontFamilies { get; private set; }
+
+        public IList<LanguageOption> AvailableLanguages { get; private set; }
 
         public ObservableCollection<DetailedScreen> Screens { get; set; }
 

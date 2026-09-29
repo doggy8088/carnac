@@ -74,19 +74,30 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppearanceSettingsFacts.cs" />
+    <Compile Include="EmbeddedResourceManagerFacts.cs" />
     <Compile Include="FontFamilyNameConverterFacts.cs" />
     <Compile Include="InMemorySettingsStorage.cs" />
+    <Compile Include="KeyLabelsFacts.cs" />
     <Compile Include="KeyPlayer.cs" />
     <Compile Include="KeysControllerFacts.cs" />
     <Compile Include="KeyStreams.cs" />
+    <Compile Include="LocalizationResourceFacts.cs" />
     <Compile Include="MessageFacts.cs" />
     <Compile Include="MessageProviderFacts.cs" />
     <Compile Include="RxTestExtensions.cs" />
     <Compile Include="SpecificationFor.cs" />
     <Compile Include="KeyProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UiLanguageFacts.cs" />
+    <Compile Include="UiLanguagesFacts.cs" />
     <Compile Include="ViewModels\ShellViewModelFacts.cs" />
     <Compile Include="WindowBoundsClamperFacts.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Test data for EmbeddedResourceManagerFacts. Not Name.<culture>.resx: that would build satellite assemblies. -->
+    <EmbeddedResource Include="TestResources.resx" />
+    <EmbeddedResource Include="TestResources_fr.resx" />
+    <EmbeddedResource Include="TestResources_fr-CA.resx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
