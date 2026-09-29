@@ -53,13 +53,10 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "startup"; Description: "Start Carnac when I sign in to Windows"; GroupDescription: "Startup:"; Flags: unchecked
 
 [Files]
-; Costura embeds all dependencies into Carnac.exe, so this is the whole app apart from the translations.
+; Costura embeds all dependencies into Carnac.exe, so this is the whole app.
 Source: "{#BuildDir}\Carnac.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BuildDir}\Carnac.exe.config"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BuildDir}\Keymaps\*.yml"; DestDir: "{app}\Keymaps"; Flags: ignoreversion
-; Translations are satellite assemblies (Resources.<culture>.resx): one line per language, see CONTRIBUTING.md.
-Source: "{#BuildDir}\zh-CN\Carnac.resources.dll"; DestDir: "{app}\zh-CN"; Flags: ignoreversion
-Source: "{#BuildDir}\zh-TW\Carnac.resources.dll"; DestDir: "{app}\zh-TW"; Flags: ignoreversion
 Source: "..\LICENSE.md"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]

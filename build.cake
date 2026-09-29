@@ -105,7 +105,7 @@ Task("Package-Squirrel")
 		var nuGetPackSettings = new NuGetPackSettings
 		{
 			Version = nugetVersion,
-			Files = releaseFiles.Select(f => new NuSpecContent { Source = f, Target = "lib/net45" + (f.Contains("Keymaps") ? "/Keymaps" : "") + (f.EndsWith(".resources.dll", StringComparison.OrdinalIgnoreCase) ? "/" + System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(f)) : "") }).ToList(),
+			Files = releaseFiles.Select(f => new NuSpecContent { Source = f, Target = "lib/net45" + (f.Contains("Keymaps") ? "/Keymaps" : "") }).ToList(),
 			BasePath = buildDir,
 			OutputDirectory = squirrelDeployDir,
 			NoPackageAnalysis = true

@@ -14,7 +14,7 @@ using Xunit;
 namespace Carnac.Tests
 {
     /// <summary>
-    /// Checks the translations as they are compiled: the neutral (English) resources and one satellite assembly per language.
+    /// Checks the translations as they are compiled: the neutral (English) resources and one embedded resource per language.
     /// </summary>
     public class LocalizationResourceFacts
     {
@@ -63,8 +63,31 @@ namespace Carnac.Tests
             foreach (var code in TranslatedLanguages)
             {
                 Assert.True(Load(CultureInfo.GetCultureInfo(code)) != null,
-                    "No satellite resources for '" + code + "': add Properties\\Resources." + code + ".resx to Carnac.csproj");
+                    "No resources for '" + code + "': add Properties\\Resources_" + code + ".resx to Carnac.csproj as an EmbeddedResource");
             }
+        }
+
+        [Fact]
+        public void TranslationsAreEmbeddedInTheExecutableNotInSatelliteAssemblies()
+        {
+            var assembly = typeof(Resources).Assembly;
+            var embedded = assembly.GetManifestResourceNames();
+            var manager = (EmbeddedResourceManager)Resources.ResourceManager;
+
+            Assert.True(embedded.Contains("Carnac.Properties.Resources.resources"), "The English resources are not embedded");
+            foreach (var code in TranslatedLanguages)
+            {
+                var name = manager.GetResourceName(CultureInfo.GetCultureInfo(code));
+                Assert.Equal("Carnac.Properties.Resources_" + code + ".resources", name);
+                Assert.True(embedded.Contains(name), name + " is not embedded in " + assembly.GetName().Name + ". Embedded: " + string.Join(", ", embedded));
+            }
+        }
+
+        [Fact]
+        public void ResourcesAreReadByTheManagerThatUsesEmbeddedResources()
+        {
+            // Generating Resources.cs with the Visual Studio resource generator would bring back a plain ResourceManager.
+            Assert.IsType<EmbeddedResourceManager>(Resources.ResourceManager);
         }
 
         [Fact]
@@ -77,10 +100,10 @@ namespace Carnac.Tests
                 var translated = ReadStrings(Load(CultureInfo.GetCultureInfo(code)));
 
                 var missing = neutral.Keys.Where(k => !translated.ContainsKey(k)).ToArray();
-                Assert.True(missing.Length == 0, "Resources." + code + ".resx misses: " + string.Join(", ", missing));
+                Assert.True(missing.Length == 0, "Resources_" + code + ".resx misses: " + string.Join(", ", missing));
 
                 var empty = neutral.Keys.Where(k => string.IsNullOrWhiteSpace(translated[k])).ToArray();
-                Assert.True(empty.Length == 0, "Resources." + code + ".resx has empty translations: " + string.Join(", ", empty));
+                Assert.True(empty.Length == 0, "Resources_" + code + ".resx has empty translations: " + string.Join(", ", empty));
             }
         }
 
@@ -94,7 +117,7 @@ namespace Carnac.Tests
                 var translated = ReadStrings(Load(CultureInfo.GetCultureInfo(code)));
 
                 var unknown = translated.Keys.Where(k => !neutral.ContainsKey(k)).ToArray();
-                Assert.True(unknown.Length == 0, "Resources." + code + ".resx has keys that Resources.resx does not have: " + string.Join(", ", unknown));
+                Assert.True(unknown.Length == 0, "Resources_" + code + ".resx has keys that Resources.resx does not have: " + string.Join(", ", unknown));
             }
         }
 
@@ -108,7 +131,7 @@ namespace Carnac.Tests
                 var translated = ReadStrings(Load(CultureInfo.GetCultureInfo(code)));
 
                 var same = neutral.Keys.Where(k => translated[k] == neutral[k]).ToArray();
-                Assert.True(same.Length == 0, "Resources." + code + ".resx still has the English text of: " + string.Join(", ", same));
+                Assert.True(same.Length == 0, "Resources_" + code + ".resx still has the English text of: " + string.Join(", ", same));
             }
         }
 
@@ -133,10 +156,10 @@ namespace Carnac.Tests
                 .ToArray();
 
             var missing = neutral.Keys.Where(k => !properties.Contains(k)).ToArray();
-            Assert.True(missing.Length == 0, "Resources.Designer.cs misses (regenerate it from Resources.resx): " + string.Join(", ", missing));
+            Assert.True(missing.Length == 0, "Resources.cs misses (add a property for each): " + string.Join(", ", missing));
 
             var stale = properties.Where(p => !neutral.ContainsKey(p)).ToArray();
-            Assert.True(stale.Length == 0, "Resources.Designer.cs has properties that Resources.resx does not have: " + string.Join(", ", stale));
+            Assert.True(stale.Length == 0, "Resources.cs has properties that Resources.resx does not have: " + string.Join(", ", stale));
         }
 
         [Fact]

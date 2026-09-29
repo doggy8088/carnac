@@ -20,8 +20,8 @@ using System.Windows;
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
 
-// The strings in Properties\Resources.resx are English. Translations are satellite assemblies
-// (Resources.<culture>.resx), so English does not have to probe for one.
+// The strings in Properties\Resources.resx are English, so English never has to look for a translation.
+// The translations (Properties\Resources_<culture>.resx) are embedded in this assembly, see EmbeddedResourceManager.
 [assembly: NeutralResourcesLanguage("en")]
 
 

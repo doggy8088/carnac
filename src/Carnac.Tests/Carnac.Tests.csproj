@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppearanceSettingsFacts.cs" />
+    <Compile Include="EmbeddedResourceManagerFacts.cs" />
     <Compile Include="FontFamilyNameConverterFacts.cs" />
     <Compile Include="InMemorySettingsStorage.cs" />
     <Compile Include="KeyLabelsFacts.cs" />
@@ -91,6 +92,12 @@
     <Compile Include="UiLanguagesFacts.cs" />
     <Compile Include="ViewModels\ShellViewModelFacts.cs" />
     <Compile Include="WindowBoundsClamperFacts.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Test data for EmbeddedResourceManagerFacts. Not Name.<culture>.resx: that would build satellite assemblies. -->
+    <EmbeddedResource Include="TestResources.resx" />
+    <EmbeddedResource Include="TestResources_fr.resx" />
+    <EmbeddedResource Include="TestResources_fr-CA.resx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
