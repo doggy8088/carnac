@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -21,11 +20,6 @@ namespace Carnac.Logic.KeyMonitor
         public readonly bool Alt;
         public readonly bool Win;
         public readonly bool Shift;
-
-        public bool IsAnyDown
-        {
-            get { return Control || Alt || Win || Shift; }
-        }
 
         /// <summary>Shift is what capital letters are typed with, so it does not make a shortcut.</summary>
         public bool IsAnyDownOtherThanShift
@@ -78,19 +72,16 @@ namespace Carnac.Logic.KeyMonitor
         /// disconnected session), which leaves it held for ever. Forget the keys that are not down any more.
         /// </summary>
         /// <param name="isDown">Whether a key really is down.</param>
-        /// <param name="except">The key of the event that is being handled, whose state is not settled yet.</param>
+        /// <param name="except">
+        /// The key of a key up that is being handled, whose state is not settled yet. (For a key down the state is
+        /// still the one from before the event, which says whether the key was already down: a repeat, or not: a press.)
+        /// </param>
         public void ForgetReleased(Func<Keys, bool> isDown, Keys except)
         {
             lock (sync)
             {
-                if (keys.Count == 0)
-                    return;
-
-                foreach (var key in keys.Where(k => k != except).ToList())
-                {
-                    if (!isDown(key))
-                        keys.Remove(key);
-                }
+                if (keys.Count > 0)
+                    keys.RemoveWhere(key => key != except && !isDown(key));
             }
         }
 
@@ -99,10 +90,10 @@ namespace Carnac.Logic.KeyMonitor
             lock (sync)
             {
                 return new ModifierState(
-                    keys.Contains(Keys.LControlKey) || keys.Contains(Keys.RControlKey),
-                    keys.Contains(Keys.LMenu) || keys.Contains(Keys.RMenu),
+                    keys.Contains(Keys.LControlKey) || keys.Contains(Keys.RControlKey) || keys.Contains(Keys.ControlKey),
+                    keys.Contains(Keys.LMenu) || keys.Contains(Keys.RMenu) || keys.Contains(Keys.Menu),
                     keys.Contains(Keys.LWin) || keys.Contains(Keys.RWin),
-                    keys.Contains(Keys.LShiftKey) || keys.Contains(Keys.RShiftKey));
+                    keys.Contains(Keys.LShiftKey) || keys.Contains(Keys.RShiftKey) || keys.Contains(Keys.ShiftKey));
             }
         }
 

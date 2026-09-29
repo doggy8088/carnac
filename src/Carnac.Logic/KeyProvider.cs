@@ -105,10 +105,19 @@ namespace Carnac.Logic
         // Keeps track of the modifier keys that are down, and tells which key events are shown
         bool ShouldShowKeyPress(InterceptKeyEventArgs interceptKeyEventArgs, HeldModifierKeys heldModifierKeys)
         {
+            // Nobody pressed the Control key that Windows adds in front of AltGr
+            if (interceptKeyEventArgs.IsAltGrControl)
+                return false;
+
             // The key ups of modifiers are not always seen, so ask the keyboard what is really down. Only for events
-            // of the keyboard hook: the state of the keyboard means nothing for events that are made up.
-            if (interceptKeyEventArgs.IsFromKeyboardHook)
-                heldModifierKeys.ForgetReleased(IsKeyDown, interceptKeyEventArgs.Key);
+            // of the keyboard hook (the state of the keyboard means nothing for events that are made up), and only when
+            // the modifiers are shown: the state of a key that another program's hook takes away is not reliable, and
+            // whoever does not use this should not depend on it.
+            if (interceptKeyEventArgs.IsFromKeyboardHook && settings != null && settings.ShowModifierKeyPresses)
+            {
+                var isKeyUp = interceptKeyEventArgs.KeyDirection == KeyDirection.Up;
+                heldModifierKeys.ForgetReleased(IsKeyDown, isKeyUp ? interceptKeyEventArgs.Key : Keys.None);
+            }
 
             if (!interceptKeyEventArgs.IsModifier())
                 return interceptKeyEventArgs.KeyDirection == KeyDirection.Down;

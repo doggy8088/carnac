@@ -41,12 +41,25 @@ namespace Carnac.Tests
             Assert.True(keyPressedWithAlt.AltPressed);
         }
 
-        static InterceptKeyEventArgs Create(Keys key, int windowMessage)
+        [Fact]
+        public void the_control_key_windows_adds_for_altgr_is_recognised_by_its_scan_code()
+        {
+            Assert.True(Create(Keys.LControlKey, Win32Methods.WM_KEYDOWN, 0x21D).IsAltGrControl);
+            Assert.True(Create(Keys.LControlKey, Win32Methods.WM_KEYUP, 0x21D).IsAltGrControl);
+
+            // a Control key that somebody pressed, and other keys, are not
+            Assert.False(Create(Keys.LControlKey, Win32Methods.WM_KEYDOWN, 0x1D).IsAltGrControl);
+            Assert.False(Create(Keys.A, Win32Methods.WM_KEYDOWN, 0x21D).IsAltGrControl);
+            Assert.True(Create(Keys.A, Win32Methods.WM_KEYDOWN, 0x1E).IsFromKeyboardHook);
+        }
+
+        static InterceptKeyEventArgs Create(Keys key, int windowMessage, int scanCode = 0)
         {
             var keyboardHookData = Marshal.AllocHGlobal(32);
             try
             {
-                Marshal.WriteInt32(keyboardHookData, (int)key);
+                Marshal.WriteInt32(keyboardHookData, 0, (int)key);
+                Marshal.WriteInt32(keyboardHookData, 4, scanCode);
                 return InterceptKeys.CreateEventArgs(new IntPtr(windowMessage), keyboardHookData);
             }
             finally
@@ -276,6 +289,58 @@ namespace Carnac.Tests
             }
 
             Assert.Equal(2, keyPresses.Count);
+        }
+
+        [Fact]
+        public async Task a_modifier_that_is_pressed_again_after_a_missed_key_up_is_shown_again()
+        {
+            // the keyboard says the key was not down before this key down: a new press, not a repeat
+            isKeyDown = key => false;
+
+            var keyPresses = await Play(FromHook(Down(Keys.LControlKey)), FromHook(Down(Keys.LControlKey)));
+
+            Assert.Equal(2, keyPresses.Count);
+        }
+
+        [Fact]
+        public async Task a_modifier_that_is_down_and_repeats_is_shown_once_also_for_the_hook()
+        {
+            isKeyDown = key => true;
+
+            var keyPresses = await Play(FromHook(Down(Keys.LControlKey)), FromHook(Down(Keys.LControlKey)), FromHook(Down(Keys.LControlKey)));
+
+            Assert.Equal(1, keyPresses.Count);
+        }
+
+        [Fact]
+        public async Task the_state_of_the_keyboard_is_only_asked_when_the_modifiers_are_shown()
+        {
+            settings.ShowModifierKeyPresses = false;
+            isKeyDown = key => { throw new InvalidOperationException("nobody asked for the modifiers"); };
+
+            // the Windows key is followed from the key events alone, as it always was
+            var keyPresses = await Play(FromHook(Down(Keys.LWin)), FromHook(Down(Keys.E)), FromHook(Up(Keys.E)), FromHook(Up(Keys.LWin)));
+
+            Assert.Equal(new[] { "Win + e" }, keyPresses.Select(k => string.Join(" + ", k.Input)).ToArray());
+        }
+
+        [Fact]
+        public async Task the_control_key_windows_adds_for_altgr_is_not_a_key_that_was_pressed()
+        {
+            var addedByWindows = Down(Keys.LControlKey);
+            addedByWindows.IsAltGrControl = true;
+
+            var keyPresses = await Play(addedByWindows, Down(Keys.RMenu));
+
+            Assert.Equal(new[] { "Alt" }, keyPresses.Select(k => string.Join(" + ", k.Input)).ToArray());
+        }
+
+        [Fact]
+        public async Task the_generic_control_and_alt_keys_are_the_modifiers_they_are()
+        {
+            var keyPresses = await Play(Down(Keys.ControlKey), Down(Keys.Menu), Down(Keys.ShiftKey));
+
+            Assert.Equal(new[] { "Ctrl", "Ctrl + Alt", "Ctrl + Alt + Shift" }, keyPresses.Select(k => string.Join(" + ", k.Input)).ToArray());
         }
 
         static InterceptKeyEventArgs FromHook(InterceptKeyEventArgs keyEvent)

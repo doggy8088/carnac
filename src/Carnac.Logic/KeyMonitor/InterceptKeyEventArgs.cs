@@ -36,11 +36,13 @@ namespace Carnac.Logic.KeyMonitor
         {
             Keys.LControlKey,
             Keys.RControlKey,
+            Keys.ControlKey,
             Keys.LShiftKey,
             Keys.RShiftKey,
+            Keys.ShiftKey,
             Keys.LMenu,
             Keys.RMenu,
-            Keys.ShiftKey,
+            Keys.Menu,
             Keys.Shift,
             Keys.Alt,
             Keys.LWin,
@@ -52,5 +54,11 @@ namespace Carnac.Logic.KeyMonitor
         /// It is not for events that are made up, as the tests do.
         /// </summary>
         public bool IsFromKeyboardHook { get; internal set; }
+
+        /// <summary>
+        /// The Control key that Windows adds in front of AltGr on the layouts that have it. Nobody pressed it, so it
+        /// is not shown as a key that was pressed.
+        /// </summary>
+        public bool IsAltGrControl { get; internal set; }
     }
 }
