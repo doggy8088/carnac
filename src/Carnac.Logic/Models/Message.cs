@@ -56,10 +56,9 @@ namespace Carnac.Logic.Models
 
             this.keys = new ReadOnlyCollection<KeyPress>(allKeys);
 
-            var textSeq = CreateTextSequence(allKeys).ToList();
-            if (!string.IsNullOrEmpty(shortcutName))
-                textSeq.Add(string.Format(" [{0}]", shortcutName));
-            textCollection = new ReadOnlyCollection<string>(textSeq);
+            // The shortcut name is deliberately not part of Text: the view renders ShortcutName on its own,
+            // so the "show shortcut descriptions" setting can be switched at display time.
+            textCollection = new ReadOnlyCollection<string>(CreateTextSequence(allKeys).ToArray());
         }
 
         private Message(Message initial, Message appended)
@@ -82,6 +81,8 @@ namespace Carnac.Logic.Models
         public ImageSource ProcessIcon { get { return processIcon; } }
 
         public string ShortcutName { get { return shortcutName; } }
+
+        public bool HasShortcutName { get { return !string.IsNullOrEmpty(shortcutName); } }
 
         public bool CanBeMerged { get { return canBeMerged; } }
 
