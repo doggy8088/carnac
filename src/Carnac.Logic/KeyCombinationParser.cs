@@ -329,6 +329,13 @@ namespace Carnac.Logic
 
             key = resolved.Value;
             impliesShift = ReplaceKey.IsShiftedCharacter(keyText);
+            if (key == Keys.KeyCode)
+            {
+                // an enum mask (0xFFFF), not a key: the keyboard hook never reports it
+                error = "'" + keyText + "' is a bit mask of the key codes, not a key";
+                return false;
+            }
+
             if (key == Keys.None || (key & Keys.Modifiers) != Keys.None || ModifierKeys.Contains(key))
             {
                 error = "'" + keyText + "' is a modifier, not a key; add the key after it (for example 'Ctrl+S')";
