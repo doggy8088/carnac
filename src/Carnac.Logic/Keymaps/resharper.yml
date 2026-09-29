@@ -150,31 +150,9 @@ shortcuts:
       keys:
       - Ctrl+`
 
-    - name:      Go to bookmark
-      keys:
-      - Ctrl+0
-      - Ctrl+1
-      - Ctrl+2
-      - Ctrl+3
-      - Ctrl+4
-      - Ctrl+5
-      - Ctrl+6
-      - Ctrl+7
-      - Ctrl+8
-      - Ctrl+9
-
-    - name:      Set/remove bookmark
-      keys:
-      - Ctrl+Shift+0
-      - Ctrl+Shift+1
-      - Ctrl+Shift+2
-      - Ctrl+Shift+3
-      - Ctrl+Shift+4
-      - Ctrl+Shift+5
-      - Ctrl+Shift+6
-      - Ctrl+Shift+7
-      - Ctrl+Shift+8
-      - Ctrl+Shift+9
+    # The bookmark shortcuts (Ctrl+0..9 to go to a bookmark, Ctrl+Shift+0..9 to set one) are not listed: the digit
+    # keys collide with Visual Studio's own Ctrl+5..9 and Ctrl+Shift+1/2/7/8 entries (visual-studio.yml, same process),
+    # and only one keymap can name a key press.
 
     - name:      Go to type
       keys:
