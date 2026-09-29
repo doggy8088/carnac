@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -21,6 +22,10 @@ namespace Carnac.Logic.MouseMonitor
         const int WM_LBUTTONDOWN = 0x0201;
         const int WM_RBUTTONDOWN = 0x0204;
         const int WM_MBUTTONDOWN = 0x0207;
+
+        // A native hook keeps calling its callback until Windows has taken it away, so the callback is kept alive until
+        // then, also when nobody gets round to unsubscribing (the dispatcher that was to do it is shutting down).
+        static readonly HashSet<Win32Methods.LowLevelKeyboardProc> InstalledCallbacks = new HashSet<Win32Methods.LowLevelKeyboardProc>();
 
         readonly IObservable<MouseClick> clickStream;
 
@@ -53,12 +58,21 @@ namespace Carnac.Logic.MouseMonitor
                 };
 
                 hookId = Win32Methods.SetHook(Win32Methods.WH_MOUSE_LL, callback);
+                lock (InstalledCallbacks)
+                {
+                    InstalledCallbacks.Add(callback);
+                }
 
                 return Disposable.Create(() =>
                 {
                     Debug.Write("Unsubscribed from mouse");
-                    Win32Methods.UnhookWindowsHookEx(hookId);
-                    GC.KeepAlive(callback);
+                    if (Win32Methods.UnhookWindowsHookEx(hookId))
+                    {
+                        lock (InstalledCallbacks)
+                        {
+                            InstalledCallbacks.Remove(callback);
+                        }
+                    }
                 });
             });
         }

@@ -174,7 +174,10 @@
                     </Grid.RowDefinitions>
                     <StackPanel Margin="10,0,0,0" Orientation="Vertical">
                         <ui:PreferencesField Header="Show Mouse Clicks">
-                            <CheckBox IsChecked="{Binding Settings.ShowMouseClicks}" Content="Show a circle around the pointer when a mouse button is pressed (also in password mode)" />
+                            <StackPanel Orientation="Vertical">
+                                <CheckBox IsChecked="{Binding Settings.ShowMouseClicks}" Content="Circle around the pointer on mouse clicks" />
+                                <TextBlock TextWrapping="Wrap">The circles are also shown in password mode.</TextBlock>
+                            </StackPanel>
                         </ui:PreferencesField>
                         <ui:PreferencesField Header="Left Button">
                             <ComboBox SelectedItem="{Binding LeftClickColor}"
