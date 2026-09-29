@@ -76,9 +76,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdministratorRestartFacts.cs" />
     <Compile Include="BoundedCacheFacts.cs" />
     <Compile Include="BuildOutputFacts.cs" />
     <Compile Include="ConfiguredHotkeysFacts.cs" />
+    <Compile Include="ElevatedAppDetectorFacts.cs" />
     <Compile Include="ErrorNotifyingLoggerFacts.cs" />
     <Compile Include="FileLoggerFacts.cs" />
     <Compile Include="GitHubReleaseFeedFacts.cs" />
@@ -100,6 +102,7 @@
     <Compile Include="ReleaseVersionFacts.cs" />
     <Compile Include="RetryWithDelayFacts.cs" />
     <Compile Include="SpecificationFor.cs" />
+    <Compile Include="SystemElevationCheckerFacts.cs" />
     <Compile Include="TrayMenuFacts.cs" />
     <Compile Include="TrayStatusTextFacts.cs" />
     <Compile Include="UpdateCheckFacts.cs" />

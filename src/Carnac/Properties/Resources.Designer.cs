@@ -79,6 +79,15 @@ namespace Carnac.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Restart as administrator.
+        /// </summary>
+        internal static string TrayMenu_RestartAsAdministrator {
+            get {
+                return ResourceManager.GetString("TrayMenu_RestartAsAdministrator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Resume.
         /// </summary>
         internal static string TrayMenu_Resume {

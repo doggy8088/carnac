@@ -40,6 +40,33 @@ namespace Carnac.Utilities
             return !createdNew;
         }
 
+        /// <summary>
+        /// Waits until a process has ended, for at most <paramref name="timeout"/>. Used by an instance that was started to replace
+        /// another one: the old instance's single-instance mutex is gone once it has ended.
+        /// </summary>
+        public static void WaitForExit(int processId, TimeSpan timeout)
+        {
+            try
+            {
+                using (var process = Process.GetProcessById(processId))
+                {
+                    process.WaitForExit((int)Math.Min(timeout.TotalMilliseconds, int.MaxValue));
+                }
+            }
+            catch (ArgumentException)
+            {
+                // no such process any more: nothing to wait for
+            }
+            catch (InvalidOperationException)
+            {
+                // ended while it was being looked at
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+                // cannot be waited for (no access): the caller just carries on, at worst the mutex is still taken and it quits
+            }
+        }
+
         public static void DestroyMutex()
         {
             if (mutex == null) return;
