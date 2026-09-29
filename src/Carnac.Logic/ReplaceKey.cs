@@ -121,6 +121,27 @@ namespace Carnac.Logic
             return null;
         }
 
+        /// <summary>
+        /// True for keys that type a character when pressed (letters, digits, punctuation, Space and the numeric keypad
+        /// operators). False for Enter, Tab, Escape, Backspace, Insert/Delete, Home/End/PageUp/PageDown, arrows, F-keys
+        /// and the other keys that trigger an action instead of typing.
+        /// </summary>
+        public static bool ProducesCharacter(this Keys key)
+        {
+            if (key >= Keys.A && key <= Keys.Z)
+                return true;
+            if (key >= Keys.D0 && key <= Keys.D9)
+                return true;
+            if (key >= Keys.NumPad0 && key <= Keys.Divide)
+                return true;   // NumPad0-9, Multiply, Add, Separator, Subtract, Decimal, Divide
+            if (key == Keys.Space)
+                return true;
+            // Oem1 (;) .. Oem3 (`) contains Oemplus, Oemcomma, OemMinus, OemPeriod; Oem4 ([) .. Oem8 are the bracket, backslash and quote keys
+            return (key >= Keys.Oem1 && key <= Keys.Oem3)
+                || (key >= Keys.Oem4 && key <= Keys.Oem8)
+                || key == Keys.Oem102;
+        }
+
         public static string Sanitise(this Keys key)
         {
             return Replacements.ContainsKey(key) ? Replacements[key] : string.Format(key.ToString());

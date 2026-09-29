@@ -9,25 +9,44 @@ namespace Carnac.Tests
     /// <summary>Builds KeyPress objects for tests that feed a message pipeline without the keyboard hook.</summary>
     public static class KeyPresses
     {
-        public static KeyPress Create(string processName, Keys key, bool control = false, bool shift = false, bool alt = false)
+        public static KeyPress Create(string processName, Keys key, bool control = false, bool shift = false, bool alt = false, bool win = false)
         {
             var args = new InterceptKeyEventArgs(key, KeyDirection.Down, alt, control, shift);
-            return new KeyPress(new ProcessInfo(processName), args, false, ToInput(key, control, shift, alt));
+            return new KeyPress(new ProcessInfo(processName), args, win, ToInput(key, control, shift, alt, win));
         }
 
-        // Mirrors what KeyProvider produces for the common cases.
-        static IEnumerable<string> ToInput(Keys key, bool control, bool shift, bool alt)
+        // Mirrors KeyProvider.ToInputs; KeyProviderTests.the_key_press_helper_builds_the_same_input_as_the_key_provider
+        // compares the two so that this copy cannot drift from production again.
+        static IEnumerable<string> ToInput(Keys key, bool control, bool shift, bool alt, bool win)
         {
             var input = new List<string>();
             if (control)
                 input.Add("Ctrl");
             if (alt)
                 input.Add("Alt");
-            if (shift && (control || alt))
-                input.Add("Shift");
+            if (win)
+                input.Add("Win");
+
+            if (control || alt || win)
+            {
+                if (shift)
+                    input.Add("Shift");
+                input.Add(key.Sanitise());
+                return input;
+            }
 
             var isLetter = key >= Keys.A && key <= Keys.Z;
-            input.Add(isLetter && !control && !alt && !shift ? key.ToString().ToLowerInvariant() : key.Sanitise());
+            string shifted;
+            var shiftModifiesInput = key.SanitiseShift(out shifted) && key.ProducesCharacter();
+            if (!isLetter && !shiftModifiesInput && shift)
+                input.Add("Shift");
+
+            if (shift && shiftModifiesInput)
+                input.Add(shifted);
+            else if (isLetter && !shift)
+                input.Add(key.ToString().ToLowerInvariant());
+            else
+                input.Add(key.Sanitise());
             return input;
         }
     }
