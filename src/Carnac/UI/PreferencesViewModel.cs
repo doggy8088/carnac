@@ -62,6 +62,12 @@ namespace Carnac.UI
 
         public PopupSettings Settings { get; set; }
 
+        /// <summary>The keys can only be named after the keyboard layout on Windows 10 version 1607 or later.</summary>
+        public bool IsKeyboardLayoutSupported
+        {
+            get { return KeyboardLayoutTranslator.IsSupported; }
+        }
+
         public string Version
         {
             get { return Assembly.GetExecutingAssembly().GetName().Version.ToString(); }

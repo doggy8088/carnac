@@ -31,7 +31,7 @@ namespace Carnac
         {
             settingsProvider = new SettingsProvider(new RoamingAppDataStorage("Carnac"));
             settings = settingsProvider.GetSettings<PopupSettings>();
-            var keyProvider = new KeyProvider(InterceptKeys.Current, new PasswordModeService(), new DesktopLockEventService(), settingsProvider);
+            var keyProvider = new KeyProvider(InterceptKeys.Current, new PasswordModeService(), new DesktopLockEventService(), settingsProvider, new KeyboardLayoutTranslator());
             messageProvider = new MessageProvider(new ShortcutProvider(), keyProvider, settings);
         }
 
