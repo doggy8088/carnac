@@ -159,6 +159,15 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void the_key_code_mask_is_not_a_key()
+        {
+            Assert.Contains("not a key", ParseError("KeyCode"));
+            Assert.Contains("not a key", ParseError("Ctrl+KeyCode"));
+            Assert.Contains("modifier", ParseError("Modifiers"));
+            Assert.Contains("modifier", ParseError("None"));
+        }
+
+        [Fact]
         public void physical_modifier_keys_are_rejected_because_they_can_never_match()
         {
             foreach (var name in new[] { "LControlKey", "RControlKey", "ControlKey", "LShiftKey", "RShiftKey", "ShiftKey", "LMenu", "RMenu", "Menu", "LWin", "RWin" })
