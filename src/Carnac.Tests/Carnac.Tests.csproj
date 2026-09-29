@@ -80,6 +80,7 @@
     <Compile Include="MessageProviderFacts.cs" />
     <Compile Include="RxTestExtensions.cs" />
     <Compile Include="ShortcutAccumulatorFacts.cs" />
+    <Compile Include="ShortcutCollectionFacts.cs" />
     <Compile Include="ShortcutProviderFacts.cs" />
     <Compile Include="SpecificationFor.cs" />
     <Compile Include="KeyProviderTests.cs" />

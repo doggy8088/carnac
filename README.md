@@ -44,6 +44,48 @@ The application will check for updates in the background, if a new version has b
 
 If you want to stop `Carnac` from recording certain key strokes, you can enter _silent mode_ by pressing `Ctrl+Alt+P`. To exit _silent mode_ you simply press `Ctrl+Alt+P` again.
 
+#### Keymaps and process filter
+
+Carnac names the shortcuts it knows: pressing `Ctrl+Shift+K` in VS Code shows `Ctrl + Shift + K [Delete Line]`. The names come from small YAML files in the `Keymaps` folder next to `Carnac.exe` (with the installer, usually `%LOCALAPPDATA%\Programs\Carnac\Keymaps`). Carnac reads them when it starts, so restart it after changing one. Copy a bundled file such as `chrome.yml` or `vscode.yml` as a starting point.
+
+```yaml
+group:   My Browsers
+process: chrome|msedge
+
+shortcuts:
+  - name: Reopen closed tab
+    keys:
+      - Ctrl+Shift+T
+  - name: Comment Selection
+    keys:
+      - Ctrl+K,Ctrl+C
+```
+
+- `process` is the process name **without `.exe`**. It is compared case-insensitively and in full: `Code` and `code` are the same, `chrome` does not match `chromedriver`. Give one name, several names separated by `|`, or a YAML list. Leave it empty to apply the keymap to every application.
+
+    ```yaml
+    process: chrome|msedge   # both browsers
+
+    process:                 # the same, as a list
+      - chrome
+      - msedge
+    ```
+
+- `keys` lists the ways to trigger a shortcut. Write modifiers (`Ctrl`, `Alt`, `Shift`, `Win`) joined with `+`, then one key: a letter, a digit, or a key name such as `Enter`, `Escape`, `Back`, `Up`, `F5`, `PageDown` or `Oemcomma` (the names of [`System.Windows.Forms.Keys`](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.keys)). The plus key is `Ctrl++`: like every character that is typed with Shift on a US keyboard (`!`, `?`, `_`, `{` ...), it means the shifted key, so `Ctrl++` is `Ctrl+Shift+=`. Write `Ctrl+=` or `Ctrl+Oemplus` for the unshifted key. The comma key after a modifier is `Ctrl+,`.
+- A chord, several key presses one after the other, uses commas: `Ctrl+K,Ctrl+C`. Carnac holds back the first key of a possible chord; if the rest does not follow within about a second, that key is shown on its own.
+- An entry Carnac cannot understand is skipped, and a message naming the file and shortcut goes to the Windows debug output (visible with a tool such as DebugView). Typical mistakes are `Ctrl+K Ctrl+C` (chords need a comma), `Up Arrow` (write `Up`) and `Esc` (write `Escape`).
+- `src/Carnac.Logic/Keymaps/samples` holds opt-in keymaps that are not installed, for example the Konami code. To use one, copy it into the `Keymaps` folder and rename it to end in `.yml`.
+
+To find a process name, open Task Manager, go to the **Details** tab and take the **Name** column without `.exe` (`Code.exe` is `Code`), or run `Get-Process | Select-Object -ExpandProperty Name` in PowerShell.
+
+##### Process filter
+
+*Preferences*, *Appearance*, *Process Filter* limits Carnac to some applications. It is a regular expression that is matched case-insensitively against the same process name (again without `.exe`) and may match a part of it. Leave it empty to show every application.
+
+- `notepad|calc` shows keys from these applications only (and from any process whose name contains one of them).
+- `^(notepad|calc)$` shows keys from exactly these two.
+- `^(?!ZoomIt64$)` shows everything except ZoomIt. Do not write `^(?!ZoomIt64\.exe$)`: process names have no `.exe`, so that expression excludes nothing.
+
 ### Contributing
 
 #### Getting started with Git and GitHub

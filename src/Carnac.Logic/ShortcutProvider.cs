@@ -55,7 +55,7 @@ namespace Carnac.Logic
         {
             var processName = keys.Process.ProcessName;
             return shortcuts
-                .Where(s => s.Process == processName || string.IsNullOrWhiteSpace(s.Process))
+                .Where(s => s.AppliesTo(processName))
                 .SelectMany(shortcut => shortcut.GetShortcutsMatching(new[] { keys }))
                 .ToList();
         }
@@ -119,10 +119,41 @@ namespace Carnac.Logic
             return child.Value == null ? null : child.Value.ToString();
         }
 
+        /// <summary>
+        /// Reads the "process:" entry of a keymap: nothing (every process), one name, names separated by '|', or a YAML
+        /// list of names. Returns the names as one '|' separated string; false when the entry has another shape.
+        /// </summary>
+        static bool TryGetProcess(YamlMappingNode collection, out string process)
+        {
+            process = null;
+            var node = collection.Children.FirstOrDefault(n => n.Key.ToString() == "process").Value;
+            if (node == null)
+                return true;
+
+            var scalar = node as YamlScalarNode;
+            if (scalar != null)
+            {
+                process = scalar.Value;
+                return true;
+            }
+
+            var list = node as YamlSequenceNode;
+            if (list == null || list.Children.Any(item => !(item is YamlScalarNode)))
+                return false;
+
+            process = string.Join("|", list.Children.Cast<YamlScalarNode>().Select(item => item.Value));
+            return true;
+        }
+
         ShortcutCollection GetShortcuts(YamlMappingNode collection, string fileName)
         {
             string group = GetValueByKey(collection, "group");
-            string process = GetValueByKey(collection, "process");
+            string process;
+            if (!TryGetProcess(collection, out process))
+            {
+                warn(fileName + ": ignoring keymap, 'process' must be a process name, several names separated by '|', or a list of names");
+                return null;
+            }
 
             var shortcutsNode = collection.Children.FirstOrDefault(n => n.Key.ToString() == "shortcuts").Value;
             var shortcutsList = shortcutsNode as YamlSequenceNode;

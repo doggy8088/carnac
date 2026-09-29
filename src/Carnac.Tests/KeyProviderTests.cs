@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Carnac.Logic;
@@ -151,6 +152,71 @@ namespace Carnac.Tests
 
             // assert
             Assert.Equal(0, processedKeys.Count);
+        }
+
+        async Task<int> KeysShownWithFilter(string processFilterExpression)
+        {
+            settingsProvider.GetSettings<PopupSettings>().Returns(new PopupSettings() { ProcessFilterExpression = processFilterExpression });
+            var provider = new KeyProvider(KeyStreams.LetterL(), passwordModeService, desktopLockEventService, settingsProvider);
+
+            var processedKeys = await provider.GetKeyStream().ToList();
+
+            return processedKeys.Count;
+        }
+
+        static string CurrentProcessName()
+        {
+            return AssociatedProcessUtilities.GetAssociatedProcess().ProcessName;
+        }
+
+        // A process name that cannot match the current process: longer than the current name and containing it only as a
+        // suffix, so even an unanchored expression built from it never matches the observed name. Tests must not assume
+        // which application owns the foreground window (a runner, an IDE, Notepad ...).
+        static string OtherProcessName(string suffix = "")
+        {
+            return "zzz-other-" + CurrentProcessName().ToLowerInvariant() + suffix;
+        }
+
+        [Fact]
+        public async Task filter_is_matched_case_insensitively()
+        {
+            Assert.Equal(1, await KeysShownWithFilter(Regex.Escape(CurrentProcessName().ToUpperInvariant())));
+            Assert.Equal(1, await KeysShownWithFilter(Regex.Escape(CurrentProcessName().ToLowerInvariant())));
+        }
+
+        [Fact]
+        public async Task filter_with_alternatives_shows_only_the_listed_processes()
+        {
+            // alternatives that do not name the current process show nothing, listing it as well shows it
+            var others = Regex.Escape(OtherProcessName("-1")) + "|" + Regex.Escape(OtherProcessName("-2"));
+
+            Assert.Equal(0, await KeysShownWithFilter(others));
+            Assert.Equal(1, await KeysShownWithFilter(others + "|" + Regex.Escape(CurrentProcessName())));
+        }
+
+        [Fact]
+        public async Task exclusion_filter_hides_the_excluded_process()
+        {
+            // "^(?!ZoomIt64$)" excludes ZoomIt64; here the excluded name is the process the test runs in
+            var excludeCurrentProcess = "^(?!" + Regex.Escape(CurrentProcessName()) + "$)";
+
+            Assert.Equal(0, await KeysShownWithFilter(excludeCurrentProcess));
+        }
+
+        [Fact]
+        public async Task exclusion_filter_shows_other_processes()
+        {
+            // excluding some other process leaves the current one visible
+            Assert.Equal(1, await KeysShownWithFilter("^(?!" + Regex.Escape(OtherProcessName()) + "$)"));
+        }
+
+        [Fact]
+        public async Task exclusion_filter_with_exe_suffix_excludes_nothing()
+        {
+            // Process names have no ".exe", so the negative look-ahead of "^(?!<name>\.exe$)" always succeeds.
+            var withExe = "^(?!" + Regex.Escape(CurrentProcessName()) + @"\.exe$)";
+
+            Assert.Equal(1, await KeysShownWithFilter(withExe));
         }
 
         [Fact]
