@@ -19,6 +19,12 @@ namespace Carnac.Tests
             return stored.TryGetValue(name, out values) ? new Dictionary<string, string>(values) : new Dictionary<string, string>();
         }
 
+        /// <summary>True when something was saved (or seeded) under this name.</summary>
+        public bool Contains(string name)
+        {
+            return stored.ContainsKey(name);
+        }
+
         /// <summary>Simulates a settings file that was written by an older Carnac version.</summary>
         public void Seed(string name, Dictionary<string, string> values)
         {

@@ -13,7 +13,6 @@ using Carnac.Logic.Models;
 using Carnac.UI;
 using Carnac.Utilities;
 using SettingsProviderNet;
-using Squirrel;
 
 namespace Carnac
 {
@@ -29,10 +28,7 @@ namespace Carnac
         KeyShowView keyShowView;
         CarnacTrayIcon trayIcon;
         KeysController carnac;
-
-#if !DEBUG
-        readonly string carnacUpdateUrl = "https://github.com/Code52/carnac";
-#endif
+        IDisposable updateCheck;
 
         public App()
         {
@@ -74,17 +70,38 @@ namespace Carnac
 
         void OpenLogFolder()
         {
+            ShellOpen(fileLogger.Directory);
+        }
+
+        // Opens a folder in Explorer or an address in the default browser.
+        void ShellOpen(string target)
+        {
             try
             {
-                // Explorer opens the folder; the returned Process (null when an existing Explorer window is reused) is not needed
-                using (Process.Start(new ProcessStartInfo(fileLogger.Directory) { UseShellExecute = true }))
+                // the returned Process (null when an existing Explorer window is reused) is not needed
+                using (Process.Start(new ProcessStartInfo(target) { UseShellExecute = true }))
                 {
                 }
             }
             catch (Exception ex)
             {
-                logger.Warn("Could not open the log folder " + fileLogger.Directory, ex);
+                logger.Warn("Could not open " + target, ex);
             }
+        }
+
+        // A pause after the start, so the check never competes with Carnac starting up; it then runs on a thread-pool thread.
+        // Only the small settings access goes back to the UI thread: the settings provider is not thread-safe.
+        void StartUpdateCheck()
+        {
+            var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            var checker = new UpdateChecker(
+                new GitHubReleaseFeed("Carnac/" + currentVersion),
+                new MarshalledUpdateCheckHistory(new SettingsUpdateCheckHistory(settingsProvider), action => Dispatcher.Invoke(action)),
+                ReleaseVersion.FromVersion(currentVersion),
+                logger,
+                () => DateTime.UtcNow);
+            var runner = new UpdateCheckRunner(checker, ReleaseVersion.FromVersion(currentVersion), trayIcon, ShellOpen, logger);
+            updateCheck = Observable.Timer(TimeSpan.FromSeconds(30)).Subscribe(x => runner.Run());
         }
 
         protected override void OnStartup(StartupEventArgs e)
@@ -122,27 +139,11 @@ namespace Carnac
             carnac = new KeysController(keyShowViewModel.Messages, messageProvider, new ConcurrencyService(), settingsProvider, logger);
             carnac.Start();
 
-#if !DEBUG
+            // Opt-in: without the setting "Check for updates on startup" Carnac never contacts GitHub.
             if (settings.AutoUpdate)
             {
-                Observable
-                    .Timer(TimeSpan.FromMinutes(5))
-                    .Subscribe(async x =>
-                    {
-                        try
-                        {
-                            using (var mgr = UpdateManager.GitHubUpdateManager(carnacUpdateUrl))
-                            {
-                                await mgr.Result.UpdateApp();
-                            }
-                        }
-                        catch
-                        {
-                            // Do something useful with the exception
-                        }
-                    });
+                StartUpdateCheck();
             }
-#endif
 
             base.OnStartup(e);
             started = true;
@@ -150,6 +151,11 @@ namespace Carnac
 
         protected override void OnExit(ExitEventArgs e)
         {
+            if (updateCheck != null)
+            {
+                updateCheck.Dispose();
+            }
+
             // trayIcon and carnac do not exist when this was a second instance that closed itself right after starting
             if (trayIcon != null)
             {

@@ -34,9 +34,13 @@ Alternatively, you can grab the latest zip file from [here](https://github.com/C
 
 ### Updating
 
-We use `Squirrel.Windows` to update your `carnac` application.
+Carnac does not update itself and never installs anything on its own. Update it the way you installed it:
 
-The application will check for updates in the background, if a new version has been released, it will automatically install the new version and once you restart `carnac` you will be up-to-date.
+- **WinGet:** `winget upgrade doggy8088.Carnac`
+- **Chocolatey:** `choco upgrade carnac`
+- **Manual setup / zip:** download the newest release from the [releases page](https://github.com/doggy8088/carnac/releases/latest).
+
+If you would like to be told when a new version is out, switch on **Check for updates on startup** in the settings (**General** tab, off by default). Carnac then asks GitHub (`api.github.com`) at most once a day whether a newer release exists and shows a notice at the tray icon; clicking it opens the release page. Nothing is downloaded, and while the option is off Carnac makes no network requests at all. If the check fails (for example when you are offline) it is only written to the [log](#troubleshooting).
 
 ### Usage
 

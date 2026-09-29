@@ -30,6 +30,10 @@ namespace Carnac.Logic.Models
         [NotifyProperty(AlsoNotifyFor = new[] { "ScaleTransform", "Alignment" })]
         public NotificationPlacement Placement { get; set; }
 
+        /// <summary>
+        /// "Check for updates on startup". The name is a leftover of the Squirrel auto-updater, which is gone; it is kept so that
+        /// existing settings files keep working. Carnac only tells about a newer release, it never installs anything.
+        /// </summary>
         [DefaultValue(false)]
         public bool AutoUpdate { get; set; }
 

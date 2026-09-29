@@ -50,6 +50,12 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <!-- BuildOutputFacts names the WPF Carnac.App type, whose base class lives in these assemblies; the C# compiler
+         of the Cake/CI build needs them referenced explicitly. -->
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Reactive.Core">
       <HintPath>..\packages\System.Reactive.Core.3.1.1\lib\net45\System.Reactive.Core.dll</HintPath>
     </Reference>
@@ -71,9 +77,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoundedCacheFacts.cs" />
+    <Compile Include="BuildOutputFacts.cs" />
     <Compile Include="ConfiguredHotkeysFacts.cs" />
     <Compile Include="ErrorNotifyingLoggerFacts.cs" />
     <Compile Include="FileLoggerFacts.cs" />
+    <Compile Include="GitHubReleaseFeedFacts.cs" />
     <Compile Include="HotkeyParserFacts.cs" />
     <Compile Include="HotkeyPipelineFacts.cs" />
     <Compile Include="HotkeySettingsFacts.cs" />
@@ -82,16 +90,19 @@
     <Compile Include="KeyPipelineResilienceFacts.cs" />
     <Compile Include="KeyPlayer.cs" />
     <Compile Include="KeysControllerFacts.cs" />
+    <Compile Include="MarshalledUpdateCheckHistoryFacts.cs" />
     <Compile Include="KeyStreams.cs" />
     <Compile Include="MessageFacts.cs" />
     <Compile Include="MessageProviderFacts.cs" />
     <Compile Include="MessageProviderPauseFacts.cs" />
     <Compile Include="PasswordModeServiceFacts.cs" />
     <Compile Include="RxTestExtensions.cs" />
+    <Compile Include="ReleaseVersionFacts.cs" />
     <Compile Include="RetryWithDelayFacts.cs" />
     <Compile Include="SpecificationFor.cs" />
     <Compile Include="TrayMenuFacts.cs" />
     <Compile Include="TrayStatusTextFacts.cs" />
+    <Compile Include="UpdateCheckFacts.cs" />
     <Compile Include="KeyProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\PreferencesViewModelHotkeyFacts.cs" />
