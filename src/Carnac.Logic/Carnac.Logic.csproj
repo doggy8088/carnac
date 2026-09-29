@@ -134,9 +134,7 @@
     <None Include="Keymaps\ncrunch.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Keymaps\konami.yml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="Keymaps\samples\konami.yml.sample" />
     <None Include="Keymaps\resharper.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

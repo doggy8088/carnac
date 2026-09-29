@@ -1,0 +1,16 @@
+# Opt-in sample, NOT active by default.
+#
+# To try it, copy this file into the "Keymaps" folder next to Carnac.exe and rename it to "konami.yml"
+# (only files ending in .yml in that folder are loaded).
+#
+# Because "process:" is empty the shortcut applies to every application, and its first key is an arrow.
+# Carnac holds a key back while it could still be the start of a shortcut, so with this keymap installed
+# a single Up arrow is only shown after a short delay (about one second). That is why it is not shipped enabled.
+
+group:          Konami
+process:        
+
+shortcuts:
+    - name:      Konami!!!
+      keys:
+      - Up,Up,Down,Down,Left,Right,Left,Right,B,A
