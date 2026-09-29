@@ -128,6 +128,11 @@ namespace Carnac.Logic
                 else if (combination[combination.Length - 2] == '+')
                 {
                     modifierText = combination.Substring(0, combination.Length - 2);
+                    if (modifierText.Trim().Length == 0)
+                    {
+                        error = "a modifier is missing before the first '+' (the plus key on its own is written '+')";
+                        return false;
+                    }
                 }
                 else
                 {
