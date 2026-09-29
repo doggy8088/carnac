@@ -87,6 +87,24 @@ namespace Carnac.Logic.Models
         [DefaultValue("")]
         public string ProcessFilterExpression { get; set;  }
 
+        [DefaultValue(false)]
+        public bool ShowMouseClicks { get; set; }
+
+        [DefaultValue(ClickHighlightSettings.DefaultLeftColor)]
+        public string LeftClickColor { get; set; }
+
+        [DefaultValue(ClickHighlightSettings.DefaultMiddleColor)]
+        public string MiddleClickColor { get; set; }
+
+        [DefaultValue(ClickHighlightSettings.DefaultRightColor)]
+        public string RightClickColor { get; set; }
+
+        [DefaultValue(ClickHighlightSettings.DefaultDiameter)]
+        public int ClickCircleSize { get; set; }
+
+        [DefaultValue(ClickHighlightSettings.DefaultDurationMilliseconds)]
+        public int ClickCircleDuration { get; set; }
+
         public double ScaleTransform
         {
             get { return Placement == NotificationPlacement.TopLeft || Placement == NotificationPlacement.TopRight ? 1 : -1; }

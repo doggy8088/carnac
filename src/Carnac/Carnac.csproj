@@ -196,6 +196,7 @@
     <Compile Include="UI\AvailableColor.cs" />
     <Compile Include="Utilities\ProcessUtilities.cs" />
     <Compile Include="UI\KeyShowViewModel.cs" />
+    <Compile Include="UI\ClickRing.cs" />
     <Compile Include="UI\PreferencesViewModel.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>

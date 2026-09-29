@@ -75,6 +75,7 @@
     <Compile Include="KeyStreams.cs" />
     <Compile Include="MessageFacts.cs" />
     <Compile Include="MessageProviderFacts.cs" />
+    <Compile Include="MouseClickHighlightFacts.cs" />
     <Compile Include="RxTestExtensions.cs" />
     <Compile Include="SpecificationFor.cs" />
     <Compile Include="KeyProviderTests.cs" />
