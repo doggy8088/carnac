@@ -1,0 +1,122 @@
+name: Chocolatey
+
+# Packs the carnac Chocolatey package from src/Chocolatey, verifies that the
+# installer URL and checksum match the GitHub release, and test-installs it on
+# the runner. A manual run also pushes the package to community.chocolatey.org.
+#
+# To publish a release:
+#   1. .\src\Chocolatey\Update-Package.ps1 -Version X.Y.Z   (after the release asset is final)
+#   2. commit and merge the change to dev
+#   3. Actions > Chocolatey > Run workflow (leave "Push" on)
+# Requires the CHOCOLATEY_API_KEY repository secret (https://community.chocolatey.org/account).
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'src/Chocolatey/**'
+      - '.github/workflows/chocolatey.yml'
+  pull_request:
+    paths:
+      - 'src/Chocolatey/**'
+      - '.github/workflows/chocolatey.yml'
+  workflow_dispatch:
+    inputs:
+      push:
+        description: Push the package to community.chocolatey.org
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Read package version and installer from the manifest
+        shell: pwsh
+        run: |
+          [xml]$nuspec = Get-Content src\Chocolatey\carnac.nuspec
+          $version = $nuspec.package.metadata.version
+          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "Unexpected nuspec version '$version'" }
+          $install = Get-Content src\Chocolatey\tools\chocolateyinstall.ps1 -Raw
+          if ($install -notmatch "url\s*=\s*'([^']+)'") { throw 'No installer url in chocolateyinstall.ps1' }
+          $url = $Matches[1]
+          if ($install -notmatch "checksum\s*=\s*'([0-9A-Fa-f]{64})'") { throw 'No SHA256 checksum in chocolateyinstall.ps1' }
+          $checksum = $Matches[1].ToUpperInvariant()
+          if ($url -ne "https://github.com/$env:GITHUB_REPOSITORY/releases/download/v$version/Carnac-$version-Setup.exe") {
+            throw "Installer url '$url' does not match release v$version of $env:GITHUB_REPOSITORY"
+          }
+          "VERSION=$version" >> $env:GITHUB_ENV
+          "INSTALLER_URL=$url" >> $env:GITHUB_ENV
+          "INSTALLER_SHA256=$checksum" >> $env:GITHUB_ENV
+          Write-Host "carnac $version -> $url ($checksum)"
+
+      # The release asset can be replaced (for example by a code-signed build), so the
+      # checksum in the package must match what GitHub serves right now.
+      - name: Verify the installer checksum against the GitHub release
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          New-Item -ItemType Directory -Force download | Out-Null
+          Invoke-WebRequest -Uri $env:INSTALLER_URL -OutFile download\Carnac-Setup.exe
+          $actual = (Get-FileHash download\Carnac-Setup.exe -Algorithm SHA256).Hash
+          if ($actual -ne $env:INSTALLER_SHA256) {
+            throw "Checksum mismatch: package says $env:INSTALLER_SHA256 but the release asset is $actual. Run src\Chocolatey\Update-Package.ps1 -Version $env:VERSION and commit."
+          }
+          Write-Host "Checksum OK: $actual"
+
+      - name: Pack
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          choco pack src\Chocolatey\carnac.nuspec --outputdirectory deploy\Chocolatey
+          Get-ChildItem deploy\Chocolatey
+
+      - name: Install from the local package
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          choco install carnac --version $env:VERSION --source deploy\Chocolatey --yes --no-progress
+          $exe = "$env:LOCALAPPDATA\Programs\Carnac\Carnac.exe"
+          if (-not (Test-Path $exe)) { throw "Carnac.exe not found at $exe after install" }
+          $fileVersion = (Get-Item $exe).VersionInfo.FileVersion
+          Write-Host "Installed Carnac.exe file version $fileVersion"
+          if (-not $fileVersion.StartsWith("$env:VERSION.")) { throw "Expected file version $env:VERSION.*, got $fileVersion" }
+          $key = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DB5C24A2-1558-4272-8C3C-676D68A1E405}_is1'
+          Write-Host "Programs and Features entry: $($key.DisplayName) $($key.DisplayVersion)"
+          Get-Content "$env:TEMP\carnac.$env:VERSION.Install.log" -Tail 5
+
+      - name: Uninstall
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          choco uninstall carnac --yes --no-progress
+          if (Test-Path "$env:LOCALAPPDATA\Programs\Carnac\Carnac.exe") { throw 'Carnac.exe still present after uninstall' }
+          if (Test-Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DB5C24A2-1558-4272-8C3C-676D68A1E405}_is1') { throw 'Uninstall registry key still present' }
+          Write-Host 'Uninstall OK'
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: carnac-chocolatey-${{ env.VERSION }}
+          path: deploy/Chocolatey/*.nupkg
+          if-no-files-found: error
+
+      - name: Push to community.chocolatey.org
+        if: github.event_name == 'workflow_dispatch' && inputs.push
+        shell: pwsh
+        env:
+          CHOCOLATEY_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          if (-not $env:CHOCOLATEY_API_KEY) { throw 'The CHOCOLATEY_API_KEY repository secret is not set.' }
+          choco push "deploy\Chocolatey\carnac.$env:VERSION.nupkg" --source https://push.chocolatey.org/ --api-key $env:CHOCOLATEY_API_KEY
+          Write-Host "Pushed carnac $env:VERSION. Track moderation at https://community.chocolatey.org/packages/carnac/$env:VERSION"

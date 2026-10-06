@@ -1,26 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+<!-- The version, releaseNotes and the installer URL/checksum in tools\chocolateyinstall.ps1
+     are updated by src\Chocolatey\Update-Package.ps1 for each release. -->
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>carnac</id>
-    <title>carnac</title>
-    <version>0.0.0.9</version>
-    <authors>Code52</authors>
-    <owners>Carnac contributors</owners>
-    <summary>A keyboard utility for all your Windows presentation needs</summary>
-    <description>
-        A keyboard utility for your Windows presentations, screencasts, and more. Carnac displays what you're typing in a modal as you type it.
-
-        This package installs into the Chocolatey lib folder, adds a user Start Menu entry, and adds carnac.exe as a Chocolatey bin executable. 
-    </description>
-    <projectUrl>https://github.com/Code52/carnac</projectUrl>
-    <tags>keyboard presentation screencast</tags>
+    <version>2.4.0</version>
+    <packageSourceUrl>https://github.com/doggy8088/carnac/tree/dev/src/Chocolatey</packageSourceUrl>
+    <owners>willh</owners>
+    <title>Carnac</title>
+    <authors>Code52 and Carnac contributors</authors>
+    <projectUrl>https://carnac.gh.miniasp.com/</projectUrl>
+    <iconUrl>https://cdn.jsdelivr.net/gh/doggy8088/carnac@0cf96733725787178d815e324a91dfc350fd8fc0/src/Carnac/carnac.png</iconUrl>
     <copyright>Copyright (c) Carnac contributors</copyright>
-    <licenseUrl>https://github.com/Code52/carnac/blob/master/LICENSE.md</licenseUrl>
+    <licenseUrl>https://github.com/doggy8088/carnac/blob/dev/LICENSE.md</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <iconUrl>https://cdn.rawgit.com/Code52/carnac/35d71121123471512e5623d1e8cbfae057d047d6/src/Carnac/carnac.png</iconUrl>
-    <releaseNotes>
-        Updates required version to .NET 4.5 and updates to Rx.NET v3
-    </releaseNotes>
+    <projectSourceUrl>https://github.com/doggy8088/carnac</projectSourceUrl>
+    <docsUrl>https://github.com/doggy8088/carnac#readme</docsUrl>
+    <bugTrackerUrl>https://github.com/doggy8088/carnac/issues</bugTrackerUrl>
+    <tags>carnac keyboard keystroke overlay presentation screencast shortcuts</tags>
+    <summary>A keystroke overlay that shows the keys and shortcuts you press, for presentations and screencasts.</summary>
+    <description><![CDATA[
+Carnac shows the keys and shortcuts you press as an on-screen overlay, so the people watching your talk, demo or screencast can follow along.
+
+It labels shortcuts from bundled keymaps for Visual Studio, VS Code, ReSharper, Chrome, Kdenlive and NCrunch, supports your own YAML keymaps, and can be anchored to the top or bottom, left or right of any monitor.
+
+This is the community-maintained fork of Code52's Carnac. The package downloads the official `Carnac-<version>-Setup.exe` from the project's GitHub Releases and runs it silently.
+
+## Package notes
+
+- The installer is per user: Carnac is installed into `%LocalAppData%\Programs\Carnac` for the account that runs Chocolatey and registered under that account's Programs and Features. It does not need administrator rights by itself.
+- Carnac needs .NET Framework 4.5.2 or later, which is included in Windows 10 and Windows 11.
+- Upgrading from the Chocolatey `carnac` 2.3.x packages removes the old Squirrel-based install from `%LocalAppData%\carnac` first, so only one copy of Carnac starts.
+]]></description>
+    <releaseNotes>https://github.com/doggy8088/carnac/releases/tag/v2.4.0</releaseNotes>
   </metadata>
   <files>
     <file src="tools\**" target="tools" />

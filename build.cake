@@ -154,35 +154,9 @@ Task("Package-Zip")
 		zipFileHash = CalculateFileHash(zipFile, HashAlgorithm.SHA256).ToHex();
 	});
 
-Task("Package-Choco")
-	.IsDependentOn("Package-Zip")
-	.Does(() =>
-	{
-		var chocoSourceDir = Directory("./src/Chocolatey");
-		var chocoToolsDir = chocoSourceDir + Directory("tools");
-		var chocoInstallFile = chocoToolsDir + File("chocolateyinstall.ps1");
-		var chocoSpecPath = chocoSourceDir + File("carnac.nuspec");
-		var chocoDeployDir = deployDir + Directory("Chocolatey");
-		
-		EnsureDirectoryExists(deployDir);
-		EnsureDirectoryExists(chocoDeployDir);
-
-		var url = $"{githubRepoUrl}/releases/download/{nugetVersion}";
-
-		ReplaceRegexInFiles(chocoInstallFile, @"\$url = '.+'", $"$url = '{url}/carnac.{nugetVersion}.zip'");
-		ReplaceRegexInFiles(chocoInstallFile, @"\$zipFileHash = '.+'", $"$zipFileHash = '{zipFileHash}'");
-
-		ChocolateyPack(chocoSpecPath, new ChocolateyPackSettings
-		{
-			Version = nugetVersion
-		});
-		MoveFiles("./*.nupkg", chocoDeployDir);
-	});
-
 Task("Package")
 	.IsDependentOn("Package-Zip")
 	.IsDependentOn("Package-Squirrel")
-	.IsDependentOn("Package-Choco")
 	.Does(() =>
 	{
 		EnsureDirectoryExists(deployDir);

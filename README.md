@@ -15,7 +15,7 @@ There are several options to install the latest version of Carnac on Windows.
 #### [WinGet](https://learn.microsoft.com/en-us/windows/package-manager/winget/)
 
 ```powershell
-winget install --id code52.Carnac
+winget install --id doggy8088.Carnac
 ```
 
 #### [Chocolatey](https://chocolatey.org/)
@@ -113,3 +113,18 @@ The `doggy8088.Carnac` WinGet package installs the per-user Inno Setup installer
     ```
 
 To build the installer locally, build `src\Carnac.sln` in Release with the MSBuild flags from the workflow's Build step, then run `iscc /DAppVersion=2.4.1 installer\Carnac.iss`.
+
+### Publish a new version to Chocolatey
+
+The [`carnac`](https://community.chocolatey.org/packages/carnac) Chocolatey package lives in `src/Chocolatey`. It downloads the same `Carnac-<version>-Setup.exe` from GitHub Releases and installs it silently, so publish the GitHub release (and re-sign the installer, if you do that) first.
+
+1. Point the package at the release and commit the change:
+
+    ```powershell
+    .\src\Chocolatey\Update-Package.ps1 -Version 2.4.1
+    git commit -am "chore(chocolatey): 2.4.1"
+    ```
+
+    This updates the version, release notes link, installer URL and SHA256. Pushing it runs the [Chocolatey workflow](.github/workflows/chocolatey.yml), which packs the package, checks the checksum against the release asset and test-installs it.
+2. Once the change is on `dev`, run the Chocolatey workflow from the Actions tab (or `gh workflow run chocolatey.yml --ref dev`) with **Push** enabled. It pushes the package with the `CHOCOLATEY_API_KEY` repository secret, which holds the API key from your [Chocolatey account page](https://community.chocolatey.org/account).
+3. Watch moderation at `https://community.chocolatey.org/packages/carnac/<version>`. New versions go through automated validation and verification before they are approved.
