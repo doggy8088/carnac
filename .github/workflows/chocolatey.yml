@@ -92,7 +92,6 @@ jobs:
           if (-not $fileVersion.StartsWith("$env:VERSION.")) { throw "Expected file version $env:VERSION.*, got $fileVersion" }
           $key = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{DB5C24A2-1558-4272-8C3C-676D68A1E405}_is1'
           Write-Host "Programs and Features entry: $($key.DisplayName) $($key.DisplayVersion)"
-          Get-Content "$env:TEMP\carnac.$env:VERSION.Install.log" -Tail 5
 
       - name: Uninstall
         shell: pwsh
