@@ -38,12 +38,12 @@ $nuspecPath = Join-Path $chocoDir 'carnac.nuspec'
 $nuspec = Get-Content $nuspecPath -Raw
 $nuspec = $nuspec -replace '<version>[^<]*</version>', "<version>$Version</version>"
 $nuspec = $nuspec -replace '<releaseNotes>[^<]*</releaseNotes>', "<releaseNotes>https://github.com/$Repository/releases/tag/v$Version</releaseNotes>"
-Set-Content $nuspecPath $nuspec -NoNewline
+Set-Content $nuspecPath $nuspec -Encoding UTF8 -NoNewline
 
 $installPath = Join-Path $chocoDir 'tools\chocolateyinstall.ps1'
 $install = Get-Content $installPath -Raw
 $install = $install -replace "url\s*=\s*'[^']*'", "url            = '$baseUrl/$setupName'"
 $install = $install -replace "checksum\s*=\s*'[^']*'", "checksum       = '$checksum'"
-Set-Content $installPath $install -NoNewline
+Set-Content $installPath $install -Encoding UTF8 -NoNewline
 
 Write-Host "Updated carnac.nuspec and tools\chocolateyinstall.ps1 to $Version ($checksum)"

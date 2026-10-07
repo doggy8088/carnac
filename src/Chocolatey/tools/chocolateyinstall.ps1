@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 
 $packageArgs = @{
   packageName    = $env:ChocolateyPackageName
@@ -27,7 +27,39 @@ if (Test-Path $squirrelUpdater) {
   if ($squirrel.ExitCode -ne 0) {
     Write-Warning "Squirrel uninstall exited with $($squirrel.ExitCode). Removing $squirrelDir anyway."
   }
-  Remove-Item $squirrelDir -Recurse -Force -ErrorAction SilentlyContinue
+  Remove-Item $squirrelDir -Recurse -Force
+  if (Test-Path $squirrelDir) {
+    throw "Failed to remove legacy Squirrel directory: $squirrelDir"
+  }
+}
+
+# Clean up legacy Squirrel uninstall registry entry if left behind
+$squirrelRegKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\Carnac'
+if (Test-Path $squirrelRegKey) {
+  Remove-Item $squirrelRegKey -Force -ErrorAction SilentlyContinue
+}
+
+# Disable legacy AutoUpdate in existing settings to prevent Carnac from triggering
+# the legacy Code52 Squirrel background update upon startup.
+$settingsDirs = @(
+  (Join-Path $env:ProgramData 'Carnac'),
+  (Join-Path $env:APPDATA 'Carnac'),
+  (Join-Path $env:LOCALAPPDATA 'Carnac')
+)
+foreach ($dir in $settingsDirs) {
+  $settingsFile = Join-Path $dir 'PopupSettings.settings'
+  if (Test-Path $settingsFile) {
+    try {
+      $json = Get-Content $settingsFile -Raw | ConvertFrom-Json
+      if ($json.PSObject.Properties['AutoUpdate'] -and $json.AutoUpdate -ne 'False') {
+        $json.AutoUpdate = 'False'
+        $json | ConvertTo-Json | Set-Content $settingsFile -Encoding UTF8
+        Write-Host "Disabled legacy AutoUpdate in $settingsFile"
+      }
+    } catch {
+      Write-Warning "Failed to update legacy settings in $settingsFile: $_"
+    }
+  }
 }
 
 Install-ChocolateyPackage @packageArgs
