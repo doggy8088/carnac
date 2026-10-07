@@ -3,8 +3,9 @@
   Points the Chocolatey package at a published GitHub release of Carnac.
 
 .DESCRIPTION
-  Downloads sha256sums.txt from the doggy8088/carnac release for the given version,
-  then updates carnac.nuspec (version, releaseNotes) and tools\chocolateyinstall.ps1
+  Downloads the installer executable Carnac-<Version>-Setup.exe from the
+  doggy8088/carnac release, computes its SHA256 checksum, then updates
+  carnac.nuspec (version, releaseNotes) and tools\chocolateyinstall.ps1
   (installer URL and SHA256). Commit the result and run the Chocolatey workflow to
   pack, test and push it.
 
@@ -24,15 +25,16 @@ $ErrorActionPreference = 'Stop'
 $chocoDir = $PSScriptRoot
 $setupName = "Carnac-$Version-Setup.exe"
 $baseUrl = "https://github.com/$Repository/releases/download/v$Version"
+$setupUrl = "$baseUrl/$setupName"
 
-Write-Host "Reading $baseUrl/sha256sums.txt"
-# GitHub serves release assets as application/octet-stream, so Content may be a byte array.
-$response = Invoke-WebRequest -Uri "$baseUrl/sha256sums.txt" -UseBasicParsing
-$sums = if ($response.Content -is [byte[]]) { [System.Text.Encoding]::UTF8.GetString($response.Content) } else { [string]$response.Content }
-$pattern = '^([0-9A-Fa-f]{64})\s+' + [regex]::Escape($setupName) + '$'
-$line = $sums -split "`r?`n" | Where-Object { $_ -match $pattern } | Select-Object -First 1
-if (-not $line) { throw "sha256sums.txt for v$Version has no entry for $setupName" }
-$checksum = ($line -split '\s+')[0].ToUpperInvariant()
+Write-Host "Downloading $setupUrl to compute SHA256 checksum..."
+$tempFile = [System.IO.Path]::GetTempFileName()
+try {
+  Invoke-WebRequest -Uri $setupUrl -OutFile $tempFile -UseBasicParsing
+  $checksum = (Get-FileHash -Path $tempFile -Algorithm SHA256).Hash.ToUpperInvariant()
+} finally {
+  Remove-Item $tempFile -Force -ErrorAction SilentlyContinue
+}
 
 $nuspecPath = Join-Path $chocoDir 'carnac.nuspec'
 $nuspec = Get-Content $nuspecPath -Raw

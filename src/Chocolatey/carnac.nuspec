@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- The version, releaseNotes and the installer URL/checksum in tools\chocolateyinstall.ps1
      are updated by src\Chocolatey\Update-Package.ps1 for each release. -->
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">

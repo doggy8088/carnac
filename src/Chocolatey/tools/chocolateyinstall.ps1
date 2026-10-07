@@ -41,6 +41,8 @@ if (Test-Path $squirrelRegKey) {
 
 # Disable legacy AutoUpdate in existing settings to prevent Carnac from triggering
 # the legacy Code52 Squirrel background update upon startup.
+# SettingsProviderNet 2.1.1 serializes Dictionary<string, string> as an array of
+# [{"Key":"AutoUpdate","Value":"True"}, ...]. We also handle {"AutoUpdate": true}.
 $settingsDirs = @(
   (Join-Path $env:ProgramData 'Carnac'),
   (Join-Path $env:APPDATA 'Carnac'),
@@ -50,11 +52,13 @@ foreach ($dir in $settingsDirs) {
   $settingsFile = Join-Path $dir 'PopupSettings.settings'
   if (Test-Path $settingsFile) {
     try {
-      $json = Get-Content $settingsFile -Raw | ConvertFrom-Json
-      if ($json.PSObject.Properties['AutoUpdate'] -and $json.AutoUpdate -ne 'False') {
-        $json.AutoUpdate = 'False'
-        $json | ConvertTo-Json | Set-Content $settingsFile -Encoding UTF8
-        Write-Host "Disabled legacy AutoUpdate in $settingsFile"
+      $raw = Get-Content $settingsFile -Raw
+      $updated = $raw -replace '("Key"\s*:\s*"AutoUpdate"\s*,\s*"Value"\s*:\s*)"(?:True|true)"', '$1"False"' `
+                      -replace '("Value"\s*:\s*)"(?:True|true)"(\s*,\s*"Key"\s*:\s*"AutoUpdate")', '$1"False"$2' `
+                      -replace '("AutoUpdate"\s*:\s*)"?(?:True|true)"?', '$1"False"'
+      if ($updated -ne $raw) {
+        Set-Content $settingsFile $updated -Encoding UTF8 -NoNewline
+        Write-Host "Disabled legacy AutoUpdate in ${settingsFile}"
       }
     } catch {
       Write-Warning "Failed to update legacy settings in ${settingsFile}: $_"
