@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Stop'
 
 $packageArgs = @{
   packageName    = $env:ChocolateyPackageName
@@ -57,7 +57,7 @@ foreach ($dir in $settingsDirs) {
         Write-Host "Disabled legacy AutoUpdate in $settingsFile"
       }
     } catch {
-      Write-Warning "Failed to update legacy settings in $settingsFile: $_"
+      Write-Warning "Failed to update legacy settings in ${settingsFile}: $_"
     }
   }
 }
