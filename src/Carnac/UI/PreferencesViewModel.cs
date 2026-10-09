@@ -50,8 +50,8 @@ namespace Carnac.UI
 
             RepeatedKeyGroupingOptions = new[]
             {
-                new KeyValuePair<RepeatedKeyGrouping, string>(RepeatedKeyGrouping.Threshold, "Group repeated typed characters"),
-                new KeyValuePair<RepeatedKeyGrouping, string>(RepeatedKeyGrouping.Never, "Never group typed characters")
+                new KeyValuePair<RepeatedKeyGrouping, string>(RepeatedKeyGrouping.Threshold, Properties.Resources.Preferences_RepeatedKeys_Group),
+                new KeyValuePair<RepeatedKeyGrouping, string>(RepeatedKeyGrouping.Never, Properties.Resources.Preferences_RepeatedKeys_Never)
             };
 
             // The mouse colors are the ones in the settings, also after they were reset to their defaults. Weak, because
@@ -59,7 +59,9 @@ namespace Carnac.UI
             WeakEventManager<PopupSettings, PropertyChangedEventArgs>.AddHandler(Settings, "PropertyChanged", OnSettingsPropertyChanged);
 
             AvailableFontFamilies = FontFamilyOption.CreateList(
-                Fonts.SystemFontFamilies, SystemFonts.MessageFontFamily, "System default", CultureInfo.CurrentUICulture);
+                Fonts.SystemFontFamilies, SystemFonts.MessageFontFamily, Properties.Resources.Preferences_SystemDefaultFont, CultureInfo.CurrentUICulture);
+
+            AvailableLanguages = LanguageOption.CreateList();
 
             SaveCommand = new DelegateCommand(SaveSettings);
             ResetToDefaultsCommand = new DelegateCommand(() => settingsProvider.ResetToDefaults<PopupSettings>());
@@ -84,6 +86,8 @@ namespace Carnac.UI
 
         public IList<FontFamilyOption> AvailableFontFamilies { get; private set; }
 
+        public IList<LanguageOption> AvailableLanguages { get; private set; }
+
         public ObservableCollection<DetailedScreen> Screens { get; set; }
 
         public DetailedScreen SelectedScreen { get; set; }
@@ -97,14 +101,14 @@ namespace Carnac.UI
         {
             return new List<KeyCategoryOption>
             {
-                new KeyCategoryOption(settings, KeyCategory.Letters, "Letters", "A to Z"),
-                new KeyCategoryOption(settings, KeyCategory.Digits, "Digits", "0 to 9, also on the numeric keypad"),
-                new KeyCategoryOption(settings, KeyCategory.Punctuation, "Punctuation", "Punctuation and symbol keys, and the numeric keypad operators"),
-                new KeyCategoryOption(settings, KeyCategory.Whitespace, "Space, Enter, Tab", "Space, Enter and Tab"),
-                new KeyCategoryOption(settings, KeyCategory.Editing, "Editing keys", "Backspace, Delete, Insert and Escape"),
-                new KeyCategoryOption(settings, KeyCategory.Navigation, "Navigation", "Arrow keys, Home, End, Page Up and Page Down"),
-                new KeyCategoryOption(settings, KeyCategory.Function, "Function keys", "F1 to F24"),
-                new KeyCategoryOption(settings, KeyCategory.Other, "Other keys", "Every other key, for example Caps Lock, Print Screen and the media keys")
+                new KeyCategoryOption(settings, KeyCategory.Letters, Properties.Resources.Preferences_KeyCategory_Letters, Properties.Resources.Preferences_KeyCategory_LettersDescription),
+                new KeyCategoryOption(settings, KeyCategory.Digits, Properties.Resources.Preferences_KeyCategory_Digits, Properties.Resources.Preferences_KeyCategory_DigitsDescription),
+                new KeyCategoryOption(settings, KeyCategory.Punctuation, Properties.Resources.Preferences_KeyCategory_Punctuation, Properties.Resources.Preferences_KeyCategory_PunctuationDescription),
+                new KeyCategoryOption(settings, KeyCategory.Whitespace, Properties.Resources.Preferences_KeyCategory_Whitespace, Properties.Resources.Preferences_KeyCategory_WhitespaceDescription),
+                new KeyCategoryOption(settings, KeyCategory.Editing, Properties.Resources.Preferences_KeyCategory_Editing, Properties.Resources.Preferences_KeyCategory_EditingDescription),
+                new KeyCategoryOption(settings, KeyCategory.Navigation, Properties.Resources.Preferences_KeyCategory_Navigation, Properties.Resources.Preferences_KeyCategory_NavigationDescription),
+                new KeyCategoryOption(settings, KeyCategory.Function, Properties.Resources.Preferences_KeyCategory_Function, Properties.Resources.Preferences_KeyCategory_FunctionDescription),
+                new KeyCategoryOption(settings, KeyCategory.Other, Properties.Resources.Preferences_KeyCategory_Other, Properties.Resources.Preferences_KeyCategory_OtherDescription)
             };
         }
 
@@ -129,7 +133,8 @@ namespace Carnac.UI
                                                          "Dmitry Pursanov",
                                                          "Chris Sainty",
                                                          "Andrew Tobin",
-                                                         "Henrik Andersson"
+                                                         "Henrik Andersson",
+                                                         "Will 保哥"
                                                      };
         readonly List<string> components = new List<string>
                                                        {
@@ -182,7 +187,7 @@ namespace Carnac.UI
         {
             try
             {
-                Process.Start("http://code52.org/carnac/");
+                Process.Start("https://carnac.gh.miniasp.com/");
             }
             catch
             {

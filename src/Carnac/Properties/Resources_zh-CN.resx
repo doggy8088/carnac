@@ -115,261 +115,261 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ShellView_Exit" xml:space="preserve">
-    <value>Exit</value>
+    <value>退出</value>
   </data>
   <data name="Preferences_TabGeneral" xml:space="preserve">
-    <value>General</value>
+    <value>常规</value>
   </data>
   <data name="Preferences_TabAppearance" xml:space="preserve">
-    <value>Appearance</value>
+    <value>外观</value>
   </data>
   <data name="Preferences_TabAbout" xml:space="preserve">
-    <value>About</value>
+    <value>关于</value>
   </data>
   <data name="Preferences_TopOffset" xml:space="preserve">
-    <value>Top Offset</value>
+    <value>顶部偏移</value>
   </data>
   <data name="Preferences_BottomOffset" xml:space="preserve">
-    <value>Bottom Offset</value>
+    <value>底部偏移</value>
   </data>
   <data name="Preferences_LeftOffset" xml:space="preserve">
-    <value>Left Offset</value>
+    <value>左侧偏移</value>
   </data>
   <data name="Preferences_RightOffset" xml:space="preserve">
-    <value>Right Offset</value>
+    <value>右侧偏移</value>
   </data>
   <data name="Preferences_AutoUpdate" xml:space="preserve">
-    <value>Auto Update</value>
+    <value>自动更新</value>
   </data>
   <data name="Preferences_AutoUpdateDescription" xml:space="preserve">
-    <value>auto check updates from GitHub (need to restart this program)</value>
+    <value>自动从 GitHub 检查更新（需要重新启动本程序）</value>
   </data>
   <data name="Preferences_Language" xml:space="preserve">
-    <value>Language</value>
+    <value>语言</value>
   </data>
   <data name="Preferences_LanguageSystemDefault" xml:space="preserve">
-    <value>System default</value>
+    <value>系统默认值</value>
   </data>
   <data name="Preferences_LanguageHint" xml:space="preserve">
-    <value>Reopen Preferences to see this window in the new language.</value>
+    <value>重新打开首选项后，此窗口将以新的语言显示。</value>
   </data>
   <data name="Preferences_ResetToDefaults" xml:space="preserve">
-    <value>Reset to Defaults</value>
+    <value>恢复默认值</value>
   </data>
   <data name="Preferences_Save" xml:space="preserve">
-    <value>Save</value>
+    <value>保存</value>
   </data>
   <data name="Preferences_PopupTextWidth" xml:space="preserve">
-    <value>Popup Text Width</value>
+    <value>弹窗文字宽度</value>
   </data>
   <data name="Preferences_PopupOpacity" xml:space="preserve">
-    <value>Popup Opacity</value>
+    <value>弹窗不透明度</value>
   </data>
   <data name="Preferences_PopupFadeDelay" xml:space="preserve">
-    <value>Popup Fade Delay (sec)</value>
+    <value>弹窗淡出延迟（秒）</value>
   </data>
   <data name="Preferences_FontSize" xml:space="preserve">
-    <value>Font Size</value>
+    <value>字体大小</value>
   </data>
   <data name="Preferences_FontFamily" xml:space="preserve">
-    <value>Font Family</value>
+    <value>字体</value>
   </data>
   <data name="Preferences_FontColor" xml:space="preserve">
-    <value>Font Color</value>
+    <value>字体颜色</value>
   </data>
   <data name="Preferences_BackgroundColor" xml:space="preserve">
-    <value>Background Color</value>
+    <value>背景颜色</value>
   </data>
   <data name="Preferences_CornerRadius" xml:space="preserve">
-    <value>Corner Radius</value>
+    <value>圆角半径</value>
   </data>
   <data name="Preferences_PopupPadding" xml:space="preserve">
-    <value>Popup Padding</value>
+    <value>弹窗内边距</value>
   </data>
   <data name="Preferences_SystemDefaultFont" xml:space="preserve">
-    <value>System default</value>
+    <value>系统默认字体</value>
   </data>
   <data name="Preferences_ShortcutsOnly" xml:space="preserve">
-    <value>Shortcuts Only</value>
+    <value>仅限快捷键</value>
   </data>
   <data name="Preferences_ShortcutsOnlyDescription" xml:space="preserve">
-    <value>Only show keys that are listed in the Keymaps folder</value>
+    <value>只显示 Keymaps 文件夹中列出的按键</value>
   </data>
   <data name="Preferences_OnlyModifiers" xml:space="preserve">
-    <value>Only keys with Modifiers</value>
+    <value>仅限带修饰键的按键</value>
   </data>
   <data name="Preferences_OnlyModifiersDescription" xml:space="preserve">
-    <value>Only show keys that have Ctrl, Shift, Alt or Windows</value>
+    <value>只显示配合 Ctrl、Shift、Alt 或 Windows 的按键</value>
   </data>
   <data name="Preferences_OnlyModifiersToolTip" xml:space="preserve">
-    <value>Shift only counts for keys that do not type a character: Shift+Enter, Shift+Tab, Shift+F5 and Shift+arrows are shown, Shift+A (a capital A) is not.</value>
+    <value>Shift 仅适用于不输入字符的按键：会显示 Shift+Enter、Shift+Tab、Shift+F5 和 Shift+方向键，但不会显示 Shift+A（大写 A）。</value>
   </data>
   <data name="Preferences_ModifierKeys" xml:space="preserve">
-    <value>Modifier Keys</value>
+    <value>修饰键</value>
   </data>
   <data name="Preferences_ModifierKeysDescription" xml:space="preserve">
-    <value>Show Ctrl, Alt and Windows pressed on their own</value>
+    <value>显示单独按下的 Ctrl、Alt 和 Windows 键</value>
   </data>
   <data name="Preferences_KeysToShow" xml:space="preserve">
-    <value>Keys to show</value>
+    <value>要显示的按键</value>
   </data>
   <data name="Preferences_KeysToShowHint" xml:space="preserve">
-    <value>Keys pressed with Ctrl, Alt or Windows and shortcuts from the Keymaps are always shown. The two options above are applied on top of these boxes, so they can only hide more.</value>
+    <value>配合 Ctrl、Alt 或 Windows 按下的按键，以及 Keymaps 中的快捷键始终会显示。上方两个选项会叠加在这些勾选项之上，因此只会隐藏更多按键。</value>
   </data>
   <data name="Preferences_KeyCategory_Letters" xml:space="preserve">
-    <value>Letters</value>
+    <value>字母</value>
   </data>
   <data name="Preferences_KeyCategory_LettersDescription" xml:space="preserve">
-    <value>A to Z</value>
+    <value>A 至 Z</value>
   </data>
   <data name="Preferences_KeyCategory_Digits" xml:space="preserve">
-    <value>Digits</value>
+    <value>数字</value>
   </data>
   <data name="Preferences_KeyCategory_DigitsDescription" xml:space="preserve">
-    <value>0 to 9, also on the numeric keypad</value>
+    <value>0 至 9（含数字小键盘）</value>
   </data>
   <data name="Preferences_KeyCategory_Punctuation" xml:space="preserve">
-    <value>Punctuation</value>
+    <value>标点符号</value>
   </data>
   <data name="Preferences_KeyCategory_PunctuationDescription" xml:space="preserve">
-    <value>Punctuation and symbol keys, and the numeric keypad operators</value>
+    <value>标点与符号键，以及数字小键盘运算符</value>
   </data>
   <data name="Preferences_KeyCategory_Whitespace" xml:space="preserve">
-    <value>Space, Enter, Tab</value>
+    <value>空格键、Enter、Tab</value>
   </data>
   <data name="Preferences_KeyCategory_WhitespaceDescription" xml:space="preserve">
-    <value>Space, Enter and Tab</value>
+    <value>空格键、Enter 和 Tab</value>
   </data>
   <data name="Preferences_KeyCategory_Editing" xml:space="preserve">
-    <value>Editing keys</value>
+    <value>编辑键</value>
   </data>
   <data name="Preferences_KeyCategory_EditingDescription" xml:space="preserve">
-    <value>Backspace, Delete, Insert and Escape</value>
+    <value>Backspace、Delete、Insert 和 Escape</value>
   </data>
   <data name="Preferences_KeyCategory_Navigation" xml:space="preserve">
-    <value>Navigation</value>
+    <value>导航键</value>
   </data>
   <data name="Preferences_KeyCategory_NavigationDescription" xml:space="preserve">
-    <value>Arrow keys, Home, End, Page Up and Page Down</value>
+    <value>方向键、Home、End、Page Up 和 Page Down</value>
   </data>
   <data name="Preferences_KeyCategory_Function" xml:space="preserve">
-    <value>Function keys</value>
+    <value>功能键</value>
   </data>
   <data name="Preferences_KeyCategory_FunctionDescription" xml:space="preserve">
-    <value>F1 to F24</value>
+    <value>F1 至 F24</value>
   </data>
   <data name="Preferences_KeyCategory_Other" xml:space="preserve">
-    <value>Other keys</value>
+    <value>其他按键</value>
   </data>
   <data name="Preferences_KeyCategory_OtherDescription" xml:space="preserve">
-    <value>Every other key, for example Caps Lock, Print Screen and the media keys</value>
+    <value>其他所有按键，例如 Caps Lock、Print Screen 和多媒体键</value>
   </data>
   <data name="Preferences_IgnoredKeys" xml:space="preserve">
-    <value>Ignored Keys</value>
+    <value>忽略的按键</value>
   </data>
   <data name="Preferences_IgnoredKeysHint" xml:space="preserve">
-    <value>Keys that are never shown, separated by commas or new lines, for example W,A,S,D or Ctrl+Alt+Delete. The modifiers must match: W does not hide Ctrl+W or Shift+W. An ignored key can still complete a shortcut from a keymap.</value>
+    <value>永不显示的按键，请用逗号或换行分隔，例如 W,A,S,D 或 Ctrl+Alt+Delete。修饰键必须匹配：W 不会隐藏 Ctrl+W 或 Shift+W。被忽略的按键仍可完成 Keymap 中的快捷键。</value>
   </data>
   <data name="Preferences_ShowSpaceAsUnicode" xml:space="preserve">
-    <value>Show Space as ␣</value>
+    <value>以 ␣ 显示空格键</value>
   </data>
   <data name="Preferences_ShowSpaceAsUnicodeDescription" xml:space="preserve">
-    <value>Show Space as Unicode character &apos;␣&apos;</value>
+    <value>以 Unicode 字符“␣”显示空格键</value>
   </data>
   <data name="Preferences_KeyboardLayout" xml:space="preserve">
-    <value>Keyboard Layout</value>
+    <value>键盘布局</value>
   </data>
   <data name="Preferences_KeyboardLayoutDescription" xml:space="preserve">
-    <value>Show keys as on my keyboard layout</value>
+    <value>按我的键盘布局显示按键</value>
   </data>
   <data name="Preferences_KeyboardLayoutHint" xml:space="preserve">
-    <value>Needs Windows 10 version 1607 or later.</value>
+    <value>需要 Windows 10 版本 1607 或更高版本。</value>
   </data>
   <data name="Preferences_RepeatedKeys" xml:space="preserve">
-    <value>Repeated Keys</value>
+    <value>重复按键</value>
   </data>
   <data name="Preferences_RepeatedKeysToolTip" xml:space="preserve">
-    <value>Named keys, arrows and shortcuts are always shown as &apos;x N&apos; when repeated</value>
+    <value>功能键、方向键和快捷键在重复按下时始终显示为“x N”</value>
   </data>
   <data name="Preferences_RepeatedKeys_Group" xml:space="preserve">
-    <value>Group repeated typed characters</value>
+    <value>合并重复输入的字符</value>
   </data>
   <data name="Preferences_RepeatedKeys_Never" xml:space="preserve">
-    <value>Never group typed characters</value>
+    <value>不合并重复输入的字符</value>
   </data>
   <data name="Preferences_GroupRepeatsFrom" xml:space="preserve">
-    <value>Group Repeats From</value>
+    <value>合并重复按键阈值</value>
   </data>
   <data name="Preferences_GroupRepeatsFromToolTip" xml:space="preserve">
-    <value>Number of presses in a row from which a typed character is shown as &apos;x N&apos;</value>
+    <value>连续输入同一字符达到此次数时，显示为“x N”</value>
   </data>
   <data name="Preferences_ShowApplicationIcon" xml:space="preserve">
-    <value>Show Application Icon</value>
+    <value>显示应用程序图标</value>
   </data>
   <data name="Preferences_ShowApplicationIconDescription" xml:space="preserve">
-    <value>Display the active application&apos;s icon</value>
+    <value>显示当前活动应用程序的图标</value>
   </data>
   <data name="Preferences_ShortcutDescriptions" xml:space="preserve">
-    <value>Shortcut Descriptions</value>
+    <value>快捷键说明</value>
   </data>
   <data name="Preferences_ShortcutDescriptionsDescription" xml:space="preserve">
-    <value>Show shortcut descriptions from keymaps</value>
+    <value>显示来自 Keymaps 的快捷键说明</value>
   </data>
   <data name="Preferences_ProcessFilter" xml:space="preserve">
-    <value>Process Filter</value>
+    <value>进程过滤</value>
   </data>
   <data name="Preferences_ProcessFilterDescription" xml:space="preserve">
-    <value>Only show keys from processes whose name matches this regular expression (case-insensitive, matches part of the name). Use the process name without .exe, as listed in Task Manager on the Details tab.</value>
+    <value>只显示进程名称匹配此正则表达式的按键（不区分大小写，匹配部分名称即可）。请使用任务管理器“详细信息”选项卡中列出的不含 .exe 的进程名称。</value>
   </data>
   <data name="Preferences_ProcessFilterExampleContains" xml:space="preserve">
-    <value> - names containing notepad or calc</value>
+    <value> - 名称包含 notepad 或 calc</value>
   </data>
   <data name="Preferences_ProcessFilterExampleExact" xml:space="preserve">
-    <value> - exactly these two applications</value>
+    <value> - 仅限这两个应用程序</value>
   </data>
   <data name="Preferences_ProcessFilterExampleExclude" xml:space="preserve">
-    <value> - every application except ZoomIt</value>
+    <value> - 除 ZoomIt 以外的所有应用程序</value>
   </data>
   <data name="Preferences_TabMouse" xml:space="preserve">
-    <value>Mouse</value>
+    <value>鼠标</value>
   </data>
   <data name="Preferences_ShowMouseClicks" xml:space="preserve">
-    <value>Show Mouse Clicks</value>
+    <value>显示鼠标点击</value>
   </data>
   <data name="Preferences_ShowMouseClicksDescription" xml:space="preserve">
-    <value>Circle around the pointer on mouse clicks</value>
+    <value>鼠标点击时在指针周围显示圆圈</value>
   </data>
   <data name="Preferences_ShowMouseClicksHint" xml:space="preserve">
-    <value>The circles are also shown in password mode.</value>
+    <value>在密码模式下也会显示圆圈。</value>
   </data>
   <data name="Preferences_LeftButton" xml:space="preserve">
-    <value>Left Button</value>
+    <value>鼠标左键</value>
   </data>
   <data name="Preferences_MiddleButton" xml:space="preserve">
-    <value>Middle Button</value>
+    <value>鼠标中键</value>
   </data>
   <data name="Preferences_RightButton" xml:space="preserve">
-    <value>Right Button</value>
+    <value>鼠标右键</value>
   </data>
   <data name="Preferences_CircleSize" xml:space="preserve">
-    <value>Circle Size</value>
+    <value>圆圈大小</value>
   </data>
   <data name="Preferences_CircleDuration" xml:space="preserve">
-    <value>Circle Duration (ms)</value>
+    <value>圆圈持续时间（毫秒）</value>
   </data>
   <data name="About_Code52Project" xml:space="preserve">
-    <value>a code52 project</value>
+    <value>一个 code52 项目</value>
   </data>
   <data name="About_ProjectBy" xml:space="preserve">
-    <value>a project by</value>
+    <value>项目作者</value>
   </data>
   <data name="About_CarnacUses" xml:space="preserve">
-    <value>Carnac uses</value>
+    <value>Carnac 使用了</value>
   </data>
   <data name="About_VisitWebsite" xml:space="preserve">
-    <value>Visit Carnac Website</value>
+    <value>访问 Carnac 网站</value>
   </data>
   <data name="About_Version" xml:space="preserve">
-    <value>version</value>
+    <value>版本</value>
   </data>
 </root>

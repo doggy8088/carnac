@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -98,6 +98,7 @@
     <Compile Include="KeyCombinationParser.cs" />
     <Compile Include="KeyIgnoreList.cs" />
     <Compile Include="KeyVisibilityFilter.cs" />
+    <Compile Include="KeyLabels.cs" />
     <Compile Include="KeysController.cs" />
     <Compile Include="Models\Processinfo.cs" />
     <Compile Include="AssociatedProcessUtilities.cs" />
@@ -118,6 +119,7 @@
     <Compile Include="ShortcutCollection.cs" />
     <Compile Include="ShortcutProvider.cs" />
     <Compile Include="SpecialKeys.cs" />
+    <Compile Include="UiLanguages.cs" />
     <Compile Include="Win32Methods.cs" />
     <Compile Include="WindowBoundsClamper.cs" />
     <Compile Include="Native\DetailedScreen.cs" />

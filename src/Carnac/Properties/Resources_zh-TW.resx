@@ -115,261 +115,261 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ShellView_Exit" xml:space="preserve">
-    <value>Exit</value>
+    <value>結束</value>
   </data>
   <data name="Preferences_TabGeneral" xml:space="preserve">
-    <value>General</value>
+    <value>一般</value>
   </data>
   <data name="Preferences_TabAppearance" xml:space="preserve">
-    <value>Appearance</value>
+    <value>外觀</value>
   </data>
   <data name="Preferences_TabAbout" xml:space="preserve">
-    <value>About</value>
+    <value>關於</value>
   </data>
   <data name="Preferences_TopOffset" xml:space="preserve">
-    <value>Top Offset</value>
+    <value>上方偏移</value>
   </data>
   <data name="Preferences_BottomOffset" xml:space="preserve">
-    <value>Bottom Offset</value>
+    <value>下方偏移</value>
   </data>
   <data name="Preferences_LeftOffset" xml:space="preserve">
-    <value>Left Offset</value>
+    <value>左側偏移</value>
   </data>
   <data name="Preferences_RightOffset" xml:space="preserve">
-    <value>Right Offset</value>
+    <value>右側偏移</value>
   </data>
   <data name="Preferences_AutoUpdate" xml:space="preserve">
-    <value>Auto Update</value>
+    <value>自動更新</value>
   </data>
   <data name="Preferences_AutoUpdateDescription" xml:space="preserve">
-    <value>auto check updates from GitHub (need to restart this program)</value>
+    <value>自動從 GitHub 檢查更新 (需要重新啟動本程式)</value>
   </data>
   <data name="Preferences_Language" xml:space="preserve">
-    <value>Language</value>
+    <value>語言</value>
   </data>
   <data name="Preferences_LanguageSystemDefault" xml:space="preserve">
-    <value>System default</value>
+    <value>系統預設值</value>
   </data>
   <data name="Preferences_LanguageHint" xml:space="preserve">
-    <value>Reopen Preferences to see this window in the new language.</value>
+    <value>重新開啟偏好設定後，此視窗會以新的語言顯示。</value>
   </data>
   <data name="Preferences_ResetToDefaults" xml:space="preserve">
-    <value>Reset to Defaults</value>
+    <value>重設為預設值</value>
   </data>
   <data name="Preferences_Save" xml:space="preserve">
-    <value>Save</value>
+    <value>儲存</value>
   </data>
   <data name="Preferences_PopupTextWidth" xml:space="preserve">
-    <value>Popup Text Width</value>
+    <value>彈出視窗文字寬度</value>
   </data>
   <data name="Preferences_PopupOpacity" xml:space="preserve">
-    <value>Popup Opacity</value>
+    <value>彈出視窗不透明度</value>
   </data>
   <data name="Preferences_PopupFadeDelay" xml:space="preserve">
-    <value>Popup Fade Delay (sec)</value>
+    <value>彈出視窗淡出延遲 (秒)</value>
   </data>
   <data name="Preferences_FontSize" xml:space="preserve">
-    <value>Font Size</value>
+    <value>字型大小</value>
   </data>
   <data name="Preferences_FontFamily" xml:space="preserve">
-    <value>Font Family</value>
+    <value>字型</value>
   </data>
   <data name="Preferences_FontColor" xml:space="preserve">
-    <value>Font Color</value>
+    <value>字型顏色</value>
   </data>
   <data name="Preferences_BackgroundColor" xml:space="preserve">
-    <value>Background Color</value>
+    <value>背景顏色</value>
   </data>
   <data name="Preferences_CornerRadius" xml:space="preserve">
-    <value>Corner Radius</value>
+    <value>圓角半徑</value>
   </data>
   <data name="Preferences_PopupPadding" xml:space="preserve">
-    <value>Popup Padding</value>
+    <value>彈出視窗內距</value>
   </data>
   <data name="Preferences_SystemDefaultFont" xml:space="preserve">
-    <value>System default</value>
+    <value>系統預設字型</value>
   </data>
   <data name="Preferences_ShortcutsOnly" xml:space="preserve">
-    <value>Shortcuts Only</value>
+    <value>僅限快速鍵</value>
   </data>
   <data name="Preferences_ShortcutsOnlyDescription" xml:space="preserve">
-    <value>Only show keys that are listed in the Keymaps folder</value>
+    <value>只顯示 Keymaps 資料夾中列出的按鍵</value>
   </data>
   <data name="Preferences_OnlyModifiers" xml:space="preserve">
-    <value>Only keys with Modifiers</value>
+    <value>僅限含修飾鍵的按鍵</value>
   </data>
   <data name="Preferences_OnlyModifiersDescription" xml:space="preserve">
-    <value>Only show keys that have Ctrl, Shift, Alt or Windows</value>
+    <value>只顯示搭配 Ctrl、Shift、Alt 或 Windows 的按鍵</value>
   </data>
   <data name="Preferences_OnlyModifiersToolTip" xml:space="preserve">
-    <value>Shift only counts for keys that do not type a character: Shift+Enter, Shift+Tab, Shift+F5 and Shift+arrows are shown, Shift+A (a capital A) is not.</value>
+    <value>Shift 僅適用於不會輸入字元的按鍵：會顯示 Shift+Enter、Shift+Tab、Shift+F5 與 Shift+方向鍵，但不會顯示 Shift+A（大寫 A）。</value>
   </data>
   <data name="Preferences_ModifierKeys" xml:space="preserve">
-    <value>Modifier Keys</value>
+    <value>修飾鍵</value>
   </data>
   <data name="Preferences_ModifierKeysDescription" xml:space="preserve">
-    <value>Show Ctrl, Alt and Windows pressed on their own</value>
+    <value>顯示單獨按下的 Ctrl、Alt 與 Windows 鍵</value>
   </data>
   <data name="Preferences_KeysToShow" xml:space="preserve">
-    <value>Keys to show</value>
+    <value>要顯示的按鍵</value>
   </data>
   <data name="Preferences_KeysToShowHint" xml:space="preserve">
-    <value>Keys pressed with Ctrl, Alt or Windows and shortcuts from the Keymaps are always shown. The two options above are applied on top of these boxes, so they can only hide more.</value>
+    <value>搭配 Ctrl、Alt 或 Windows 按下的按鍵，以及 Keymaps 中的快速鍵永遠會顯示。上方兩個選項會套用在這些勾選項目之上，因此只會隱藏更多按鍵。</value>
   </data>
   <data name="Preferences_KeyCategory_Letters" xml:space="preserve">
-    <value>Letters</value>
+    <value>字母</value>
   </data>
   <data name="Preferences_KeyCategory_LettersDescription" xml:space="preserve">
-    <value>A to Z</value>
+    <value>A 至 Z</value>
   </data>
   <data name="Preferences_KeyCategory_Digits" xml:space="preserve">
-    <value>Digits</value>
+    <value>數字</value>
   </data>
   <data name="Preferences_KeyCategory_DigitsDescription" xml:space="preserve">
-    <value>0 to 9, also on the numeric keypad</value>
+    <value>0 至 9（含數字鍵台）</value>
   </data>
   <data name="Preferences_KeyCategory_Punctuation" xml:space="preserve">
-    <value>Punctuation</value>
+    <value>標點符號</value>
   </data>
   <data name="Preferences_KeyCategory_PunctuationDescription" xml:space="preserve">
-    <value>Punctuation and symbol keys, and the numeric keypad operators</value>
+    <value>標點與符號鍵，以及數字鍵台運算子</value>
   </data>
   <data name="Preferences_KeyCategory_Whitespace" xml:space="preserve">
-    <value>Space, Enter, Tab</value>
+    <value>空白鍵、Enter、Tab</value>
   </data>
   <data name="Preferences_KeyCategory_WhitespaceDescription" xml:space="preserve">
-    <value>Space, Enter and Tab</value>
+    <value>空白鍵、Enter 與 Tab</value>
   </data>
   <data name="Preferences_KeyCategory_Editing" xml:space="preserve">
-    <value>Editing keys</value>
+    <value>編輯鍵</value>
   </data>
   <data name="Preferences_KeyCategory_EditingDescription" xml:space="preserve">
-    <value>Backspace, Delete, Insert and Escape</value>
+    <value>Backspace、Delete、Insert 與 Escape</value>
   </data>
   <data name="Preferences_KeyCategory_Navigation" xml:space="preserve">
-    <value>Navigation</value>
+    <value>導覽鍵</value>
   </data>
   <data name="Preferences_KeyCategory_NavigationDescription" xml:space="preserve">
-    <value>Arrow keys, Home, End, Page Up and Page Down</value>
+    <value>方向鍵、Home、End、Page Up 與 Page Down</value>
   </data>
   <data name="Preferences_KeyCategory_Function" xml:space="preserve">
-    <value>Function keys</value>
+    <value>功能鍵</value>
   </data>
   <data name="Preferences_KeyCategory_FunctionDescription" xml:space="preserve">
-    <value>F1 to F24</value>
+    <value>F1 至 F24</value>
   </data>
   <data name="Preferences_KeyCategory_Other" xml:space="preserve">
-    <value>Other keys</value>
+    <value>其他按鍵</value>
   </data>
   <data name="Preferences_KeyCategory_OtherDescription" xml:space="preserve">
-    <value>Every other key, for example Caps Lock, Print Screen and the media keys</value>
+    <value>其他所有按鍵，例如 Caps Lock、Print Screen 與多媒體鍵</value>
   </data>
   <data name="Preferences_IgnoredKeys" xml:space="preserve">
-    <value>Ignored Keys</value>
+    <value>忽略的按鍵</value>
   </data>
   <data name="Preferences_IgnoredKeysHint" xml:space="preserve">
-    <value>Keys that are never shown, separated by commas or new lines, for example W,A,S,D or Ctrl+Alt+Delete. The modifiers must match: W does not hide Ctrl+W or Shift+W. An ignored key can still complete a shortcut from a keymap.</value>
+    <value>永遠不顯示的按鍵，請以逗號或換行分隔，例如 W,A,S,D 或 Ctrl+Alt+Delete。修飾鍵必須相符：W 不會隱藏 Ctrl+W 或 Shift+W。被忽略的按鍵仍可完成 Keymap 中的快速鍵。</value>
   </data>
   <data name="Preferences_ShowSpaceAsUnicode" xml:space="preserve">
-    <value>Show Space as ␣</value>
+    <value>以 ␣ 顯示空白鍵</value>
   </data>
   <data name="Preferences_ShowSpaceAsUnicodeDescription" xml:space="preserve">
-    <value>Show Space as Unicode character &apos;␣&apos;</value>
+    <value>以 Unicode 字元「␣」顯示空白鍵</value>
   </data>
   <data name="Preferences_KeyboardLayout" xml:space="preserve">
-    <value>Keyboard Layout</value>
+    <value>鍵盤配置</value>
   </data>
   <data name="Preferences_KeyboardLayoutDescription" xml:space="preserve">
-    <value>Show keys as on my keyboard layout</value>
+    <value>依我的鍵盤配置顯示按鍵</value>
   </data>
   <data name="Preferences_KeyboardLayoutHint" xml:space="preserve">
-    <value>Needs Windows 10 version 1607 or later.</value>
+    <value>需要 Windows 10 版本 1607 或更新版本。</value>
   </data>
   <data name="Preferences_RepeatedKeys" xml:space="preserve">
-    <value>Repeated Keys</value>
+    <value>重複按鍵</value>
   </data>
   <data name="Preferences_RepeatedKeysToolTip" xml:space="preserve">
-    <value>Named keys, arrows and shortcuts are always shown as &apos;x N&apos; when repeated</value>
+    <value>具名按鍵、方向鍵與快速鍵在重複按下時永遠顯示為「x N」</value>
   </data>
   <data name="Preferences_RepeatedKeys_Group" xml:space="preserve">
-    <value>Group repeated typed characters</value>
+    <value>合併重複輸入的字元</value>
   </data>
   <data name="Preferences_RepeatedKeys_Never" xml:space="preserve">
-    <value>Never group typed characters</value>
+    <value>不合併重複輸入的字元</value>
   </data>
   <data name="Preferences_GroupRepeatsFrom" xml:space="preserve">
-    <value>Group Repeats From</value>
+    <value>合併重複按鍵門檻</value>
   </data>
   <data name="Preferences_GroupRepeatsFromToolTip" xml:space="preserve">
-    <value>Number of presses in a row from which a typed character is shown as &apos;x N&apos;</value>
+    <value>連續輸入同一個字元達此次數時，顯示為「x N」</value>
   </data>
   <data name="Preferences_ShowApplicationIcon" xml:space="preserve">
-    <value>Show Application Icon</value>
+    <value>顯示應用程式圖示</value>
   </data>
   <data name="Preferences_ShowApplicationIconDescription" xml:space="preserve">
-    <value>Display the active application&apos;s icon</value>
+    <value>顯示使用中應用程式的圖示</value>
   </data>
   <data name="Preferences_ShortcutDescriptions" xml:space="preserve">
-    <value>Shortcut Descriptions</value>
+    <value>快速鍵說明</value>
   </data>
   <data name="Preferences_ShortcutDescriptionsDescription" xml:space="preserve">
-    <value>Show shortcut descriptions from keymaps</value>
+    <value>顯示來自 Keymaps 的快速鍵說明</value>
   </data>
   <data name="Preferences_ProcessFilter" xml:space="preserve">
-    <value>Process Filter</value>
+    <value>處理序篩選</value>
   </data>
   <data name="Preferences_ProcessFilterDescription" xml:space="preserve">
-    <value>Only show keys from processes whose name matches this regular expression (case-insensitive, matches part of the name). Use the process name without .exe, as listed in Task Manager on the Details tab.</value>
+    <value>只顯示處理序名稱符合此規則運算式的按鍵（不區分大小寫，符合部分名稱即可）。請使用工作管理員「詳細資料」分頁所列、不含 .exe 的處理序名稱。</value>
   </data>
   <data name="Preferences_ProcessFilterExampleContains" xml:space="preserve">
-    <value> - names containing notepad or calc</value>
+    <value> - 名稱包含 notepad 或 calc</value>
   </data>
   <data name="Preferences_ProcessFilterExampleExact" xml:space="preserve">
-    <value> - exactly these two applications</value>
+    <value> - 僅限這兩個應用程式</value>
   </data>
   <data name="Preferences_ProcessFilterExampleExclude" xml:space="preserve">
-    <value> - every application except ZoomIt</value>
+    <value> - 除 ZoomIt 以外的所有應用程式</value>
   </data>
   <data name="Preferences_TabMouse" xml:space="preserve">
-    <value>Mouse</value>
+    <value>滑鼠</value>
   </data>
   <data name="Preferences_ShowMouseClicks" xml:space="preserve">
-    <value>Show Mouse Clicks</value>
+    <value>顯示滑鼠點擊</value>
   </data>
   <data name="Preferences_ShowMouseClicksDescription" xml:space="preserve">
-    <value>Circle around the pointer on mouse clicks</value>
+    <value>在滑鼠點擊時於游標周圍顯示圓圈</value>
   </data>
   <data name="Preferences_ShowMouseClicksHint" xml:space="preserve">
-    <value>The circles are also shown in password mode.</value>
+    <value>在密碼模式下也會顯示圓圈。</value>
   </data>
   <data name="Preferences_LeftButton" xml:space="preserve">
-    <value>Left Button</value>
+    <value>滑鼠左鍵</value>
   </data>
   <data name="Preferences_MiddleButton" xml:space="preserve">
-    <value>Middle Button</value>
+    <value>滑鼠中鍵</value>
   </data>
   <data name="Preferences_RightButton" xml:space="preserve">
-    <value>Right Button</value>
+    <value>滑鼠右鍵</value>
   </data>
   <data name="Preferences_CircleSize" xml:space="preserve">
-    <value>Circle Size</value>
+    <value>圓圈大小</value>
   </data>
   <data name="Preferences_CircleDuration" xml:space="preserve">
-    <value>Circle Duration (ms)</value>
+    <value>圓圈持續時間 (毫秒)</value>
   </data>
   <data name="About_Code52Project" xml:space="preserve">
-    <value>a code52 project</value>
+    <value>一個 code52 專案</value>
   </data>
   <data name="About_ProjectBy" xml:space="preserve">
-    <value>a project by</value>
+    <value>專案作者</value>
   </data>
   <data name="About_CarnacUses" xml:space="preserve">
-    <value>Carnac uses</value>
+    <value>Carnac 使用了</value>
   </data>
   <data name="About_VisitWebsite" xml:space="preserve">
-    <value>Visit Carnac Website</value>
+    <value>造訪 Carnac 網站</value>
   </data>
   <data name="About_Version" xml:space="preserve">
-    <value>version</value>
+    <value>版本</value>
   </data>
 </root>

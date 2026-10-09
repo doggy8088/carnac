@@ -31,6 +31,14 @@ namespace Carnac
         {
             settingsProvider = new SettingsProvider(new RoamingAppDataStorage("Carnac"));
             settings = settingsProvider.GetSettings<PopupSettings>();
+            // Before anything with text (the tray menu, key labels) is created, and again whenever the setting changes.
+            UiLanguage.Follow(settings, RefreshLanguage);
+        }
+
+        void RefreshLanguage()
+        {
+            if (trayIcon != null)
+                trayIcon.RefreshLanguage();
         }
 
         protected override void OnStartup(StartupEventArgs e)

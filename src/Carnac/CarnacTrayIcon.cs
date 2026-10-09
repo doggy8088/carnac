@@ -11,10 +11,11 @@ namespace Carnac
     public class CarnacTrayIcon : IDisposable
     {
         readonly NotifyIcon trayIcon;
+        readonly MenuItem exitMenuItem;
 
         public CarnacTrayIcon()
         {
-            var exitMenuItem = new MenuItem
+            exitMenuItem = new MenuItem
             {
                 Text = Properties.Resources.ShellView_Exit
             };
@@ -37,6 +38,14 @@ namespace Carnac
         }
 
         public event Action OpenPreferences = () => { };
+
+        /// <summary>
+        /// Shows the menu text in the current language of the application, for when the language setting changed.
+        /// </summary>
+        public void RefreshLanguage()
+        {
+            exitMenuItem.Text = Properties.Resources.ShellView_Exit;
+        }
 
         void NotifyIconClick(object sender, MouseEventArgs mouseEventArgs)
         {

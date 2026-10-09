@@ -76,11 +76,13 @@
   <ItemGroup>
     <Compile Include="AppearanceSettingsFacts.cs" />
     <Compile Include="ChordTimeoutFacts.cs" />
+    <Compile Include="EmbeddedResourceManagerFacts.cs" />
     <Compile Include="FontFamilyNameConverterFacts.cs" />
     <Compile Include="InMemorySettingsStorage.cs" />
     <Compile Include="KeyCategoriesFacts.cs" />
     <Compile Include="KeyCombinationParserFacts.cs" />
     <Compile Include="KeyIgnoreListFacts.cs" />
+    <Compile Include="KeyLabelsFacts.cs" />
     <Compile Include="KeyPlayer.cs" />
     <Compile Include="KeyPressFacts.cs" />
     <Compile Include="KeyVisibilityFilterFacts.cs" />
@@ -89,6 +91,7 @@
     <Compile Include="KeysControllerFacts.cs" />
     <Compile Include="ModifierKeyPressFacts.cs" />
     <Compile Include="KeyStreams.cs" />
+    <Compile Include="LocalizationResourceFacts.cs" />
     <Compile Include="MessageFacts.cs" />
     <Compile Include="MessageProviderFacts.cs" />
     <Compile Include="MouseClickHighlightFacts.cs" />
@@ -102,9 +105,17 @@
     <Compile Include="SpecialKeysFacts.cs" />
     <Compile Include="KeyProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UiLanguageFacts.cs" />
+    <Compile Include="UiLanguagesFacts.cs" />
     <Compile Include="ViewModels\KeyCategoryOptionFacts.cs" />
     <Compile Include="ViewModels\ShellViewModelFacts.cs" />
     <Compile Include="WindowBoundsClamperFacts.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Test data for EmbeddedResourceManagerFacts. Not Name.<culture>.resx: that would build satellite assemblies. -->
+    <EmbeddedResource Include="TestResources.resx" />
+    <EmbeddedResource Include="TestResources_fr.resx" />
+    <EmbeddedResource Include="TestResources_fr-CA.resx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

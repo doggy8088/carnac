@@ -6,13 +6,14 @@
                       xmlns:ui="clr-namespace:Carnac.UI"
                       xmlns:utilities="clr-namespace:Carnac.Utilities"
                       xmlns:carnac="clr-namespace:Carnac"
+                      xmlns:properties="clr-namespace:Carnac.Properties"
                       x:Class="Carnac.UI.PreferencesView"
-                      Width="660" Height="760" MinWidth="630" MinHeight="620" Icon="../icon.ico"
+                      Width="680" Height="760" MinWidth="640" MinHeight="620" Icon="../icon.ico"
+                      Background="#1C1C1F" BorderBrush="#3A3A42" BorderThickness="1"
                       Foreground="{DynamicResource BlackBrush}"
                       d:DataContext="{d:DesignInstance ui:PreferencesViewModel}" mc:Ignorable="d"
                       ShowTitleBar="False" ShowMinButton="False" ShowMaxRestoreButton="False"
-                      SaveWindowPosition="True" utilities:DesignTimeHelper.Background="Black"
-                      MouseLeftButtonDown="OnMouseLeftButtonDown"
+                      SaveWindowPosition="True" utilities:DesignTimeHelper.Background="#1C1C1F"
                       Name="PreferencesViewWindow">
     <Window.Resources>
         <ResourceDictionary>
@@ -28,16 +29,12 @@
             </ResourceDictionary.MergedDictionaries>
 
             <DataTemplate x:Key="ColourPickerTemplate">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Stretch"
-                                d:DataContext="{d:DesignInstance ui:AvailableColor}">
-                    <TextBlock Width="20"
-                                   Height="20"
-                                   Margin="2"
-                                   VerticalAlignment="Stretch"
-                                   Background="{Binding Brush}" />
-                    <TextBlock Margin="2"
-                                   VerticalAlignment="Stretch"
-                                   Text="{Binding Name}" />
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
+                            d:DataContext="{d:DesignInstance ui:AvailableColor}">
+                    <Border Width="16" Height="16" Margin="2,1,8,1" CornerRadius="3"
+                            BorderBrush="#55FFFFFF" BorderThickness="1"
+                            VerticalAlignment="Center" Background="{Binding Brush}" />
+                    <TextBlock VerticalAlignment="Center" Text="{Binding Name}" />
                 </StackPanel>
             </DataTemplate>
 
@@ -45,296 +42,478 @@
                 <TextBlock Margin="2" FontFamily="{Binding Family}" Text="{Binding DisplayName}"
                            d:DataContext="{d:DesignInstance ui:FontFamilyOption}" />
             </DataTemplate>
+
+            <Style x:Key="NumericValueBoxStyle" TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+                <Setter Property="Foreground" Value="#F2F2F7" />
+                <Setter Property="Background" Value="#18181B" />
+                <Setter Property="BorderBrush" Value="#3E3E46" />
+                <Setter Property="TextAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Padding" Value="4,2" />
+                <Setter Property="MinHeight" Value="26" />
+            </Style>
+
+            <Style x:Key="SecondaryActionButtonStyle" TargetType="{x:Type Button}">
+                <Setter Property="MinWidth" Value="136" />
+                <Setter Property="Height" Value="32" />
+                <Setter Property="Padding" Value="16,0" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="FontWeight" Value="Normal" />
+                <Setter Property="Foreground" Value="#E4E4EA" />
+                <Setter Property="Background" Value="#2D2D34" />
+                <Setter Property="BorderBrush" Value="#45454F" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border x:Name="Border" Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="4" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  RecognizesAccessKey="True" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Border" Property="Background" Value="#3A3A44" />
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="#5A5A66" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Border" Property="Background" Value="#24242A" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="PrimaryActionButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource SecondaryActionButtonStyle}">
+                <Setter Property="MinWidth" Value="92" />
+                <Setter Property="Padding" Value="20,0" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="#FFFFFF" />
+                <Setter Property="Background" Value="#0E639C" />
+                <Setter Property="BorderBrush" Value="#1C82C4" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border x:Name="Border" Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="4" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  RecognizesAccessKey="True" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Border" Property="Background" Value="#1177BB" />
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="#4CA6E8" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Border" Property="Background" Value="#0B4F7C" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="ModernTabControlStyle" TargetType="{x:Type TabControl}">
+                <Setter Property="Focusable" Value="False" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type TabControl}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <Border Grid.Row="0" Background="#25252A" BorderBrush="#323238" BorderThickness="0,0,0,1"
+                                        Padding="16,6,44,0">
+                                    <TabPanel x:Name="HeaderPanel" IsItemsHost="True" Background="Transparent" />
+                                </Border>
+                                <ContentPresenter x:Name="PART_SelectedContentHost" Grid.Row="1"
+                                                  ContentSource="SelectedContent" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="ModernTabItemStyle" TargetType="{x:Type TabItem}">
+                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Padding" Value="16,10" />
+                <Setter Property="Margin" Value="0,0,4,0" />
+                <Setter Property="FontSize" Value="15" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="#9A9AA4" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type TabItem}">
+                            <Grid Background="Transparent" SnapsToDevicePixels="True">
+                                <Border x:Name="HoverBg" Background="Transparent" CornerRadius="4,4,0,0" Margin="0,2,0,0" />
+                                <ContentPresenter x:Name="ContentSite" ContentSource="Header"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" />
+                                <Border x:Name="ActiveIndicator" Height="3" VerticalAlignment="Bottom"
+                                        CornerRadius="1.5" Background="Transparent" Margin="8,0,8,0" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="#E4E4EC" />
+                                    <Setter TargetName="HoverBg" Property="Background" Value="#14FFFFFF" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Foreground" Value="#FFFFFF" />
+                                    <Setter TargetName="ActiveIndicator" Property="Background" Value="#38A3F1" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <TabControl>
-            <TabItem Header="General">
+    <Grid Background="Transparent">
+        <TabControl Style="{StaticResource ModernTabControlStyle}" ItemContainerStyle="{StaticResource ModernTabItemStyle}">
+            <TabItem Header="{x:Static properties:Resources.Preferences_TabGeneral}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Margin="10,0,0,0" Orientation="Vertical">
-                            <carnac:PositionOnMonitorSelector />
-                            <ui:PreferencesField Header="Top Offset">
-                                <Slider Value="{Binding Settings.TopOffset}" IsSnapToTickEnabled="True"
-                                    LargeChange="10"
-                                Maximum="{Binding SelectedScreen.Height}" Minimum="0" SmallChange="1" TickFrequency="20" />
-                                <ui:PreferencesField.SecondaryControl>
-                                    <TextBox Foreground="White" Text="{Binding Settings.TopOffset}" />
-                                </ui:PreferencesField.SecondaryControl>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Bottom Offset">
-                                <Slider Value="{Binding Settings.BottomOffset}" IsSnapToTickEnabled="True" LargeChange="10"
-                                Maximum="{Binding SelectedScreen.Height}" Minimum="0" SmallChange="1" TickFrequency="20" />
-                                <ui:PreferencesField.SecondaryControl>
-                                    <TextBox Foreground="White" Text="{Binding Settings.BottomOffset}" />
-                                </ui:PreferencesField.SecondaryControl>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Left Offset">
-                                <Slider Value="{Binding Settings.LeftOffset}" IsSnapToTickEnabled="True" LargeChange="10"
-                                Maximum="{Binding SelectedScreen.Width}" Minimum="0" SmallChange="1" TickFrequency="20" />
-                                <ui:PreferencesField.SecondaryControl>
-                                    <TextBox Foreground="White" Text="{Binding Settings.LeftOffset}" />
-                                </ui:PreferencesField.SecondaryControl>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Right Offset">
-                                <Slider Value="{Binding Settings.RightOffset}" IsSnapToTickEnabled="True" LargeChange="10"
-                                Maximum="{Binding SelectedScreen.Width}" Minimum="0" SmallChange="1" TickFrequency="20" />
-                                <ui:PreferencesField.SecondaryControl>
-                                    <TextBox Foreground="White" Text="{Binding Settings.RightOffset}" />
-                                </ui:PreferencesField.SecondaryControl>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Auto Update">
-                                <CheckBox IsChecked="{Binding Settings.AutoUpdate}" Content="auto check updates from GitHub (need to restart this program)" />
-                            </ui:PreferencesField>
+                    <ScrollViewer Focusable="False" FocusVisualStyle="{x:Null}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="16,14,16,16" Orientation="Vertical">
+                            <Border Background="#232328" BorderBrush="#2E2E34" BorderThickness="1" CornerRadius="6"
+                                    Padding="12,12,12,10" Margin="0,0,0,12" SnapsToDevicePixels="True">
+                                <carnac:PositionOnMonitorSelector />
+                            </Border>
+                            <Border Background="#232328" BorderBrush="#2E2E34" BorderThickness="1,1,1,0" CornerRadius="6"
+                                    ClipToBounds="True" SnapsToDevicePixels="True">
+                                <StackPanel Orientation="Vertical">
+                                    <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_TopOffset}">
+                                        <Slider Value="{Binding Settings.TopOffset}" IsSnapToTickEnabled="True"
+                                            LargeChange="10"
+                                            Maximum="{Binding SelectedScreen.Height}" Minimum="0" SmallChange="1" TickFrequency="20" />
+                                        <ui:PreferencesField.SecondaryControl>
+                                            <TextBox Style="{StaticResource NumericValueBoxStyle}" Text="{Binding Settings.TopOffset}" />
+                                        </ui:PreferencesField.SecondaryControl>
+                                    </ui:PreferencesField>
+                                    <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_BottomOffset}">
+                                        <Slider Value="{Binding Settings.BottomOffset}" IsSnapToTickEnabled="True" LargeChange="10"
+                                            Maximum="{Binding SelectedScreen.Height}" Minimum="0" SmallChange="1" TickFrequency="20" />
+                                        <ui:PreferencesField.SecondaryControl>
+                                            <TextBox Style="{StaticResource NumericValueBoxStyle}" Text="{Binding Settings.BottomOffset}" />
+                                        </ui:PreferencesField.SecondaryControl>
+                                    </ui:PreferencesField>
+                                    <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_LeftOffset}">
+                                        <Slider Value="{Binding Settings.LeftOffset}" IsSnapToTickEnabled="True" LargeChange="10"
+                                            Maximum="{Binding SelectedScreen.Width}" Minimum="0" SmallChange="1" TickFrequency="20" />
+                                        <ui:PreferencesField.SecondaryControl>
+                                            <TextBox Style="{StaticResource NumericValueBoxStyle}" Text="{Binding Settings.LeftOffset}" />
+                                        </ui:PreferencesField.SecondaryControl>
+                                    </ui:PreferencesField>
+                                    <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_RightOffset}">
+                                        <Slider Value="{Binding Settings.RightOffset}" IsSnapToTickEnabled="True" LargeChange="10"
+                                            Maximum="{Binding SelectedScreen.Width}" Minimum="0" SmallChange="1" TickFrequency="20" />
+                                        <ui:PreferencesField.SecondaryControl>
+                                            <TextBox Style="{StaticResource NumericValueBoxStyle}" Text="{Binding Settings.RightOffset}" />
+                                        </ui:PreferencesField.SecondaryControl>
+                                    </ui:PreferencesField>
+                                    <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_AutoUpdate}">
+                                        <CheckBox HorizontalAlignment="Left" IsChecked="{Binding Settings.AutoUpdate}" Content="{x:Static properties:Resources.Preferences_AutoUpdateDescription}" />
+                                    </ui:PreferencesField>
+                                    <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_Language}">
+                                        <StackPanel Orientation="Vertical">
+                                            <ComboBox ItemsSource="{Binding AvailableLanguages}" DisplayMemberPath="DisplayName"
+                                                      SelectedValuePath="Code" SelectedValue="{Binding Settings.Language}" />
+                                            <TextBlock Margin="0,6,0,0" FontSize="12" Foreground="#A6A6B0" HorizontalAlignment="Left" TextWrapping="Wrap"
+                                                       Text="{x:Static properties:Resources.Preferences_LanguageHint}" />
+                                        </StackPanel>
+                                    </ui:PreferencesField>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </ScrollViewer>
-                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Grid.Row="1" Margin="5">
-                        <Button Width="150" Margin="0 0 5 0" Content="Reset to Defaults" Command="{Binding ResetToDefaultsCommand}" />
-                        <Button Width="50" Content="Save" Command="{Binding SaveCommand}" />
-                    </StackPanel>
+                    <Border Grid.Row="1" Background="#25252A" BorderBrush="#323238" BorderThickness="0,1,0,0" Padding="16,10">
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                            <Button Margin="0,0,8,0" Style="{StaticResource SecondaryActionButtonStyle}"
+                                    Content="{x:Static properties:Resources.Preferences_ResetToDefaults}" Command="{Binding ResetToDefaultsCommand}" />
+                            <Button Style="{StaticResource PrimaryActionButtonStyle}"
+                                    Content="{x:Static properties:Resources.Preferences_Save}" Command="{Binding SaveCommand}" />
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </TabItem>
-            <TabItem Header="Appearance">
+            <TabItem Header="{x:Static properties:Resources.Preferences_TabAppearance}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Margin="10,0,0,0" Orientation="Vertical">
-                            <ui:PreferencesField Header="Popup Text Width">
-                                <Slider IsSnapToTickEnabled="True" Value="{Binding Settings.ItemMaxWidth}"
-                                LargeChange="50" Maximum="1000" Minimum="0" SmallChange="10" TickFrequency="10" />
-                                <ui:PreferencesField.SecondaryControl>
-                                    <TextBox Foreground="White" Text="{Binding Settings.ItemMaxWidth}" />
-                                </ui:PreferencesField.SecondaryControl>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Popup Opacity">
-                                <Slider Value="{Binding Settings.ItemOpacity}" IsSnapToTickEnabled="True"
-                                LargeChange="0.1" Maximum="1" Minimum="0" SmallChange="0.05" TickFrequency="0.05" />
-                                <ui:PreferencesField.SecondaryControl>
-                                    <TextBox Foreground="White" Text="{Binding Settings.ItemOpacity}" />
-                                </ui:PreferencesField.SecondaryControl>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Popup Fade Delay (sec)">
-                                <Slider Value="{Binding Settings.ItemFadeDelay}" IsSnapToTickEnabled="True"
-                                LargeChange="2" Maximum="50" Minimum="1" SmallChange="1" TickFrequency="1" />
-                                <ui:PreferencesField.SecondaryControl>
-                                    <TextBox Foreground="White" Text="{Binding Settings.ItemFadeDelay}" />
-                                </ui:PreferencesField.SecondaryControl>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Font Size">
-                                <Slider Value="{Binding Settings.FontSize}" IsSnapToTickEnabled="True"
-                                LargeChange="2" Maximum="48" Minimum="8" SmallChange="1" TickFrequency="1" />
-                                <ui:PreferencesField.SecondaryControl>
-                                    <TextBox Foreground="White" Text="{Binding Settings.FontSize}" />
-                                </ui:PreferencesField.SecondaryControl>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Font Family">
-                                <ComboBox ItemsSource="{Binding AvailableFontFamilies}" SelectedValuePath="Name"
-                                  SelectedValue="{Binding Settings.FontFamily}"
-                                  ItemTemplate="{StaticResource FontFamilyPickerTemplate}" />
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Font Color">
-                                <ComboBox SelectedItem="{Binding FontColor}"
-                                  ItemsSource="{Binding AvailableColors}"
-                                  ItemTemplate="{StaticResource ColourPickerTemplate}" />
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Background Color">
-                                <ComboBox SelectedItem="{Binding ItemBackgroundColor}"
-                                  ItemsSource="{Binding AvailableColors}"
-                                  ItemTemplate="{StaticResource ColourPickerTemplate}" />
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Corner Radius">
-                                <Slider Value="{Binding Settings.ItemCornerRadius}" IsSnapToTickEnabled="True"
-                                LargeChange="5" Maximum="50" Minimum="0" SmallChange="1" TickFrequency="1" />
-                                <ui:PreferencesField.SecondaryControl>
-                                    <TextBox Foreground="White" Text="{Binding Settings.ItemCornerRadius}" />
-                                </ui:PreferencesField.SecondaryControl>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Popup Padding">
-                                <Slider Value="{Binding Settings.ItemPadding}" IsSnapToTickEnabled="True"
-                                LargeChange="5" Maximum="30" Minimum="0" SmallChange="1" TickFrequency="1" />
-                                <ui:PreferencesField.SecondaryControl>
-                                    <TextBox Foreground="White" Text="{Binding Settings.ItemPadding}" />
-                                </ui:PreferencesField.SecondaryControl>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Shortcuts Only">
-                                <CheckBox IsChecked="{Binding Settings.DetectShortcutsOnly}" Content="Only show keys that are listed in the Keymaps folder" />
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Only keys with Modifiers">
-                                <CheckBox IsChecked="{Binding Settings.ShowOnlyModifiers}" Content="Only show keys that have Ctrl, Shift, Alt or Windows"
-                                          ToolTip="Shift only counts for keys that do not type a character: Shift+Enter, Shift+Tab, Shift+F5 and Shift+arrows are shown, Shift+A (a capital A) is not." />
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Modifier Keys">
-                                <CheckBox IsChecked="{Binding Settings.ShowModifierKeyPresses}" Content="Show Ctrl, Alt and Windows pressed on their own" />
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Keys to show">
-                                <StackPanel Orientation="Vertical">
-                                    <ItemsControl ItemsSource="{Binding KeyCategoryOptions}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <WrapPanel />
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <CheckBox Margin="0 0 12 4" IsChecked="{Binding IsSelected}" Content="{Binding Label}" ToolTip="{Binding Description}" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                    <TextBlock Margin="0,4,0,0" Foreground="#B8FFFFFF" HorizontalAlignment="Left" TextWrapping="Wrap"
-                                               Text="Keys pressed with Ctrl, Alt or Windows and shortcuts from the Keymaps are always shown. The two options above are applied on top of these boxes, so they can only hide more." />
-                                </StackPanel>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Ignored Keys">
-                                <StackPanel Orientation="Vertical">
-                                    <TextBox Text="{Binding Settings.IgnoredKeys}" AcceptsReturn="True" TextWrapping="Wrap"
-                                             MinLines="2" MaxLines="4" VerticalScrollBarVisibility="Auto" />
-                                    <TextBlock Margin="0,4,0,0" Foreground="#B8FFFFFF" HorizontalAlignment="Left" TextWrapping="Wrap"
-                                               Text="Keys that are never shown, separated by commas or new lines, for example W,A,S,D or Ctrl+Alt+Delete. The modifiers must match: W does not hide Ctrl+W or Shift+W. An ignored key can still complete a shortcut from a keymap." />
-                                </StackPanel>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Show Space as ␣">
-                                <CheckBox IsChecked="{Binding Settings.ShowSpaceAsUnicode}" Content="Show Space as Unicode character '␣'" />
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Keyboard Layout">
-                                <StackPanel Orientation="Vertical">
-                                    <CheckBox IsChecked="{Binding Settings.UseKeyboardLayoutNames}" IsEnabled="{Binding IsKeyboardLayoutSupported, Mode=OneTime}" Content="Show keys as on my keyboard layout" />
-                                    <TextBlock Margin="0,4,0,0" Foreground="#B8FFFFFF" TextWrapping="Wrap">Needs Windows 10 version 1607 or later.</TextBlock>
-                                </StackPanel>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Repeated Keys">
-                                <ComboBox ItemsSource="{Binding RepeatedKeyGroupingOptions}"
-                                          DisplayMemberPath="Value" SelectedValuePath="Key"
-                                          SelectedValue="{Binding Settings.RepeatedKeyGrouping}"
-                                          ToolTip="Named keys, arrows and shortcuts are always shown as 'x N' when repeated" />
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Group Repeats From">
-                                <Slider Value="{Binding Settings.RepeatedKeyThreshold}" IsSnapToTickEnabled="True"
-                                LargeChange="1" Maximum="10" Minimum="2" SmallChange="1" TickFrequency="1"
-                                ToolTip="Number of presses in a row from which a typed character is shown as 'x N'" />
-                                <ui:PreferencesField.SecondaryControl>
-                                    <TextBox Foreground="White" Text="{Binding Settings.RepeatedKeyThreshold}" />
-                                </ui:PreferencesField.SecondaryControl>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Show Application Icon">
-                                <CheckBox IsChecked="{Binding Settings.ShowApplicationIcon}" Content="Display the active application's icon" />
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Shortcut Descriptions">
-                                <CheckBox IsChecked="{Binding Settings.ShowShortcutDescription}" Content="Show shortcut descriptions from keymaps" />
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Process Filter">
-                                <StackPanel Orientation="Vertical">
-                                    <TextBox Text="{Binding Settings.ProcessFilterExpression}"></TextBox>
-                                    <TextBlock Margin="0,4,0,0" Foreground="#B8FFFFFF" HorizontalAlignment="Left" TextWrapping="Wrap">
-                                        <Run Text="Only show keys from processes whose name matches this regular expression (case-insensitive, matches part of the name). Use the process name without .exe, as listed in Task Manager on the Details tab." /><LineBreak />
-                                        <Run FontFamily="Consolas" Text="notepad|calc" /><Run Text=" - names containing notepad or calc" /><LineBreak />
-                                        <Run FontFamily="Consolas" Text="^(notepad|calc)$" /><Run Text=" - exactly these two applications" /><LineBreak />
-                                        <Run FontFamily="Consolas" Text="^(?!ZoomIt64$)" /><Run Text=" - every application except ZoomIt" />
+                    <ScrollViewer Focusable="False" FocusVisualStyle="{x:Null}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <Border Margin="16,14,16,16" Background="#232328" BorderBrush="#2E2E34" BorderThickness="1,1,1,0"
+                                CornerRadius="6" ClipToBounds="True" SnapsToDevicePixels="True">
+                            <StackPanel Orientation="Vertical">
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_PopupTextWidth}">
+                                    <Slider IsSnapToTickEnabled="True" Value="{Binding Settings.ItemMaxWidth}"
+                                        LargeChange="50" Maximum="1000" Minimum="0" SmallChange="10" TickFrequency="10" />
+                                    <ui:PreferencesField.SecondaryControl>
+                                        <TextBox Style="{StaticResource NumericValueBoxStyle}" Text="{Binding Settings.ItemMaxWidth}" />
+                                    </ui:PreferencesField.SecondaryControl>
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_PopupOpacity}">
+                                    <Slider Value="{Binding Settings.ItemOpacity}" IsSnapToTickEnabled="True"
+                                        LargeChange="0.1" Maximum="1" Minimum="0" SmallChange="0.05" TickFrequency="0.05" />
+                                    <ui:PreferencesField.SecondaryControl>
+                                        <TextBox Style="{StaticResource NumericValueBoxStyle}" Text="{Binding Settings.ItemOpacity}" />
+                                    </ui:PreferencesField.SecondaryControl>
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_PopupFadeDelay}">
+                                    <Slider Value="{Binding Settings.ItemFadeDelay}" IsSnapToTickEnabled="True"
+                                        LargeChange="2" Maximum="50" Minimum="1" SmallChange="1" TickFrequency="1" />
+                                    <ui:PreferencesField.SecondaryControl>
+                                        <TextBox Style="{StaticResource NumericValueBoxStyle}" Text="{Binding Settings.ItemFadeDelay}" />
+                                    </ui:PreferencesField.SecondaryControl>
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_FontSize}">
+                                    <Slider Value="{Binding Settings.FontSize}" IsSnapToTickEnabled="True"
+                                        LargeChange="2" Maximum="48" Minimum="8" SmallChange="1" TickFrequency="1" />
+                                    <ui:PreferencesField.SecondaryControl>
+                                        <TextBox Style="{StaticResource NumericValueBoxStyle}" Text="{Binding Settings.FontSize}" />
+                                    </ui:PreferencesField.SecondaryControl>
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_FontFamily}">
+                                    <ComboBox ItemsSource="{Binding AvailableFontFamilies}" SelectedValuePath="Name"
+                                        SelectedValue="{Binding Settings.FontFamily}"
+                                        ItemTemplate="{StaticResource FontFamilyPickerTemplate}" />
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_FontColor}">
+                                    <ComboBox SelectedItem="{Binding FontColor}"
+                                        ItemsSource="{Binding AvailableColors}"
+                                        ItemTemplate="{StaticResource ColourPickerTemplate}" />
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_BackgroundColor}">
+                                    <ComboBox SelectedItem="{Binding ItemBackgroundColor}"
+                                        ItemsSource="{Binding AvailableColors}"
+                                        ItemTemplate="{StaticResource ColourPickerTemplate}" />
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_CornerRadius}">
+                                    <Slider Value="{Binding Settings.ItemCornerRadius}" IsSnapToTickEnabled="True"
+                                        LargeChange="5" Maximum="50" Minimum="0" SmallChange="1" TickFrequency="1" />
+                                    <ui:PreferencesField.SecondaryControl>
+                                        <TextBox Style="{StaticResource NumericValueBoxStyle}" Text="{Binding Settings.ItemCornerRadius}" />
+                                    </ui:PreferencesField.SecondaryControl>
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_PopupPadding}">
+                                    <Slider Value="{Binding Settings.ItemPadding}" IsSnapToTickEnabled="True"
+                                        LargeChange="5" Maximum="30" Minimum="0" SmallChange="1" TickFrequency="1" />
+                                    <ui:PreferencesField.SecondaryControl>
+                                        <TextBox Style="{StaticResource NumericValueBoxStyle}" Text="{Binding Settings.ItemPadding}" />
+                                    </ui:PreferencesField.SecondaryControl>
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_ShortcutsOnly}">
+                                    <CheckBox HorizontalAlignment="Left" IsChecked="{Binding Settings.DetectShortcutsOnly}" Content="{x:Static properties:Resources.Preferences_ShortcutsOnlyDescription}" />
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_OnlyModifiers}">
+                                    <CheckBox HorizontalAlignment="Left" IsChecked="{Binding Settings.ShowOnlyModifiers}" Content="{x:Static properties:Resources.Preferences_OnlyModifiersDescription}"
+                                              ToolTip="{x:Static properties:Resources.Preferences_OnlyModifiersToolTip}" />
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_ModifierKeys}">
+                                    <CheckBox HorizontalAlignment="Left" IsChecked="{Binding Settings.ShowModifierKeyPresses}" Content="{x:Static properties:Resources.Preferences_ModifierKeysDescription}" />
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_KeysToShow}">
+                                    <StackPanel Orientation="Vertical">
+                                        <ItemsControl ItemsSource="{Binding KeyCategoryOptions}" Focusable="False">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <CheckBox Margin="0,2,14,6" IsChecked="{Binding IsSelected}" Content="{Binding Label}" ToolTip="{Binding Description}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#A6A6B0" HorizontalAlignment="Left" TextWrapping="Wrap"
+                                                   Text="{x:Static properties:Resources.Preferences_KeysToShowHint}" />
+                                    </StackPanel>
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_IgnoredKeys}">
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBox Text="{Binding Settings.IgnoredKeys}" AcceptsReturn="True" TextWrapping="Wrap"
+                                                 MinLines="2" MaxLines="4" VerticalScrollBarVisibility="Auto" />
+                                        <TextBlock Margin="0,6,0,0" FontSize="12" Foreground="#A6A6B0" HorizontalAlignment="Left" TextWrapping="Wrap"
+                                                   Text="{x:Static properties:Resources.Preferences_IgnoredKeysHint}" />
+                                    </StackPanel>
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_ShowSpaceAsUnicode}">
+                                    <CheckBox HorizontalAlignment="Left" IsChecked="{Binding Settings.ShowSpaceAsUnicode}" Content="{x:Static properties:Resources.Preferences_ShowSpaceAsUnicodeDescription}" />
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_KeyboardLayout}">
+                                    <StackPanel Orientation="Vertical">
+                                        <CheckBox HorizontalAlignment="Left" IsChecked="{Binding Settings.UseKeyboardLayoutNames}" IsEnabled="{Binding IsKeyboardLayoutSupported, Mode=OneTime}"
+                                                  Content="{x:Static properties:Resources.Preferences_KeyboardLayoutDescription}" />
+                                        <TextBlock Margin="0,6,0,0" FontSize="12" Foreground="#A6A6B0" TextWrapping="Wrap"
+                                                   Text="{x:Static properties:Resources.Preferences_KeyboardLayoutHint}" />
+                                    </StackPanel>
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_RepeatedKeys}">
+                                    <ComboBox ItemsSource="{Binding RepeatedKeyGroupingOptions}"
+                                              DisplayMemberPath="Value" SelectedValuePath="Key"
+                                              SelectedValue="{Binding Settings.RepeatedKeyGrouping}"
+                                              ToolTip="{x:Static properties:Resources.Preferences_RepeatedKeysToolTip}" />
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_GroupRepeatsFrom}">
+                                    <Slider Value="{Binding Settings.RepeatedKeyThreshold}" IsSnapToTickEnabled="True"
+                                        LargeChange="1" Maximum="10" Minimum="2" SmallChange="1" TickFrequency="1"
+                                        ToolTip="{x:Static properties:Resources.Preferences_GroupRepeatsFromToolTip}" />
+                                    <ui:PreferencesField.SecondaryControl>
+                                        <TextBox Style="{StaticResource NumericValueBoxStyle}" Text="{Binding Settings.RepeatedKeyThreshold}" />
+                                    </ui:PreferencesField.SecondaryControl>
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_ShowApplicationIcon}">
+                                    <CheckBox HorizontalAlignment="Left" IsChecked="{Binding Settings.ShowApplicationIcon}" Content="{x:Static properties:Resources.Preferences_ShowApplicationIconDescription}" />
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_ShortcutDescriptions}">
+                                    <CheckBox HorizontalAlignment="Left" IsChecked="{Binding Settings.ShowShortcutDescription}" Content="{x:Static properties:Resources.Preferences_ShortcutDescriptionsDescription}" />
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_ProcessFilter}">
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBox Text="{Binding Settings.ProcessFilterExpression}" />
+                                        <TextBlock Margin="0,6,0,0" FontSize="12" Foreground="#A6A6B0" HorizontalAlignment="Left" TextWrapping="Wrap">
+                                            <Run Text="{x:Static properties:Resources.Preferences_ProcessFilterDescription}" /><LineBreak />
+                                            <Run FontFamily="Consolas" Foreground="#D4D4DC" Text="notepad|calc" /><Run Text="{x:Static properties:Resources.Preferences_ProcessFilterExampleContains}" /><LineBreak />
+                                            <Run FontFamily="Consolas" Foreground="#D4D4DC" Text="^(notepad|calc)$" /><Run Text="{x:Static properties:Resources.Preferences_ProcessFilterExampleExact}" /><LineBreak />
+                                            <Run FontFamily="Consolas" Foreground="#D4D4DC" Text="^(?!ZoomIt64$)" /><Run Text="{x:Static properties:Resources.Preferences_ProcessFilterExampleExclude}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </ui:PreferencesField>
+                            </StackPanel>
+                        </Border>
+                    </ScrollViewer>
+                    <Border Grid.Row="1" Background="#25252A" BorderBrush="#323238" BorderThickness="0,1,0,0" Padding="16,10">
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                            <Button Margin="0,0,8,0" Style="{StaticResource SecondaryActionButtonStyle}"
+                                    Content="{x:Static properties:Resources.Preferences_ResetToDefaults}" Command="{Binding ResetToDefaultsCommand}" />
+                            <Button Style="{StaticResource PrimaryActionButtonStyle}"
+                                    Content="{x:Static properties:Resources.Preferences_Save}" Command="{Binding SaveCommand}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+            <TabItem Header="{x:Static properties:Resources.Preferences_TabMouse}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ScrollViewer Focusable="False" FocusVisualStyle="{x:Null}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <Border Margin="16,14,16,16" VerticalAlignment="Top" Background="#232328" BorderBrush="#2E2E34"
+                                BorderThickness="1,1,1,0" CornerRadius="6" ClipToBounds="True" SnapsToDevicePixels="True">
+                            <StackPanel Orientation="Vertical">
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_ShowMouseClicks}">
+                                    <StackPanel Orientation="Vertical">
+                                        <CheckBox HorizontalAlignment="Left" IsChecked="{Binding Settings.ShowMouseClicks}" Content="{x:Static properties:Resources.Preferences_ShowMouseClicksDescription}" />
+                                        <TextBlock Margin="0,6,0,0" FontSize="12" Foreground="#A6A6B0" HorizontalAlignment="Left" TextWrapping="Wrap"
+                                                   Text="{x:Static properties:Resources.Preferences_ShowMouseClicksHint}" />
+                                    </StackPanel>
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_LeftButton}">
+                                    <ComboBox SelectedItem="{Binding LeftClickColor}"
+                                        ItemsSource="{Binding AvailableColors}"
+                                        ItemTemplate="{StaticResource ColourPickerTemplate}" />
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_MiddleButton}">
+                                    <ComboBox SelectedItem="{Binding MiddleClickColor}"
+                                        ItemsSource="{Binding AvailableColors}"
+                                        ItemTemplate="{StaticResource ColourPickerTemplate}" />
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_RightButton}">
+                                    <ComboBox SelectedItem="{Binding RightClickColor}"
+                                        ItemsSource="{Binding AvailableColors}"
+                                        ItemTemplate="{StaticResource ColourPickerTemplate}" />
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_CircleSize}">
+                                    <Slider Value="{Binding Settings.ClickCircleSize}" IsSnapToTickEnabled="True"
+                                        LargeChange="20" Maximum="200" Minimum="20" SmallChange="5" TickFrequency="5" />
+                                    <ui:PreferencesField.SecondaryControl>
+                                        <Border Background="#18181B" BorderBrush="#3E3E46" BorderThickness="1" CornerRadius="3" Padding="4,4">
+                                            <TextBlock Foreground="#F2F2F7" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding Settings.ClickCircleSize}" />
+                                        </Border>
+                                    </ui:PreferencesField.SecondaryControl>
+                                </ui:PreferencesField>
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_CircleDuration}">
+                                    <Slider Value="{Binding Settings.ClickCircleDuration}" IsSnapToTickEnabled="True"
+                                        LargeChange="500" Maximum="3000" Minimum="100" SmallChange="100" TickFrequency="100" />
+                                    <ui:PreferencesField.SecondaryControl>
+                                        <Border Background="#18181B" BorderBrush="#3E3E46" BorderThickness="1" CornerRadius="3" Padding="4,4">
+                                            <TextBlock Foreground="#F2F2F7" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding Settings.ClickCircleDuration}" />
+                                        </Border>
+                                    </ui:PreferencesField.SecondaryControl>
+                                </ui:PreferencesField>
+                            </StackPanel>
+                        </Border>
+                    </ScrollViewer>
+                    <Border Grid.Row="1" Background="#25252A" BorderBrush="#323238" BorderThickness="0,1,0,0" Padding="16,10">
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                            <Button Margin="0,0,8,0" Style="{StaticResource SecondaryActionButtonStyle}"
+                                    Content="{x:Static properties:Resources.Preferences_ResetToDefaults}" Command="{Binding ResetToDefaultsCommand}" />
+                            <Button Style="{StaticResource PrimaryActionButtonStyle}"
+                                    Content="{x:Static properties:Resources.Preferences_Save}" Command="{Binding SaveCommand}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+            <TabItem Header="{x:Static properties:Resources.Preferences_TabAbout}">
+                <ScrollViewer Focusable="False" FocusVisualStyle="{x:Null}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <Border Margin="16,14,16,16" VerticalAlignment="Top" Background="#232328" BorderBrush="#2E2E34"
+                            BorderThickness="1" CornerRadius="6" Padding="28,28,28,28" SnapsToDevicePixels="True">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,24,0" VerticalAlignment="Center">
+                                <TextBlock HorizontalAlignment="Left" FontSize="14" FontWeight="SemiBold"
+                                           Foreground="#38A3F1" TextWrapping="Wrap">
+                                    <Run Text="{x:Static properties:Resources.About_Code52Project}" />
+                                </TextBlock>
+                                <TextBlock Margin="0,16,0,6" HorizontalAlignment="Left" FontSize="15" FontWeight="SemiBold"
+                                           Foreground="#ECECF0" Text="{x:Static properties:Resources.About_ProjectBy}" TextWrapping="Wrap" />
+                                <TextBlock Foreground="#B4B4BE" FontSize="13" LineHeight="20" Text="{Binding Authors}" TextWrapping="Wrap" />
+                                <TextBlock Margin="0,18,0,6" HorizontalAlignment="Left" FontSize="15" FontWeight="SemiBold"
+                                           Foreground="#ECECF0" TextWrapping="Wrap">
+                                    <Run Text="{x:Static properties:Resources.About_CarnacUses}" />
+                                </TextBlock>
+                                <TextBlock Foreground="#B4B4BE" FontSize="13" LineHeight="20" Text="{Binding Components}" TextWrapping="Wrap" />
+                                <Button Margin="0,28,0,0" HorizontalAlignment="Left" Command="{Binding VisitCommand}"
+                                        Style="{StaticResource PrimaryActionButtonStyle}"
+                                        Content="{x:Static properties:Resources.About_VisitWebsite}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <Image Width="160" Height="160" HorizontalAlignment="Center" VerticalAlignment="Top"
+                                       Source="/Carnac;component/carnac_2.png" Stretch="Uniform" />
+                                <TextBlock Margin="0,4,0,0" HorizontalAlignment="Center" FontSize="44" FontWeight="Bold"
+                                           Foreground="#FFFFFF" TextWrapping="Wrap">
+                                    <Run Text="Carnac" />
+                                </TextBlock>
+                                <Border HorizontalAlignment="Center" Margin="0,4,0,0" Background="#2E2E36"
+                                        BorderBrush="#42424E" BorderThickness="1" CornerRadius="10" Padding="12,3">
+                                    <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="#C8C8D2">
+                                        <Run Text="{x:Static properties:Resources.About_Version}" /><Run Text=" " /><Run Text="{Binding Version, Mode=OneTime}" />
                                     </TextBlock>
-                                </StackPanel>
-                            </ui:PreferencesField>
-                        </StackPanel>
-                    </ScrollViewer>
-                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Grid.Row="1" Margin="5">
-                        <Button Width="150" Margin="0 0 5 0" Content="Reset to Defaults" Command="{Binding ResetToDefaultsCommand}" />
-                        <Button Width="50" Content="Save" Command="{Binding SaveCommand}" />
-                    </StackPanel>
-                </Grid>
-
-            </TabItem>
-            <TabItem Header="Mouse">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Margin="10,0,0,0" Orientation="Vertical">
-                            <ui:PreferencesField Header="Show Mouse Clicks">
-                                <StackPanel Orientation="Vertical">
-                                    <CheckBox IsChecked="{Binding Settings.ShowMouseClicks}" Content="Circle around the pointer on mouse clicks" />
-                                    <TextBlock Margin="0,4,0,0" Foreground="#B8FFFFFF" HorizontalAlignment="Left" TextWrapping="Wrap">The circles are also shown in password mode.</TextBlock>
-                                </StackPanel>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Left Button">
-                                <ComboBox SelectedItem="{Binding LeftClickColor}"
-                                  ItemsSource="{Binding AvailableColors}"
-                                  ItemTemplate="{StaticResource ColourPickerTemplate}" />
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Middle Button">
-                                <ComboBox SelectedItem="{Binding MiddleClickColor}"
-                                  ItemsSource="{Binding AvailableColors}"
-                                  ItemTemplate="{StaticResource ColourPickerTemplate}" />
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Right Button">
-                                <ComboBox SelectedItem="{Binding RightClickColor}"
-                                  ItemsSource="{Binding AvailableColors}"
-                                  ItemTemplate="{StaticResource ColourPickerTemplate}" />
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Circle Size">
-                                <Slider Value="{Binding Settings.ClickCircleSize}" IsSnapToTickEnabled="True"
-                                    LargeChange="20" Maximum="200" Minimum="20" SmallChange="5" TickFrequency="5" />
-                                <ui:PreferencesField.SecondaryControl>
-                                    <TextBlock Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding Settings.ClickCircleSize}" />
-                                </ui:PreferencesField.SecondaryControl>
-                            </ui:PreferencesField>
-                            <ui:PreferencesField Header="Circle Duration (ms)">
-                                <Slider Value="{Binding Settings.ClickCircleDuration}" IsSnapToTickEnabled="True"
-                                    LargeChange="500" Maximum="3000" Minimum="100" SmallChange="100" TickFrequency="100" />
-                                <ui:PreferencesField.SecondaryControl>
-                                    <TextBlock Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding Settings.ClickCircleDuration}" />
-                                </ui:PreferencesField.SecondaryControl>
-                            </ui:PreferencesField>
-                        </StackPanel>
-                    </ScrollViewer>
-                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Grid.Row="1" Margin="5">
-                        <Button Width="150" Margin="0 0 5 0" Content="Reset to Defaults" Command="{Binding ResetToDefaultsCommand}" />
-                        <Button Width="50" Content="Save" Command="{Binding SaveCommand}" />
-                    </StackPanel>
-                </Grid>
-            </TabItem>
-            <TabItem Header="About">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                <StackPanel Margin="20,40,0,0" Orientation="Horizontal">
-                    <StackPanel Width="340">
-                        <TextBlock Margin="0,-7,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom"
-                               FontFamily="Segoe UI Light" FontSize="18.667" Foreground="#FF41B1E1" TextWrapping="Wrap">
-                        <Run Text="a code52 project" />
-                        </TextBlock>
-                        <TextBlock Margin="0,8,0,0" HorizontalAlignment="Left" FontFamily="Segoe UI Light" FontSize="20"
-                               Foreground="White" Text="a project by" TextWrapping="Wrap" />
-                        <TextBlock Margin="0,4,0,0" Foreground="White" Text="{Binding Authors}" TextWrapping="Wrap" />
-                        <TextBlock Margin="0,10,0,0" HorizontalAlignment="Left" FontFamily="Segoe UI Light" FontSize="20"
-                               Foreground="White" TextWrapping="Wrap">
-                        <Run Text="Carnac uses" />
-                        </TextBlock>
-                        <TextBlock Margin="0,4,0,0" Foreground="White" Text="{Binding Components}" TextWrapping="Wrap" />
-                        <Button Width="145" Margin="0,60,0,0" HorizontalAlignment="Center" Command="{Binding VisitCommand}"
-                            Content="Visit Carnac Website" Style="{DynamicResource SquareButtonStyle}" />
-                    </StackPanel>
-                    <StackPanel>
-                        <Image Width="200" Height="200" HorizontalAlignment="Center" VerticalAlignment="Top"
-                           Source="/Carnac;component/carnac_2.png" Stretch="UniformToFill" />
-                        <TextBlock Margin="-4,0,0,0" HorizontalAlignment="Left" FontSize="69.333" FontWeight="Bold"
-                               Foreground="White" TextWrapping="Wrap">
-                        <Run Text="Carnac" />
-                        </TextBlock>
-                        <TextBlock Height="20.83" Margin="0,-10,0,0" HorizontalAlignment="Left" FontWeight="Bold"
-                               Foreground="White" TextWrapping="Wrap">
-                        <Run Text="version " /><Run Text=" " /><Run Text="{Binding Version, Mode=OneTime}" />
-                        </TextBlock>
-                    </StackPanel>
-                </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                 </ScrollViewer>
             </TabItem>
         </TabControl>

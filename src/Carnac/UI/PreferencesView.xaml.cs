@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -6,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Markup;
 using System.Windows.Media;
 using Carnac.Logic;
 using Forms = System.Windows.Forms;
@@ -17,7 +19,13 @@ namespace Carnac.UI
         public PreferencesView(PreferencesViewModel viewModel)
         {
             DataContext = viewModel;
+            // WPF picks the fonts of Chinese text by the language of the element: without this the Traditional and Simplified
+            // translations would both be drawn with the fonts for the default language.
+            Language = XmlLanguage.GetLanguage((Properties.Resources.Culture ?? CultureInfo.CurrentUICulture).IetfLanguageTag);
             InitializeComponent();
+            // ScrollViewer (including the one inside MahApps's tab strip template) marks MouseLeftButtonDown as handled
+            // when it takes focus, so listen to handled events too and filter interactive controls explicitly below.
+            AddHandler(MouseLeftButtonDownEvent, new MouseButtonEventHandler(OnMouseLeftButtonDown), true);
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -31,8 +39,6 @@ namespace Carnac.UI
         // The title bar is hidden, so the window is dragged by any part of its background.
         void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            // Controls that use the mouse themselves usually mark the event as handled; the checks below cover
-            // the parts that do not (slider margins, text box borders, drop-down popups, thumbs that hold the capture).
             if (Mouse.LeftButton != MouseButtonState.Pressed || Mouse.Captured != null)
                 return;
 
@@ -47,7 +53,7 @@ namespace Carnac.UI
             while (element != null)
             {
                 if (element is ButtonBase || element is TextBoxBase || element is RangeBase ||
-                    element is ComboBox || element is TabItem)
+                    element is ComboBox || element is ComboBoxItem || element is Thumb || element is TabItem)
                     return true;
 
                 element = GetParent(element);

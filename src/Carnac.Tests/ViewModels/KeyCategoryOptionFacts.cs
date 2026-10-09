@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Carnac.Logic;
 using Carnac.Logic.Enums;
 using Carnac.Logic.Models;
+using Carnac.Properties;
 using Carnac.UI;
 using NSubstitute;
 using SettingsProviderNet;
@@ -16,9 +18,18 @@ namespace Carnac.Tests.ViewModels
 
         PreferencesViewModel CreateViewModel()
         {
-            var settingsProvider = Substitute.For<ISettingsProvider>();
-            settingsProvider.GetSettings<PopupSettings>().Returns(settings);
-            return new PreferencesViewModel(settingsProvider, Substitute.For<IScreenManager>());
+            var previousCulture = Resources.Culture;
+            try
+            {
+                Resources.Culture = CultureInfo.InvariantCulture;
+                var settingsProvider = Substitute.For<ISettingsProvider>();
+                settingsProvider.GetSettings<PopupSettings>().Returns(settings);
+                return new PreferencesViewModel(settingsProvider, Substitute.For<IScreenManager>());
+            }
+            finally
+            {
+                Resources.Culture = previousCulture;
+            }
         }
 
         [Fact]
