@@ -63,8 +63,7 @@ namespace Carnac.Tests
 
         static KeyPress Press(string processName, Keys key, bool control = false, bool shift = false, bool alt = false)
         {
-            var args = new InterceptKeyEventArgs(key, KeyDirection.Down, alt, control, shift);
-            return new KeyPress(new ProcessInfo(processName), args, false, new[] { key.ToString() });
+            return KeyPresses.Create(processName, key, control, shift, alt);
         }
 
         // Every entry of every shipped keymap has to be understood by the parser. A bad entry used to be misread or
@@ -144,6 +143,32 @@ namespace Carnac.Tests
             var shortcuts = provider.GetShortcutsStartingWith(Press("chrome", Keys.D1, control: true));
 
             Assert.Equal("Jump to first tab", shortcuts.Single().Name);
+        }
+
+        [Fact]
+        public void konami_keymap_is_not_active_by_default()
+        {
+            // Its first key is Up and it applies to every process, so a single Up arrow was only shown after the
+            // next key (or never). It is shipped as an opt-in sample instead.
+            var folder = FindShippedKeymapsFolder();
+            var provider = new ShortcutProvider(folder, warnings.Add);
+
+            Assert.False(File.Exists(Path.Combine(folder, "konami.yml")));
+            Assert.Empty(provider.Keymaps.Where(keymap => keymap.Group == "Konami"));
+            Assert.Empty(provider.GetShortcutsStartingWith(Press("chrome", Keys.Up)));
+        }
+
+        [Fact]
+        public void konami_sample_works_when_it_is_copied_into_the_keymaps_folder()
+        {
+            var sample = Path.Combine(FindShippedKeymapsFolder(), "samples", "konami.yml.sample");
+            Assert.True(File.Exists(sample), "Missing opt-in sample " + sample);
+            var folder = CreateKeymapFolder("konami.yml", File.ReadAllText(sample));
+
+            var provider = new ShortcutProvider(folder, warnings.Add);
+
+            Assert.Empty(warnings);
+            Assert.Equal("Konami!!!", provider.GetShortcutsStartingWith(Press("chrome", Keys.Up)).Single().Name);
         }
 
         [Fact]
