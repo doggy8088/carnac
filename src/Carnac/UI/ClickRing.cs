@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Carnac.Logic;
+using Carnac.Logic.Overlay;
 
 namespace Carnac.UI
 {
@@ -21,7 +23,7 @@ namespace Carnac.UI
         // frozen brushes, made once per colour: the UI thread is the only one that draws rings
         static readonly Dictionary<string, Brush> Brushes = new Dictionary<string, Brush>();
 
-        public static void Show(Canvas layer, ClickHighlight highlight)
+        public static void Show(Canvas layer, ClickHighlight highlight, Action onCompleted = null)
         {
             while (layer.Children.Count >= MaximumRings)
             {
@@ -52,11 +54,62 @@ namespace Carnac.UI
             {
                 EasingFunction = new CircleEase { EasingMode = EasingMode.EaseIn }
             };
-            fade.Completed += (sender, e) => layer.Children.Remove(ring);
+            fade.Completed += (sender, e) =>
+            {
+                layer.Children.Remove(ring);
+                if (onCompleted != null)
+                    onCompleted();
+            };
 
             scale.BeginAnimation(ScaleTransform.ScaleXProperty, grow);
             scale.BeginAnimation(ScaleTransform.ScaleYProperty, grow);
             ring.BeginAnimation(UIElement.OpacityProperty, fade);
+        }
+
+        public static void ShowAtScreenLocation(Visual referenceVisual, ClickHighlight highlight)
+        {
+            var source = PresentationSource.FromVisual(referenceVisual);
+            var dpiScale = source != null && source.CompositionTarget != null
+                ? source.CompositionTarget.TransformToDevice.M11
+                : 1.0;
+            if (dpiScale <= 0 || double.IsInfinity(dpiScale) || double.IsNaN(dpiScale))
+                dpiScale = 1.0;
+
+            var size = highlight.Diameter + StrokeThickness * 4;
+            var canvas = new Canvas { Width = size, Height = size, IsHitTestVisible = false };
+            var window = new Window
+            {
+                WindowStyle = WindowStyle.None,
+                AllowsTransparency = true,
+                Background = System.Windows.Media.Brushes.Transparent,
+                BorderBrush = System.Windows.Media.Brushes.Transparent,
+                ShowInTaskbar = false,
+                ShowActivated = false,
+                Topmost = true,
+                Focusable = false,
+                IsHitTestVisible = false,
+                WindowStartupLocation = WindowStartupLocation.Manual,
+                Width = size,
+                Height = size,
+                Content = canvas
+            };
+            window.SourceInitialized += (sender, e) =>
+            {
+                var hwnd = new WindowInteropHelper(window).Handle;
+                Win32Methods.ApplyOverlayWindowStyles(hwnd, false);
+                var pixelSize = (int)Math.Ceiling(size * dpiScale);
+                var pixelLeft = (int)Math.Round(highlight.Location.X - pixelSize / 2.0);
+                var pixelTop = (int)Math.Round(highlight.Location.Y - pixelSize / 2.0);
+                Win32Methods.SetWindowRect(hwnd, new PixelRect(pixelLeft, pixelTop, pixelSize, pixelSize));
+            };
+            window.Show();
+            Show(
+                canvas,
+                new ClickHighlight(new OverlayLocation(size / 2.0, size / 2.0), highlight.ColorName, highlight.Diameter, highlight.Duration),
+                () =>
+                {
+                    try { window.Close(); } catch { }
+                });
         }
 
         static Brush GetBrush(string colorName)

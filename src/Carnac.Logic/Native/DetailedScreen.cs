@@ -3,7 +3,7 @@ using Carnac.Logic.Overlay;
 
 namespace Carnac.Logic.Native
 {
-    public class DetailedScreen
+    public class DetailedScreen : NotifyPropertyChanged
     {
         /// <summary>The number shown in Preferences (1 based, in enumeration order).</summary>
         public int Index { get; set; }

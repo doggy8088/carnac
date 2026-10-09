@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Carnac.Logic;
@@ -256,6 +256,27 @@ namespace Carnac.Tests.ViewModels
                 subject.FontColor = null;
 
                 Assert.Equal("White", popupSettings.FontColor);
+            }
+
+            [Fact]
+            public void selecting_a_screen_and_placement_shows_on_the_overlay_immediately()
+            {
+                var settingsService = Substitute.For<ISettingsProvider>();
+                var screenManager = Substitute.For<IScreenManager>();
+                var first = new DetailedScreen { Index = 1, DeviceName = @"\\.\DISPLAY1", IsPrimary = true };
+                var second = new DetailedScreen { Index = 2, DeviceName = @"\\.\DISPLAY2" };
+                settingsService.GetSettings<PopupSettings>().Returns(popupSettings);
+                screenManager.GetScreens().Returns(new List<DetailedScreen> { first, second });
+                var subject = new PreferencesViewModel(settingsService, screenManager, previewService);
+
+                subject.SelectScreenAndPlacement(second, NotificationPlacement.TopRight);
+
+                Assert.Same(second, subject.SelectedScreen);
+                Assert.Equal(@"\\.\DISPLAY2", popupSettings.ScreenDeviceName);
+                Assert.Equal(2, popupSettings.Screen);
+                Assert.Equal(NotificationPlacement.TopRight, popupSettings.Placement);
+                Assert.True(second.NotificationPlacementTopRight);
+                Assert.False(first.NotificationPlacementBottomLeft);
             }
 
             [Fact]

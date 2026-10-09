@@ -11,7 +11,7 @@ using Carnac.Logic.Overlay;
 
 namespace Carnac.UI
 {
-    public partial class KeyShowView : IOverlayWindow
+    public partial class KeyShowView : IOverlayWindow, IOverlayStyle
     {
         // How often the overlay is put back on top of other topmost windows.
         static readonly TimeSpan TopmostRefreshInterval = TimeSpan.FromSeconds(1);
@@ -23,6 +23,7 @@ namespace Carnac.UI
         IntPtr hwnd;
         DispatcherTimer topmostTimer;
         OverlayPlacementController placement;
+        OverlayStyleController styles;
 
         public KeyShowView(
             KeyShowViewModel keyShowViewModel,
@@ -51,6 +52,7 @@ namespace Carnac.UI
             DataContext = keyShowViewModel;
             ShowActivated = false;
             InitializeComponent();
+            Title = OverlayWindowStyles.WindowTitle;
 
             var highlighter = new MouseClickHighlighter(interceptMouse, keyShowViewModel.Settings, ToOverlayLocation, new DispatcherScheduler(Dispatcher));
             Loaded += (sender, e) =>
@@ -66,22 +68,31 @@ namespace Carnac.UI
         {
             try
             {
-                ClickRing.Show(ClickLayer, highlight);
+                if (PresentationSource.FromVisual(ClickLayer) != null)
+                {
+                    var local = ClickLayer.PointFromScreen(new Point(highlight.Location.X, highlight.Location.Y));
+                    var radius = highlight.Diameter / 2.0 + 4;
+                    if (local.X >= radius && local.Y >= radius &&
+                        local.X <= ClickLayer.ActualWidth - radius && local.Y <= ClickLayer.ActualHeight - radius)
+                    {
+                        ClickRing.Show(ClickLayer, new ClickHighlight(new OverlayLocation(local.X, local.Y), highlight.ColorName, highlight.Diameter, highlight.Duration));
+                        return;
+                    }
+                }
+
+                ClickRing.ShowAtScreenLocation(this, highlight);
             }
             catch (Exception)
             {
             }
         }
 
-        // The overlay covers the monitor that was picked in the preferences: clicks elsewhere are not highlighted
         OverlayLocation ToOverlayLocation(MouseClick click)
         {
             if (PresentationSource.FromVisual(ClickLayer) == null)
                 return null;
 
-            var location = ClickLayer.PointFromScreen(new Point(click.X, click.Y));
-            var isOnOverlay = location.X >= 0 && location.Y >= 0 && location.X < ClickLayer.ActualWidth && location.Y < ClickLayer.ActualHeight;
-            return isOnOverlay ? new OverlayLocation(location.X, location.Y) : null;
+            return new OverlayLocation(click.X, click.Y);
         }
 
         double IOverlayWindow.DpiScale
@@ -101,24 +112,36 @@ namespace Carnac.UI
             return hwnd != IntPtr.Zero && Win32Methods.SetWindowRect(hwnd, bounds);
         }
 
+        void IOverlayStyle.SetCaptureFriendly(bool captureFriendly)
+        {
+            if (hwnd != IntPtr.Zero)
+                Win32Methods.ApplyOverlayWindowStyles(hwnd, captureFriendly);
+        }
+
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
 
             hwnd = new WindowInteropHelper(this).Handle;
-            Win32Methods.ApplyOverlayWindowStyles(hwnd);
+            var settings = ((KeyShowViewModel)DataContext).Settings;
+            styles = new OverlayStyleController(this, settings);
+            styles.Apply();
 
             topmostTimer = new DispatcherTimer { Interval = TopmostRefreshInterval };
             topmostTimer.Tick += TopmostTimerTick;
             topmostTimer.Start();
 
-            var settings = ((KeyShowViewModel)DataContext).Settings;
             placement = new OverlayPlacementController(this, screenManager, settings, displaySettingsMonitor, concurrencyService);
             placement.Apply();
         }
 
         protected override void OnClosed(EventArgs e)
         {
+            if (styles != null)
+            {
+                styles.Dispose();
+                styles = null;
+            }
             if (placement != null)
             {
                 placement.Dispose();

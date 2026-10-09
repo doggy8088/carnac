@@ -46,7 +46,8 @@ namespace Carnac.Tests
 
                 Assert.Equal(2, messages.Count);
                 var texts = messages.Select(TextOf).ToList();
-                Assert.True(texts.Contains("Ctrl + Shift + P [Command Palette]"), string.Join(" | ", texts));
+                Assert.True(texts.Contains("Ctrl + Shift + P"), string.Join(" | ", texts));
+                Assert.True(messages.Any(m => m.ShortcutName == "Command Palette"));
                 Assert.True(texts.Contains("Preview: type anything"), string.Join(" | ", texts));
             }
 

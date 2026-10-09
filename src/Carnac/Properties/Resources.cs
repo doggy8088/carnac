@@ -133,6 +133,24 @@ namespace Carnac.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Capture for OBS.
+        /// </summary>
+        public static string Preferences_CaptureForObs {
+            get {
+                return ResourceManager.GetString("Preferences_CaptureForObs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to let OBS / XSplit capture the overlay as a window.
+        /// </summary>
+        public static string Preferences_CaptureForObsDescription {
+            get {
+                return ResourceManager.GetString("Preferences_CaptureForObsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Corner Radius.
         /// </summary>
         public static string Preferences_CornerRadius {

@@ -144,6 +144,12 @@
   <data name="Preferences_AutoUpdateDescription" xml:space="preserve">
     <value>自動從 GitHub 檢查更新 (需要重新啟動本程式)</value>
   </data>
+  <data name="Preferences_CaptureForObs" xml:space="preserve">
+    <value>支援 OBS 擷取</value>
+  </data>
+  <data name="Preferences_CaptureForObsDescription" xml:space="preserve">
+    <value>讓 OBS / XSplit 可以將彈出層當作視窗來源擷取</value>
+  </data>
   <data name="Preferences_Language" xml:space="preserve">
     <value>語言</value>
   </data>

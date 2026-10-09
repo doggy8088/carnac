@@ -229,6 +229,9 @@
                                     <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_AutoUpdate}">
                                         <CheckBox HorizontalAlignment="Left" IsChecked="{Binding Settings.AutoUpdate}" Content="{x:Static properties:Resources.Preferences_AutoUpdateDescription}" />
                                     </ui:PreferencesField>
+                                    <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_CaptureForObs}">
+                                        <CheckBox HorizontalAlignment="Left" IsChecked="{Binding Settings.CaptureFriendlyWindow}" Content="{x:Static properties:Resources.Preferences_CaptureForObsDescription}" />
+                                    </ui:PreferencesField>
                                     <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_Language}">
                                         <StackPanel Orientation="Vertical">
                                             <ComboBox ItemsSource="{Binding AvailableLanguages}" DisplayMemberPath="DisplayName"

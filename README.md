@@ -105,6 +105,22 @@ Everything you type is shown by default. *Preferences*, *Appearance* has four wa
 - **Keys to show** switches whole groups of keys off: letters, digits, punctuation, Space/Enter/Tab, editing keys (Backspace, Delete, Insert, Esc), navigation keys (arrows, Home, End, Page Up/Down), function keys and all other keys. Tick only *Function keys* and *Navigation* to see F5 or the up arrow but not the text you type. Key presses made with Ctrl, Alt or Windows, and shortcuts recognised from your keymaps, are always shown by these boxes. The two options above are applied in addition, so they can only hide more.
 - **Ignored Keys** lists keys that are never shown, separated by commas or new lines and written like keymap keys, for example `W,A,S,D` or `Ctrl+Alt+Delete`. Modifiers must match, so `W` does not hide `Ctrl+W` or `Shift+W`. Ignored keys still count for the shortcuts in your keymaps (for a chord such as `Ctrl+K,S` the `S` can be ignored and the chord is still recognised). Entries Carnac cannot understand are skipped and reported to the Windows debug output.
 
+#### Capturing the popups in OBS or XSplit
+
+The popups are drawn by a transparent, click-through overlay window that is hidden from window lists, so the *Window Capture* source of OBS (and the window pickers of other tools) cannot select it by default. To capture it as a window:
+
+1. Open the Preferences (click the tray icon), tick **Capture for OBS** on the *General* tab (it applies immediately) and press **Save** to keep it. The overlay now shows up in window lists; it stays click-through and never takes the keyboard focus. Untick it again to hide the overlay from window lists.
+2. In OBS add a *Window Capture* source and select `[Carnac.exe]: Carnac Overlay`. The title of the overlay window is always `Carnac Overlay`.
+3. Set *Capture Method* to *Windows 10 (1903 and up)*. If your version of OBS has an *Allow Transparency* option, enable it, otherwise the transparent area around the popups may be captured as black. (The option names are those of recent OBS versions and may differ slightly in yours.)
+4. The overlay window is as wide as the popups (*Popup Text Width* plus the left and right offsets) and as high as the monitor it is on, so crop the source in the scene to the area you want.
+5. The class name of a WPF window contains a new random id with every start of Carnac. If OBS does not find the window again after restarting Carnac, set *Window Match Priority* to *Window title must match*.
+
+Things to know:
+
+- **Recorded but not shown on your own screen** is not possible with the overlay window itself. The Windows call that hides a window from screen captures (`SetWindowDisplayAffinity`) does the opposite of what is needed: it removes the window from the capture. The practical way is to show the popups on a dedicated monitor or virtual display (choose it in the Preferences) and capture that display or the overlay window.
+- **Windows Game Bar** (`Win+G`) only records the game window, not overlays of other applications, so the popups do not appear in Game Bar recordings. Use OBS or another tool that captures the desktop or a window.
+- While **Capture for OBS** is on, other tools that list windows (for example the window picker of ShareX) list the overlay as well.
+
 ### Contributing
 
 #### Getting started with Git and GitHub

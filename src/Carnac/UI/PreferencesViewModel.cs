@@ -254,6 +254,18 @@ namespace Carnac.UI
             }
         }
 
+        public void SelectScreenAndPlacement(DetailedScreen screen, NotificationPlacement placement)
+        {
+            if (screen == null)
+                return;
+
+            SelectedScreen = screen;
+            Settings.ScreenDeviceName = screen.DeviceName;
+            Settings.Screen = screen.Index;
+            Settings.Placement = placement;
+            PlaceScreen();
+        }
+
         void SaveSettings()
         {
             if (Screens.Count < 1)
@@ -295,24 +307,24 @@ namespace Carnac.UI
             if (SelectedScreen == null) 
                 return;
 
-            switch (Settings.Placement)
+            foreach (var screen in Screens)
             {
-                case NotificationPlacement.TopLeft:
-                    SelectedScreen.NotificationPlacementTopLeft = true;
-                    break;
-                case NotificationPlacement.BottomLeft:
-                    SelectedScreen.NotificationPlacementBottomLeft = true;
-                    break;
-                case NotificationPlacement.TopRight:
-                    SelectedScreen.NotificationPlacementTopRight = true;
-                    break;
-                case NotificationPlacement.BottomRight:
-                    SelectedScreen.NotificationPlacementBottomRight = true;
-                    break;
-                default:
-                    SelectedScreen.NotificationPlacementBottomLeft = true;
-                    break;
+                if (!ReferenceEquals(screen, SelectedScreen))
+                {
+                    screen.NotificationPlacementTopLeft = false;
+                    screen.NotificationPlacementBottomLeft = false;
+                    screen.NotificationPlacementTopRight = false;
+                    screen.NotificationPlacementBottomRight = false;
+                }
             }
+
+            SelectedScreen.NotificationPlacementTopLeft = Settings.Placement == NotificationPlacement.TopLeft;
+            SelectedScreen.NotificationPlacementBottomLeft = Settings.Placement == NotificationPlacement.BottomLeft ||
+                (Settings.Placement != NotificationPlacement.TopLeft &&
+                 Settings.Placement != NotificationPlacement.TopRight &&
+                 Settings.Placement != NotificationPlacement.BottomRight);
+            SelectedScreen.NotificationPlacementTopRight = Settings.Placement == NotificationPlacement.TopRight;
+            SelectedScreen.NotificationPlacementBottomRight = Settings.Placement == NotificationPlacement.BottomRight;
         }
     }
 }

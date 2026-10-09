@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using Carnac.Logic.Enums;
 using Carnac.Logic.Native;
 using Carnac.UI;
 
@@ -26,7 +27,24 @@ namespace Carnac
             if (tag == null)
                 return;
 
-            dc.SelectedScreen = tag;
+            NotificationPlacement placement;
+            switch (rb.Name)
+            {
+                case "rbTL":
+                    placement = NotificationPlacement.TopLeft;
+                    break;
+                case "rbTR":
+                    placement = NotificationPlacement.TopRight;
+                    break;
+                case "rbBR":
+                    placement = NotificationPlacement.BottomRight;
+                    break;
+                default:
+                    placement = NotificationPlacement.BottomLeft;
+                    break;
+            }
+
+            dc.SelectScreenAndPlacement(tag, placement);
         }
     }
 }

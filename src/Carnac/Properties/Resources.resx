@@ -144,6 +144,12 @@
   <data name="Preferences_AutoUpdateDescription" xml:space="preserve">
     <value>auto check updates from GitHub (need to restart this program)</value>
   </data>
+  <data name="Preferences_CaptureForObs" xml:space="preserve">
+    <value>Capture for OBS</value>
+  </data>
+  <data name="Preferences_CaptureForObsDescription" xml:space="preserve">
+    <value>let OBS / XSplit capture the overlay as a window</value>
+  </data>
   <data name="Preferences_Language" xml:space="preserve">
     <value>Language</value>
   </data>

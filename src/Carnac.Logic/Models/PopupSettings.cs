@@ -1,9 +1,5 @@
-<<<<<<< HEAD
 using System;
 using System.ComponentModel;
-=======
-﻿using System.ComponentModel;
->>>>>>> d4fbbc2 (Size the overlay to its popups instead of maximizing it)
 using System.Windows;
 using Carnac.Logic.Enums;
 
@@ -93,6 +89,13 @@ namespace Carnac.Logic.Models
         /// </summary>
         [DefaultValue("")]
         public string Language { get; set; }
+
+        /// <summary>
+        /// Lists the overlay window in window lists so that capture tools such as OBS can select it
+        /// (a tool window, which is what the overlay is otherwise, is not listed).
+        /// </summary>
+        [DefaultValue(false)]
+        public bool CaptureFriendlyWindow { get; set; }
 
         [NotifyProperty(AlsoNotifyFor = new[] { "Margins" })]
         public int TopOffset { get; set; }

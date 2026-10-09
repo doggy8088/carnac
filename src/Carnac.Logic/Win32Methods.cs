@@ -28,6 +28,7 @@ namespace Carnac.Logic
         const uint SWP_NOMOVE = 0x0002;
         const uint SWP_NOZORDER = 0x0004;
         const uint SWP_NOACTIVATE = 0x0010;
+        const uint SWP_FRAMECHANGED = 0x0020;
         const uint SWP_SHOWWINDOW = 0x0040;
         static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
 
@@ -78,12 +79,19 @@ namespace Carnac.Logic
         static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
 
         /// <summary>
-        /// Makes the window click-through, hides it from window lists and keeps it from ever taking the focus.
+        /// Makes the window click-through and keeps it from ever taking the focus; it is hidden from window lists
+        /// unless <paramref name="captureFriendly"/> is set. Can be called again while the window is shown.
         /// </summary>
-        public static void ApplyOverlayWindowStyles(IntPtr hwnd)
+        public static void ApplyOverlayWindowStyles(IntPtr hwnd, bool captureFriendly)
         {
             var extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-            SetWindowLong(hwnd, GWL_EXSTYLE, OverlayWindowStyles.Apply(extendedStyle));
+            var newStyle = OverlayWindowStyles.Apply(extendedStyle, captureFriendly);
+            if (newStyle == extendedStyle)
+                return;
+
+            SetWindowLong(hwnd, GWL_EXSTYLE, newStyle);
+            // Windows caches the frame (and the shell what it knows about the window) until it is told that it changed.
+            SetWindowPos(hwnd, IntPtr.Zero, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
         }
 
         /// <summary>
