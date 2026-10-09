@@ -155,7 +155,12 @@
                         <ui:PreferencesField Header="Process Filter">
                             <StackPanel Orientation="Vertical">
                                 <TextBox Text="{Binding Settings.ProcessFilterExpression}"></TextBox>
-                                <TextBlock HorizontalAlignment="Left">Only show keys from processes matching this regular expression</TextBlock>
+                                <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap">
+                                    <Run Text="Only show keys from processes whose name matches this regular expression (case-insensitive, matches part of the name). Use the process name without .exe, as listed in Task Manager on the Details tab." /><LineBreak />
+                                    <Run FontFamily="Consolas" Text="notepad|calc" /><Run Text=" - names containing notepad or calc" /><LineBreak />
+                                    <Run FontFamily="Consolas" Text="^(notepad|calc)$" /><Run Text=" - exactly these two applications" /><LineBreak />
+                                    <Run FontFamily="Consolas" Text="^(?!ZoomIt64$)" /><Run Text=" - every application except ZoomIt" />
+                                </TextBlock>
                             </StackPanel>
                         </ui:PreferencesField>
                     </StackPanel>
