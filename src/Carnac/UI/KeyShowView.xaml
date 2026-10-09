@@ -95,10 +95,19 @@
                     <Border.LayoutTransform>
                         <ScaleTransform ScaleY="{Binding DataContext.Settings.ScaleTransform, Source={x:Reference This}}" />
                     </Border.LayoutTransform>
-                    <StackPanel Orientation="Horizontal">
-                        <Image Margin="3" Width="20" Height="20"  Visibility="{Binding DataContext.Settings.ShowApplicationIcon,Source={x:Reference This},
+                    <!-- Row 0: the application icon and the keys. Row 1: the keymap's shortcut description under the keys. -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Image Grid.RowSpan="2" Margin="3" Width="20" Height="20"  Visibility="{Binding DataContext.Settings.ShowApplicationIcon,Source={x:Reference This},
                             Converter={StaticResource BooleanToVisibilityConverter}}" Source="{Binding ProcessIcon, Mode=OneWay}" />
-                        <ListBox MaxWidth="{Binding DataContext.Settings.ItemMaxWidth, Source={x:Reference This}}"
+                        <ListBox Grid.Column="1" MaxWidth="{Binding DataContext.Settings.ItemMaxWidth, Source={x:Reference This}}"
                              HorizontalAlignment="Stretch" VerticalContentAlignment="Center" ItemsSource="{Binding Text, Mode=OneWay}"
                              FontWeight="Bold" Focusable="False" BorderBrush="{x:Null}"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" IsHitTestVisible="False">
@@ -185,7 +194,32 @@
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
-                    </StackPanel>
+                        <!-- Not part of the key text: shown only when the message matched a keymap shortcut and the
+                             ShowShortcutDescription setting is on, and wrapped inside the popup width. -->
+                        <TextBlock Grid.Column="1" Grid.Row="1" Margin="4,0,4,2" Opacity="0.7" TextWrapping="Wrap"
+                                   MaxWidth="{Binding DataContext.Settings.ItemMaxWidth, Source={x:Reference This}}"
+                                   Text="{Binding ShortcutName, Mode=OneWay, StringFormat='[{0}]'}">
+                            <TextBlock.Foreground>
+                                <SolidColorBrush Color="{Binding DataContext.Settings.FontColor, Source={x:Reference This}}" />
+                            </TextBlock.Foreground>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding HasShortcutName, Mode=OneWay}" Value="True" />
+                                                <Condition
+                                                    Binding="{Binding DataContext.Settings.ShowShortcutDescription, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    Value="True" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
                 </Border>
             </DataTemplate>
         </ListView.ItemTemplate>

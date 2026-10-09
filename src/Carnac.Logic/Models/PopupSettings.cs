@@ -112,5 +112,12 @@ namespace Carnac.Logic.Models
         public bool SettingsConfigured { get; set; }
         public bool ShowOnlyModifiers { get; set; }
         public bool ShowSpaceAsUnicode { get; set; }
+
+        /// <summary>
+        /// Shows the name of a recognised keymap shortcut (for example "Open the Find Bar") next to the keys.
+        /// Read at display time, so switching it takes effect immediately.
+        /// </summary>
+        [DefaultValue(true)]
+        public bool ShowShortcutDescription { get; set; }
     }
 }

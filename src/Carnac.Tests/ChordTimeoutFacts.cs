@@ -131,7 +131,7 @@ namespace Carnac.Tests
             var message = Assert.Single(messages);
             Assert.Equal("Add Line Comment", message.ShortcutName);
             Assert.True(message.IsShortcut);
-            Assert.Equal("Ctrl + K, Ctrl + C [Add Line Comment]", Text(message));
+            Assert.Equal("Ctrl + K, Ctrl + C", Text(message));
 
             scheduler.AdvanceBy(10 * Timeout);
             Assert.Single(messages);
