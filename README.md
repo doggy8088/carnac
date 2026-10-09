@@ -74,6 +74,7 @@ Hover over the Carnac icon in the notification area to see whether Carnac is act
 - **Settings...** (a left click opens the settings too)
 - **Pause** / **Resume**: no popups are shown while Carnac is paused
 - **Silent mode**: the same switch as the silent mode hotkey
+- **Restart as administrator**: only shown while Carnac does not run as administrator yet, see [Troubleshooting](#no-keys-are-shown-in-some-applications)
 - **Exit**
 
 The menu shows the current hotkeys next to the items. Pause and silent mode are not remembered, Carnac always starts with both switched off.
@@ -154,6 +155,12 @@ Carnac writes a log file to `%APPDATA%\Carnac\logs`, one file per day: `carnac-Y
 The log contains error messages with their stack trace, never the keys you type, but it can mention program names (for example when Carnac cannot read a program's icon). A log file is limited to 1 MB (the previous part is kept as `carnac-YYYYMMDD.old.log`), repeated identical entries are written once, and files older than 14 days are deleted automatically.
 
 If you [open an issue](https://github.com/doggy8088/carnac/issues), please attach the newest entries of the log.
+
+#### No keys are shown in some applications
+
+That application is probably running as administrator. Windows does not let a normal program, and that includes Carnac, see the keys typed into an application that has more rights, so Carnac stays silent there. When you switch to such an application, Carnac shows a notice at the tray icon (once per application). Click the notice, or choose **Restart as administrator** in the tray menu: Windows asks for your permission and Carnac then starts again with administrator rights and can show the keys of every application. If you decline the Windows prompt, Carnac just keeps running as before. Carnac never restarts itself with more rights on its own.
+
+If Windows asks for the password of a different administrator account, the restarted Carnac belongs to that account and uses its own settings. The detection is also written to the log (see above).
 
 ### Contributing
 

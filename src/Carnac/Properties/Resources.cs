@@ -717,6 +717,12 @@ namespace Carnac.Properties {
             }
         }
 
+        public static string TrayMenu_RestartAsAdministrator {
+            get {
+                return ResourceManager.GetString("TrayMenu_RestartAsAdministrator", resourceCulture);
+            }
+        }
+
         public static string TrayMenu_Resume {
             get {
                 return ResourceManager.GetString("TrayMenu_Resume", resourceCulture);

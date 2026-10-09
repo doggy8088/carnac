@@ -384,6 +384,9 @@
   <data name="TrayMenu_Pause" xml:space="preserve">
     <value>暫停</value>
   </data>
+  <data name="TrayMenu_RestartAsAdministrator" xml:space="preserve">
+    <value>以系統管理員身分重新啟動</value>
+  </data>
   <data name="TrayMenu_Resume" xml:space="preserve">
     <value>繼續</value>
   </data>

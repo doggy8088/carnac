@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
 using Carnac.Logic;
@@ -24,6 +25,7 @@ namespace Carnac
         readonly MenuItem settingsItem;
         readonly MenuItem pauseItem;
         readonly MenuItem silentItem;
+        readonly MenuItem restartAsAdministratorItem;
         readonly MenuItem exitItem;
         bool disposed;
 
@@ -35,7 +37,11 @@ namespace Carnac
         /// Runs an action on the UI thread. The state can change on the keyboard hook's thread (hotkeys),
         /// menu items may only be touched from the UI thread.
         /// </param>
-        public TrayMenu(IKeyDisplayState displayState, PopupSettings settings, Action openSettings, Action exit, Action<Action> invokeOnUiThread)
+        /// <param name="restartAsAdministrator">
+        /// Invoked by the "Restart as administrator" item. Pass null when Carnac already runs as administrator: the item is then left out.
+        /// </param>
+        public TrayMenu(IKeyDisplayState displayState, PopupSettings settings, Action openSettings, Action exit, Action<Action> invokeOnUiThread,
+            Action restartAsAdministrator = null)
         {
             if (displayState == null)
                 throw new ArgumentNullException("displayState");
@@ -60,7 +66,15 @@ namespace Carnac
             silentItem = new MenuItem(Properties.Resources.TrayMenu_SilentMode, (sender, args) => displayState.ToggleSilent());
             exitItem = new MenuItem(Properties.Resources.ShellView_Exit, (sender, args) => exit());
 
-            contextMenu = new ContextMenu(new[] { settingsItem, pauseItem, silentItem, new MenuItem("-"), exitItem });
+            var items = new List<MenuItem> { settingsItem, pauseItem, silentItem, new MenuItem("-") };
+            if (restartAsAdministrator != null)
+            {
+                restartAsAdministratorItem = new MenuItem(Properties.Resources.TrayMenu_RestartAsAdministrator, (sender, args) => restartAsAdministrator());
+                items.Add(restartAsAdministratorItem);
+            }
+
+            items.Add(exitItem);
+            contextMenu = new ContextMenu(items.ToArray());
 
             Refresh();
             displayState.Changed += DisplayStateChanged;
@@ -111,6 +125,8 @@ namespace Carnac
 
             settingsItem.Text = Properties.Resources.TrayMenu_Settings;
             silentItem.Text = Properties.Resources.TrayMenu_SilentMode;
+            if (restartAsAdministratorItem != null)
+                restartAsAdministratorItem.Text = Properties.Resources.TrayMenu_RestartAsAdministrator;
             exitItem.Text = Properties.Resources.ShellView_Exit;
             Refresh();
         }

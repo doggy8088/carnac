@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -31,6 +32,9 @@ namespace Carnac
         CarnacTrayIcon trayIcon;
         KeysController carnac;
         IDisposable updateCheck;
+        readonly IElevationChecker elevationChecker = new SystemElevationChecker();
+        AdministratorRestart administratorRestart;
+        IDisposable elevationWatch;
 
         public App()
         {
@@ -112,9 +116,60 @@ namespace Carnac
             updateCheck = Observable.Timer(TimeSpan.FromSeconds(30)).Subscribe(x => runner.Run());
         }
 
+        // Applications that run as administrator hide their keys from a normal Carnac (Windows blocks the keyboard hook).
+        // Look at the foreground application once a second and say so, once per application; the user decides about the restart.
+        void StartElevatedAppWatch(Action restartAsAdministrator)
+        {
+            string executablePath;
+            int processId;
+            try
+            {
+                using (var self = Process.GetCurrentProcess())
+                {
+                    processId = self.Id;
+                    executablePath = self.MainModule.FileName;
+                }
+            }
+            catch (Win32Exception ex)
+            {
+                // without its own path Carnac cannot restart itself; everything else keeps working
+                logger.Warn("Restart as administrator is not available: the path of Carnac.exe is unknown", ex);
+                return;
+            }
+            catch (InvalidOperationException ex)
+            {
+                logger.Warn("Restart as administrator is not available: the path of Carnac.exe is unknown", ex);
+                return;
+            }
+
+            administratorRestart = new AdministratorRestart(elevationChecker, new ShellElevatedLauncher(), executablePath, processId,
+                () => Dispatcher.BeginInvoke(new Action(() => Shutdown())), trayIcon, logger);
+            var detector = new ElevatedAppDetector(new SystemForegroundSource(), elevationChecker, trayIcon, restartAsAdministrator, logger, processId);
+            elevationWatch = Observable.Interval(TimeSpan.FromSeconds(1)).Subscribe(x => detector.Poll());
+        }
+
+        void RestartAsAdministrator()
+        {
+            // The UAC prompt can stay open for a long time. The keyboard hook runs on the UI thread, which must not be blocked meanwhile.
+            var restart = administratorRestart;
+            if (restart != null)
+            {
+                Task.Factory.StartNew(() => restart.Restart());
+            }
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
             ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+
+            // Carnac restarted itself as administrator: wait until the old instance has closed, otherwise its
+            // single-instance mutex would make this instance quit at once.
+            int replacedProcessId;
+            if (RestartArguments.TryGetProcessIdToWaitFor(e.Args, out replacedProcessId))
+            {
+                ProcessUtilities.WaitForExit(replacedProcessId, TimeSpan.FromSeconds(15));
+            }
+
             // Check if there was instance before this. If there was-close the current one.  
             if (ProcessUtilities.ThisProcessIsAlreadyRunning())
             {
@@ -127,9 +182,19 @@ namespace Carnac
                 Assembly.GetExecutingAssembly().GetName().Version, Environment.Is64BitProcess ? 64 : 32,
                 Environment.Is64BitOperatingSystem ? 64 : 32, Environment.Version));
 
-            trayIcon = new CarnacTrayIcon(displayState, settings);
+            // Nothing to restart (and no menu item) when Carnac already runs as administrator.
+            Action restartAsAdministrator = elevationChecker.IsCurrentProcessElevated ? null : (Action)RestartAsAdministrator;
+            trayIcon = new CarnacTrayIcon(displayState, settings, restartAsAdministrator);
             trayIcon.OpenPreferences += TrayIconOnOpenPreferences;
             logger.SetNotifier(trayIcon);
+            if (restartAsAdministrator != null)
+            {
+                StartElevatedAppWatch(restartAsAdministrator);
+            }
+            else
+            {
+                logger.Info("Carnac runs as administrator");
+            }
 
             // One ConcurrencyService (its main thread scheduler wraps the UI thread's synchronization context) is shared by the
             // message provider, which schedules the chord timeout on it, and the controller that shows the messages.
@@ -160,6 +225,11 @@ namespace Carnac
             if (updateCheck != null)
             {
                 updateCheck.Dispose();
+            }
+
+            if (elevationWatch != null)
+            {
+                elevationWatch.Dispose();
             }
 
             // trayIcon and carnac do not exist when this was a second instance that closed itself right after starting

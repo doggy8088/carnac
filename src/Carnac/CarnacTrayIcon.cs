@@ -19,14 +19,15 @@ namespace Carnac
         Action balloonClickAction;
         bool disposed;
 
-        public CarnacTrayIcon(IKeyDisplayState displayState, PopupSettings settings)
+        /// <param name="restartAsAdministrator">Behind the "Restart as administrator" menu item; null when Carnac already runs as administrator.</param>
+        public CarnacTrayIcon(IKeyDisplayState displayState, PopupSettings settings, Action restartAsAdministrator = null)
         {
             if (displayState == null)
                 throw new ArgumentNullException("displayState");
             if (settings == null)
                 throw new ArgumentNullException("settings");
 
-            trayMenu = new TrayMenu(displayState, settings, OpenOrActivatePreferences, Exit, InvokeOnUiThread);
+            trayMenu = new TrayMenu(displayState, settings, OpenOrActivatePreferences, Exit, InvokeOnUiThread, restartAsAdministrator);
 
             using (var iconStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Carnac.icon.embedded.ico"))
             {

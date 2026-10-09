@@ -322,6 +322,43 @@ namespace Carnac.Tests
             }
         }
 
+        // ---- restart as administrator ----
+
+        [Fact]
+        public void has_no_restart_item_unless_a_restart_is_possible()
+        {
+            using (var sut = CreateMenu())
+            {
+                Assert.False(ItemsOf(sut).Any(item => item.Text == "Restart as administrator"));
+            }
+        }
+
+        [Fact]
+        public void offers_restart_as_administrator_between_the_separator_and_exit()
+        {
+            var restarts = 0;
+            using (var sut = new TrayMenu(displayState, settings, () => { }, () => { }, action => action(), () => restarts++))
+            {
+                var texts = ItemsOf(sut).Select(item => item.Text).ToArray();
+
+                Assert.Equal(new[] { SettingsCaption, "Pause", "Silent mode	Ctrl+Alt+P", "-", "Restart as administrator", "Exit" }, texts);
+            }
+        }
+
+        [Fact]
+        public void the_restart_item_starts_the_restart_and_only_that()
+        {
+            var restarts = 0;
+            using (var sut = new TrayMenu(displayState, settings, () => settingsRequested++, () => exitRequested++, action => action(), () => restarts++))
+            {
+                ItemsOf(sut)[4].PerformClick();
+
+                Assert.Equal(1, restarts);
+                Assert.Equal(0, exitRequested);
+                Assert.Equal(0, settingsRequested);
+            }
+        }
+
         [Fact]
         public void other_settings_do_not_refresh_the_menu()
         {

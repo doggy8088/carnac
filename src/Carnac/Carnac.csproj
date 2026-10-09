@@ -153,6 +153,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CarnacTrayIcon.cs" />
+    <Compile Include="ShellElevatedLauncher.cs" />
     <Compile Include="TrayMenu.cs" />
     <Compile Include="PositionOnMonitorSelector.xaml.cs">
       <DependentUpon>PositionOnMonitorSelector.xaml</DependentUpon>
