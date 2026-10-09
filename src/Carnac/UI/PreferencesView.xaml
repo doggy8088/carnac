@@ -178,6 +178,12 @@
                             <ui:PreferencesField Header="Show Space as ␣">
                                 <CheckBox IsChecked="{Binding Settings.ShowSpaceAsUnicode}" Content="Show Space as Unicode character '␣'" />
                             </ui:PreferencesField>
+                            <ui:PreferencesField Header="Keyboard Layout">
+                                <StackPanel Orientation="Vertical">
+                                    <CheckBox IsChecked="{Binding Settings.UseKeyboardLayoutNames}" IsEnabled="{Binding IsKeyboardLayoutSupported, Mode=OneTime}" Content="Show keys as on my keyboard layout" />
+                                    <TextBlock Margin="0,4,0,0" Foreground="#B8FFFFFF" TextWrapping="Wrap">Needs Windows 10 version 1607 or later.</TextBlock>
+                                </StackPanel>
+                            </ui:PreferencesField>
                             <ui:PreferencesField Header="Repeated Keys">
                                 <ComboBox ItemsSource="{Binding RepeatedKeyGroupingOptions}"
                                           DisplayMemberPath="Value" SelectedValuePath="Key"

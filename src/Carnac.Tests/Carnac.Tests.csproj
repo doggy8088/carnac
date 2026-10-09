@@ -79,6 +79,7 @@
     <Compile Include="KeyPressFacts.cs" />
     <Compile Include="KeyVisibilityFilterFacts.cs" />
     <Compile Include="KeyPresses.cs" />
+    <Compile Include="KeyboardLayoutFacts.cs" />
     <Compile Include="KeysControllerFacts.cs" />
     <Compile Include="KeyStreams.cs" />
     <Compile Include="MessageFacts.cs" />

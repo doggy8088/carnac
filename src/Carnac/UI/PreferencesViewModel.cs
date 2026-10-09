@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -88,6 +88,12 @@ namespace Carnac.UI
                 new KeyCategoryOption(settings, KeyCategory.Function, "Function keys", "F1 to F24"),
                 new KeyCategoryOption(settings, KeyCategory.Other, "Other keys", "Every other key, for example Caps Lock, Print Screen and the media keys")
             };
+        }
+
+        /// <summary>The keys can only be named after the keyboard layout on Windows 10 version 1607 or later.</summary>
+        public bool IsKeyboardLayoutSupported
+        {
+            get { return KeyboardLayoutTranslator.IsSupported; }
         }
 
         public string Version
