@@ -20,6 +20,12 @@ namespace Carnac.Logic.Models
 
         public IEnumerable<string> Input { get; private set; }
 
+        /// <summary>A modifier key (Ctrl, Alt, Win) pressed on its own, shown when the user asked for it.</summary>
+        public bool IsModifierOnly
+        {
+            get { return InterceptKeyEventArgs.IsModifier(); }
+        }
+
         public bool HasModifierPressed
         {
             get

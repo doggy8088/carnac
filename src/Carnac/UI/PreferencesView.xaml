@@ -149,6 +149,9 @@
                                 <CheckBox IsChecked="{Binding Settings.ShowOnlyModifiers}" Content="Only show keys that have Ctrl, Shift, Alt or Windows"
                                           ToolTip="Shift only counts for keys that do not type a character: Shift+Enter, Shift+Tab, Shift+F5 and Shift+arrows are shown, Shift+A (a capital A) is not." />
                             </ui:PreferencesField>
+                            <ui:PreferencesField Header="Modifier Keys">
+                                <CheckBox IsChecked="{Binding Settings.ShowModifierKeyPresses}" Content="Show Ctrl, Alt and Windows pressed on their own" />
+                            </ui:PreferencesField>
                             <ui:PreferencesField Header="Keys to show">
                                 <StackPanel Orientation="Vertical">
                                     <ItemsControl ItemsSource="{Binding KeyCategoryOptions}">

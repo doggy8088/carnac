@@ -60,8 +60,12 @@ namespace Carnac.Logic
             sel many    :  a---b-------------ctrl+r,ctrl+r-------------ctrl+r---a-----↓---↓
             msg merger  :  a---*ab-----------ctrl+r,ctrl+r-------------ctrl+r---a-----↓---*'↓ x2'
             */
-            return GetCompletedShortcuts()
-                .SelectMany(c => c.GetMessages())
+            // Modifiers pressed on their own go around the shortcut accumulator: they are not part of a shortcut and
+            // pressing Ctrl again between the chords of "Ctrl+K, Ctrl+C" must not break the sequence.
+            return keyProvider.GetKeyStream()
+                .Publish(keys => GetCompletedShortcuts(keys.Where(key => !key.IsModifierOnly))
+                    .SelectMany(c => c.GetMessages())
+                    .Merge(keys.Where(key => key.IsModifierOnly).Select(key => new Message(key))))
                 .Where(visibilityFilter.IsVisible)
                 .Scan(new Message(), (acc, key) => Message.MergeIfNeeded(acc, key, GetRepeatedKeyPolicy()))
                 .Where(m =>
@@ -87,7 +91,7 @@ namespace Carnac.Logic
         /// A key that starts a possible shortcut leaves the accumulator pending; nothing is emitted until the shortcut
         /// is completed or broken by a later key, or the chord timeout flushes it.
         /// </summary>
-        IObservable<ShortcutAccumulator> GetCompletedShortcuts()
+        IObservable<ShortcutAccumulator> GetCompletedShortcuts(IObservable<KeyPress> keys)
         {
             return Observable.Create<ShortcutAccumulator>(observer =>
             {
@@ -98,7 +102,7 @@ namespace Carnac.Logic
                 var keyCount = 0L;
                 var flushTimer = new SerialDisposable();
 
-                var keySubscription = keyProvider.GetKeyStream().Subscribe(
+                var keySubscription = keys.Subscribe(
                     key =>
                     {
                         lock (gate)
