@@ -75,9 +75,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppearanceSettingsFacts.cs" />
+    <Compile Include="BoundedCacheFacts.cs" />
     <Compile Include="ChordTimeoutFacts.cs" />
     <Compile Include="ConfiguredHotkeysFacts.cs" />
     <Compile Include="EmbeddedResourceManagerFacts.cs" />
+    <Compile Include="ErrorNotifyingLoggerFacts.cs" />
+    <Compile Include="FileLoggerFacts.cs" />
     <Compile Include="FontFamilyNameConverterFacts.cs" />
     <Compile Include="HotkeyParserFacts.cs" />
     <Compile Include="HotkeyPipelineFacts.cs" />
@@ -89,6 +92,7 @@
     <Compile Include="KeyDisplayStateFacts.cs" />
     <Compile Include="KeyIgnoreListFacts.cs" />
     <Compile Include="KeyLabelsFacts.cs" />
+    <Compile Include="KeyPipelineResilienceFacts.cs" />
     <Compile Include="KeyPlayer.cs" />
     <Compile Include="KeyPressFacts.cs" />
     <Compile Include="KeyVisibilityFilterFacts.cs" />
@@ -111,6 +115,7 @@
     <Compile Include="PopupSettingsFacts.cs" />
     <Compile Include="PreviewServiceFacts.cs" />
     <Compile Include="RepeatedKeyPolicyFacts.cs" />
+    <Compile Include="RetryWithDelayFacts.cs" />
     <Compile Include="RxTestExtensions.cs" />
     <Compile Include="ScreenListFacts.cs" />
     <Compile Include="ShortcutAccumulatorFacts.cs" />

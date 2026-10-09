@@ -76,8 +76,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BoundedCache.cs" />
     <Compile Include="ConfiguredHotkeys.cs" />
     <Compile Include="Enums\KeyCategory.cs" />
+    <Compile Include="ErrorNotifyingLogger.cs" />
+    <Compile Include="FileLogger.cs" />
     <Compile Include="Enums\NotificationPlacement.cs" />
     <Compile Include="Enums\RepeatedKeyGrouping.cs" />
     <Compile Include="IConcurrencyService.cs" />
@@ -86,8 +89,10 @@
     <Compile Include="HotkeyParser.cs" />
     <Compile Include="IKeyProvider.cs" />
     <Compile Include="IKeyboardLayoutTranslator.cs" />
+    <Compile Include="ILogger.cs" />
     <Compile Include="IPasswordModeService.cs" />
     <Compile Include="IPreviewService.cs" />
+    <Compile Include="IProcessProvider.cs" />
     <Compile Include="IScreenManager.cs" />
     <Compile Include="IShortcutProvider.cs" />
     <Compile Include="ITrayNotifier.cs" />
@@ -118,6 +123,7 @@
     <Compile Include="Models\PopupSettings.cs" />
     <Compile Include="Models\RepeatedKeyPolicy.cs" />
     <Compile Include="NotifyPropertyChanged.cs" />
+    <Compile Include="NullLogger.cs" />
     <Compile Include="Overlay\IDisplaySettingsMonitor.cs" />
     <Compile Include="Overlay\IOverlayStyle.cs" />
     <Compile Include="Overlay\IOverlayWindow.cs" />
@@ -130,6 +136,7 @@
     <Compile Include="PasswordModeService.cs" />
     <Compile Include="PreviewService.cs" />
     <Compile Include="ReplaceKey.cs" />
+    <Compile Include="RetryWithDelayExtensions.cs" />
     <Compile Include="ScreenManager.cs" />
     <Compile Include="ShortcutCollection.cs" />
     <Compile Include="ShortcutProvider.cs" />

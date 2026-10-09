@@ -44,9 +44,13 @@ Alternatively, you can grab the latest zip file from [here](https://github.com/C
 
 ### Updating
 
-We use `Squirrel.Windows` to update your `carnac` application.
+Carnac does not update itself and never installs anything on its own. Update it the way you installed it:
 
-The application will check for updates in the background, if a new version has been released, it will automatically install the new version and once you restart `carnac` you will be up-to-date.
+- **WinGet:** `winget upgrade doggy8088.Carnac`
+- **Chocolatey:** `choco upgrade carnac`
+- **Manual setup / zip:** download the newest release from the [releases page](https://github.com/doggy8088/carnac/releases/latest).
+
+If you would like to be told when a new version is out, switch on **Check for updates on startup** in the settings (**General** tab, off by default). Carnac then asks GitHub (`api.github.com`) at most once a day whether a newer release exists and shows a notice at the tray icon; clicking it opens the release page. Nothing is downloaded, and while the option is off Carnac makes no network requests at all. If the check fails (for example when you are offline) it is only written to the [log](#troubleshooting).
 
 ### Usage
 
@@ -140,6 +144,16 @@ Things to know:
 - **Recorded but not shown on your own screen** is not possible with the overlay window itself. The Windows call that hides a window from screen captures (`SetWindowDisplayAffinity`) does the opposite of what is needed: it removes the window from the capture. The practical way is to show the popups on a dedicated monitor or virtual display (choose it in the Preferences) and capture that display or the overlay window.
 - **Windows Game Bar** (`Win+G`) only records the game window, not overlays of other applications, so the popups do not appear in Game Bar recordings. Use OBS or another tool that captures the desktop or a window.
 - While **Capture for OBS** is on, other tools that list windows (for example the window picker of ShareX) list the overlay as well.
+
+### Troubleshooting
+
+#### Carnac stopped showing keys or closed by itself
+
+Carnac writes a log file to `%APPDATA%\Carnac\logs`, one file per day: `carnac-YYYYMMDD.log` (paste that path into the Windows Explorer address bar). When errors keep happening, Carnac also shows a notice at the tray icon; click it to open the folder.
+
+The log contains error messages with their stack trace, never the keys you type, but it can mention program names (for example when Carnac cannot read a program's icon). A log file is limited to 1 MB (the previous part is kept as `carnac-YYYYMMDD.old.log`), repeated identical entries are written once, and files older than 14 days are deleted automatically.
+
+If you [open an issue](https://github.com/doggy8088/carnac/issues), please attach the newest entries of the log.
 
 ### Contributing
 

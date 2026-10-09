@@ -17,12 +17,17 @@ namespace Carnac.Logic
 {
     public class KeyProvider : IKeyProvider
     {
+        const int MaxLoggedIconFailures = 100;
+
         readonly IInterceptKeys interceptKeysSource;
         readonly IPasswordModeService passwordModeService;
         readonly IDesktopLockEventService desktopLockEventService;
         readonly PopupSettings settings;
         readonly IKeyboardLayoutTranslator keyboardLayoutTranslator;
+        readonly IProcessProvider processProvider;
+        readonly ILogger logger;
         readonly object filterSync = new object();
+        readonly HashSet<string> iconFailuresLogged = new HashSet<string>();
         string currentFilter = null;
         Regex currentFilterRegex;
 
@@ -30,7 +35,7 @@ namespace Carnac.Logic
         internal Func<Keys, bool> IsKeyDown = HeldModifierKeys.IsKeyPhysicallyDown;
 
         public KeyProvider(IInterceptKeys interceptKeysSource, IPasswordModeService passwordModeService, IDesktopLockEventService desktopLockEventService, ISettingsProvider settingsProvider)
-            : this(interceptKeysSource, passwordModeService, desktopLockEventService, settingsProvider, null)
+            : this(interceptKeysSource, passwordModeService, desktopLockEventService, settingsProvider, new SystemProcessProvider(), NullLogger.Instance, null)
         {
         }
 
@@ -39,11 +44,29 @@ namespace Carnac.Logic
         /// keys are named as on a US keyboard.
         /// </param>
         public KeyProvider(IInterceptKeys interceptKeysSource, IPasswordModeService passwordModeService, IDesktopLockEventService desktopLockEventService, ISettingsProvider settingsProvider, IKeyboardLayoutTranslator keyboardLayoutTranslator)
+            : this(interceptKeysSource, passwordModeService, desktopLockEventService, settingsProvider, new SystemProcessProvider(), NullLogger.Instance, keyboardLayoutTranslator)
+        {
+        }
+
+        public KeyProvider(IInterceptKeys interceptKeysSource, IPasswordModeService passwordModeService, IDesktopLockEventService desktopLockEventService, ISettingsProvider settingsProvider, IProcessProvider processProvider, ILogger logger, IKeyboardLayoutTranslator keyboardLayoutTranslator = null)
         {
             if (settingsProvider == null)
             {
                 throw new ArgumentNullException("settingsProvider");
             }
+
+            if (processProvider == null)
+            {
+                throw new ArgumentNullException("processProvider");
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
+            this.processProvider = processProvider;
+            this.logger = logger;
 
             this.interceptKeysSource = interceptKeysSource;
             this.passwordModeService = passwordModeService;
@@ -69,8 +92,10 @@ namespace Carnac.Logic
                         {
                             currentFilterRegex = new Regex(currentFilter, RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromMilliseconds(250));
                         }
-                        catch
+                        catch (ArgumentException ex)
                         {
+                            // not a valid regular expression: keys of all applications are shown; logged once per change of the setting
+                            logger.Warn(string.Format("The process filter '{0}' is not a valid regular expression and is ignored", currentFilter), ex);
                             currentFilterRegex = null;
                         }
                     }
@@ -150,15 +175,34 @@ namespace Carnac.Logic
 
         KeyPress ToCarnacKeyPress(InterceptKeyEventArgs interceptKeyEventArgs, HeldModifierKeys heldModifierKeys)
         {
-            var process = AssociatedProcessUtilities.GetAssociatedProcess();
+            try
+            {
+                return CreateKeyPress(interceptKeyEventArgs, heldModifierKeys);
+            }
+            catch (Exception ex)
+            {
+                // The foreground process can exit while we look at it, the process filter can time out, ...
+                // An exception in a Select ends the whole Rx key stream (OnError) and Carnac would silently stop
+                // showing keys, so it is logged and only this key press is dropped.
+                logger.Error("A key press could not be processed and was skipped", ex);
+                return null;
+            }
+        }
+
+        KeyPress CreateKeyPress(InterceptKeyEventArgs interceptKeyEventArgs, HeldModifierKeys heldModifierKeys)
+        {
+            var process = processProvider.GetAssociatedProcess();
             if (process == null)
             {
                 return null;
             }
 
+            // reading the name throws when the process has exited in the meantime
+            var processName = process.ProcessName;
+
             // see if this process is one being filtered for
             Regex filterRegex;
-            if (ShouldFilterProcess(out filterRegex) && !filterRegex.IsMatch(process.ProcessName))
+            if (ShouldFilterProcess(out filterRegex) && !filterRegex.IsMatch(processName))
             {
                 return null;
             }
@@ -183,16 +227,35 @@ namespace Carnac.Logic
                 inputs = ToInputs(isLetter, isWinKeyPressed, interceptKeyEventArgs).ToArray();
             }
 
+            return new KeyPress(new ProcessInfo(processName, GetProcessIcon(process, processName)), interceptKeyEventArgs, isWinKeyPressed, inputs);
+        }
+
+        ImageSource GetProcessIcon(Process process, string processName)
+        {
             try
             {
-                string processFileName = process.MainModule.FileName;
-                ImageSource image = IconUtilities.GetProcessIconAsImageSource(processFileName);
-                return new KeyPress(new ProcessInfo(process.ProcessName, image), interceptKeyEventArgs, isWinKeyPressed, inputs);
+                return IconUtilities.GetProcessIconAsImageSource(process.MainModule.FileName);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return new KeyPress(new ProcessInfo(process.ProcessName), interceptKeyEventArgs, isWinKeyPressed, inputs);
+                // Typically "access denied": the module list of an application that runs as administrator cannot be read.
+                // The key is still shown, just without an icon; log it once per application, not once per key press.
+                LogIconFailureOnce(processName, ex);
+                return null;
             }
+        }
+
+        void LogIconFailureOnce(string processName, Exception exception)
+        {
+            lock (iconFailuresLogged)
+            {
+                if (iconFailuresLogged.Count >= MaxLoggedIconFailures || !iconFailuresLogged.Add(processName))
+                {
+                    return;
+                }
+            }
+
+            logger.Warn(string.Format("No application icon for '{0}' ({1}: {2})", processName, exception.GetType().Name, exception.Message));
         }
 
         IEnumerable<string> ToInputs(bool isLetter, bool isWinKeyPressed, InterceptKeyEventArgs interceptKeyEventArgs)

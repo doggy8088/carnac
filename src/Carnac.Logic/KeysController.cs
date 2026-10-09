@@ -17,17 +17,30 @@ namespace Carnac.Logic
         public const double DefaultFadeDelaySeconds = 5;
 
         static readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
+        public static readonly TimeSpan RestartDelay = TimeSpan.FromSeconds(1);
         readonly PopupSettings settings;
         readonly ObservableCollection<Message> messages;
         readonly IMessageProvider messageProvider;
         readonly IConcurrencyService concurrencyService;
+        readonly ILogger logger;
         readonly SingleAssignmentDisposable actionSubscription = new SingleAssignmentDisposable();
 
         public KeysController(ObservableCollection<Message> messages, IMessageProvider messageProvider, IConcurrencyService concurrencyService, ISettingsProvider settingsProvider)
+            : this(messages, messageProvider, concurrencyService, settingsProvider, NullLogger.Instance)
         {
+        }
+
+        public KeysController(ObservableCollection<Message> messages, IMessageProvider messageProvider, IConcurrencyService concurrencyService, ISettingsProvider settingsProvider, ILogger logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
             this.messages = messages;
             this.messageProvider = messageProvider;
             this.concurrencyService = concurrencyService;
+            this.logger = logger;
 
             // SettingsProvider caches the settings, so this is the instance the Preferences window edits and saves.
             // It is kept (instead of copying the delay) so that the delay is read again for every message.
@@ -48,7 +61,13 @@ namespace Carnac.Logic
 
         public void Start()
         {
-            var messageStream = messageProvider.GetMessageStream().Publish();
+            // An error in the key pipeline would end the stream and Carnac would silently stop showing keys.
+            // Instead the error is logged and, after a short pause, a fresh pipeline is started.
+            var messageStream = Observable
+                .Defer(() => messageProvider.GetMessageStream())
+                .RetryWithDelay(RestartDelay, concurrencyService.Default,
+                    ex => logger.Error("The key stream failed and is being restarted", ex))
+                .Publish();
 
             var addMessageSubscription = messageStream
                 .ObserveOn(concurrencyService.MainThreadScheduler)
