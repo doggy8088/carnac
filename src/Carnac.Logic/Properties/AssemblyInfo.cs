@@ -19,6 +19,9 @@ using System.Runtime.InteropServices;
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
 
+// the tests reach the parts of the low-level key handling that cannot be driven through the public API
+[assembly: InternalsVisibleTo("Carnac.Tests")]
+
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("1efdbb8a-fe0c-4f1b-bf2a-7db06587fac6")]
 

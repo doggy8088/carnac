@@ -158,5 +158,8 @@ namespace Carnac.Logic.Models
 
         [DefaultValue(RepeatedKeyPolicy.DefaultTypedCharacterThreshold)]
         public int RepeatedKeyThreshold { get; set; }
+
+        [DefaultValue(false)]
+        public bool ShowModifierKeyPresses { get; set; }
     }
 }

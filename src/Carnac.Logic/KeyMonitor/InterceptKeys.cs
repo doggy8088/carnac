@@ -12,6 +12,8 @@ namespace Carnac.Logic.KeyMonitor
     [PermissionSet(SecurityAction.InheritanceDemand, Name = "FullTrust")]
     public class InterceptKeys : IInterceptKeys
     {
+        const int AltGrControlScanCode = 0x21D;
+
         public static readonly InterceptKeys Current = new InterceptKeys();
         readonly IObservable<InterceptKeyEventArgs> keyStream;
         // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
@@ -53,7 +55,7 @@ namespace Carnac.Logic.KeyMonitor
             return keyStream;
         }
 
-        static InterceptKeyEventArgs CreateEventArgs(IntPtr wParam, IntPtr lParam)
+        internal static InterceptKeyEventArgs CreateEventArgs(IntPtr wParam, IntPtr lParam)
         {
             bool alt = (Control.ModifierKeys & Keys.Alt) != 0;
             bool control = (Control.ModifierKeys & Keys.Control) != 0;
@@ -63,23 +65,28 @@ namespace Carnac.Logic.KeyMonitor
             int vkCode = Marshal.ReadInt32(lParam);
             var key = (Keys)vkCode;
             //http://msdn.microsoft.com/en-us/library/windows/desktop/ms646286(v=vs.85).aspx
-            if (key != Keys.RMenu && key != Keys.LMenu && wParam == (IntPtr)Win32Methods.WM_SYSKEYDOWN)
+            // A key pressed while Alt is down is a system key, and so are the Alt keys themselves
+            var isAltKey = key == Keys.RMenu || key == Keys.LMenu;
+            if (wParam == (IntPtr)Win32Methods.WM_SYSKEYDOWN)
             {
-                alt = true;
+                alt = alt || !isAltKey;
                 keyDown = true;
             }
-            if (key != Keys.RMenu && key != Keys.LMenu && wParam == (IntPtr)Win32Methods.WM_SYSKEYUP)
+            if (wParam == (IntPtr)Win32Methods.WM_SYSKEYUP)
             {
-                alt = true;
+                alt = alt || !isAltKey;
                 keyUp = true;
             }
+
+            // the Control key that Windows adds in front of AltGr has this scan code (KBDLLHOOKSTRUCT.scanCode)
+            var isAltGrControl = key == Keys.LControlKey && Marshal.ReadInt32(lParam, 4) == AltGrControlScanCode;
 
             return new InterceptKeyEventArgs(
                 key,
                 keyDown ?
                 KeyDirection.Down : keyUp
                 ? KeyDirection.Up : KeyDirection.Unknown,
-                alt, control, shift);
+                alt, control, shift) { IsFromKeyboardHook = true, IsAltGrControl = isAltGrControl };
         }
 
         static IntPtr SetHook(Win32Methods.LowLevelKeyboardProc proc)
