@@ -7,6 +7,7 @@ using System.Windows;
 using Carnac.Logic;
 using Carnac.Logic.KeyMonitor;
 using Carnac.Logic.Models;
+using Carnac.Logic.MouseMonitor;
 using Carnac.UI;
 using Carnac.Utilities;
 using SettingsProviderNet;
@@ -56,7 +57,7 @@ namespace Carnac
             }
 
             var keyShowViewModel = new KeyShowViewModel(settings);
-            keyShowView = new KeyShowView(keyShowViewModel);
+            keyShowView = new KeyShowView(keyShowViewModel, new InterceptMouse());
             keyShowView.Show();
 
             // One ConcurrencyService (its main thread scheduler wraps the UI thread's synchronization context) is shared by the

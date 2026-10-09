@@ -60,6 +60,7 @@
     </Window.Resources>
 
 
+    <Grid>
     <ListView Margin="{Binding Settings.Margins}" HorizontalAlignment="{Binding Settings.Alignment}"
               VerticalAlignment="Stretch" ItemsSource="{Binding Source={StaticResource KeysViewSource}}"
               Background="Transparent" Focusable="False" IsHitTestVisible="False" BorderBrush="Transparent"
@@ -224,4 +225,6 @@
             </DataTemplate>
         </ListView.ItemTemplate>
     </ListView>
+    <Canvas x:Name="ClickLayer" IsHitTestVisible="False" />
+    </Grid>
 </Window>
