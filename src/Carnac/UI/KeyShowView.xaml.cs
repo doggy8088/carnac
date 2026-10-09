@@ -1,18 +1,55 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Timers;
 using System.Windows;
 using System.Windows.Interop;
 using Carnac.Logic;
+using Carnac.Logic.MouseMonitor;
 
 namespace Carnac.UI
 {
     public partial class KeyShowView
     {
-        public KeyShowView(KeyShowViewModel keyShowViewModel)
+        readonly SingleAssignmentDisposable clickHighlights = new SingleAssignmentDisposable();
+
+        public KeyShowView(KeyShowViewModel keyShowViewModel, IInterceptMouse interceptMouse)
         {
             DataContext = keyShowViewModel;
             InitializeComponent();
+
+            var highlighter = new MouseClickHighlighter(interceptMouse, keyShowViewModel.Settings, ToOverlayLocation, new DispatcherScheduler(Dispatcher));
+            Loaded += (sender, e) =>
+            {
+                if (clickHighlights.Disposable == null)
+                    clickHighlights.Disposable = highlighter.GetHighlightStream().Subscribe(ShowClickRing, exception => Debug.WriteLine("The click highlight has ended: " + exception));
+            };
+            Closed += (sender, e) => clickHighlights.Dispose();
+        }
+
+        // A ring that cannot be drawn must not end the rings after it
+        void ShowClickRing(ClickHighlight highlight)
+        {
+            try
+            {
+                ClickRing.Show(ClickLayer, highlight);
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        // The overlay covers the monitor that was picked in the preferences: clicks elsewhere are not highlighted
+        OverlayLocation ToOverlayLocation(MouseClick click)
+        {
+            if (PresentationSource.FromVisual(ClickLayer) == null)
+                return null;
+
+            var location = ClickLayer.PointFromScreen(new Point(click.X, click.Y));
+            var isOnOverlay = location.X >= 0 && location.Y >= 0 && location.X < ClickLayer.ActualWidth && location.Y < ClickLayer.ActualHeight;
+            return isOnOverlay ? new OverlayLocation(location.X, location.Y) : null;
         }
 
         protected override void OnSourceInitialized(EventArgs e)
