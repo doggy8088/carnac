@@ -139,10 +139,13 @@
     <value>右側偏移</value>
   </data>
   <data name="Preferences_AutoUpdate" xml:space="preserve">
-    <value>自動更新</value>
+    <value>檢查更新</value>
   </data>
   <data name="Preferences_AutoUpdateDescription" xml:space="preserve">
-    <value>自動從 GitHub 檢查更新 (需要重新啟動本程式)</value>
+    <value>啟動時檢查更新</value>
+  </data>
+  <data name="Preferences_AutoUpdateToolTip" xml:space="preserve">
+    <value>Carnac 每天會向 GitHub 查詢一次是否有新版本，並在系統匣通知您。不會自動下載或安裝任何內容。</value>
   </data>
   <data name="Preferences_CaptureForObs" xml:space="preserve">
     <value>支援 OBS 擷取</value>

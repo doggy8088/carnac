@@ -139,10 +139,13 @@
     <value>右侧偏移</value>
   </data>
   <data name="Preferences_AutoUpdate" xml:space="preserve">
-    <value>自动更新</value>
+    <value>检查更新</value>
   </data>
   <data name="Preferences_AutoUpdateDescription" xml:space="preserve">
-    <value>自动从 GitHub 检查更新（需要重新启动本程序）</value>
+    <value>启动时检查更新</value>
+  </data>
+  <data name="Preferences_AutoUpdateToolTip" xml:space="preserve">
+    <value>Carnac 每天会向 GitHub 查询一次是否有新版本，并在托盘通知您。不会自动下载或安装任何内容。</value>
   </data>
   <data name="Preferences_CaptureForObs" xml:space="preserve">
     <value>支持 OBS 捕获</value>

@@ -69,7 +69,9 @@
     <Reference Include="System.Reactive.Windows.Threading, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Reactive.Windows.Threading.3.1.1\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
     <Reference Include="YamlDotNet">
       <HintPath>..\packages\YamlDotNet.5.0.0\lib\net45\YamlDotNet.dll</HintPath>
@@ -81,6 +83,7 @@
     <Compile Include="Enums\KeyCategory.cs" />
     <Compile Include="ErrorNotifyingLogger.cs" />
     <Compile Include="FileLogger.cs" />
+    <Compile Include="GitHubReleaseFeed.cs" />
     <Compile Include="Enums\NotificationPlacement.cs" />
     <Compile Include="Enums\RepeatedKeyGrouping.cs" />
     <Compile Include="IConcurrencyService.cs" />
@@ -93,6 +96,7 @@
     <Compile Include="IPasswordModeService.cs" />
     <Compile Include="IPreviewService.cs" />
     <Compile Include="IProcessProvider.cs" />
+    <Compile Include="IReleaseFeed.cs" />
     <Compile Include="IScreenManager.cs" />
     <Compile Include="IShortcutProvider.cs" />
     <Compile Include="ITrayNotifier.cs" />
@@ -110,6 +114,7 @@
     <Compile Include="KeyVisibilityFilter.cs" />
     <Compile Include="KeyLabels.cs" />
     <Compile Include="KeysController.cs" />
+    <Compile Include="LatestRelease.cs" />
     <Compile Include="Models\Processinfo.cs" />
     <Compile Include="AssociatedProcessUtilities.cs" />
     <Compile Include="ShortcutAccumulator.cs" />
@@ -119,9 +124,11 @@
     <Compile Include="KeyProvider.cs" />
     <Compile Include="KeyboardLayoutTranslator.cs" />
     <Compile Include="MessageProvider.cs" />
+    <Compile Include="MarshalledUpdateCheckHistory.cs" />
     <Compile Include="Models\Message.cs" />
     <Compile Include="Models\PopupSettings.cs" />
     <Compile Include="Models\RepeatedKeyPolicy.cs" />
+    <Compile Include="Models\UpdateCheckState.cs" />
     <Compile Include="NotifyPropertyChanged.cs" />
     <Compile Include="NullLogger.cs" />
     <Compile Include="Overlay\IDisplaySettingsMonitor.cs" />
@@ -135,14 +142,19 @@
     <Compile Include="Overlay\SystemEventsDisplaySettingsMonitor.cs" />
     <Compile Include="PasswordModeService.cs" />
     <Compile Include="PreviewService.cs" />
+    <Compile Include="ReleaseVersion.cs" />
     <Compile Include="ReplaceKey.cs" />
     <Compile Include="RetryWithDelayExtensions.cs" />
     <Compile Include="ScreenManager.cs" />
+    <Compile Include="SettingsUpdateCheckHistory.cs" />
     <Compile Include="ShortcutCollection.cs" />
     <Compile Include="ShortcutProvider.cs" />
     <Compile Include="SpecialKeys.cs" />
     <Compile Include="TrayStatusText.cs" />
     <Compile Include="UiLanguages.cs" />
+    <Compile Include="UpdateCheckRunner.cs" />
+    <Compile Include="UpdateChecker.cs" />
+    <Compile Include="UpdateNotice.cs" />
     <Compile Include="Win32Methods.cs" />
     <Compile Include="WindowBoundsClamper.cs" />
     <Compile Include="Native\DetailedScreen.cs" />

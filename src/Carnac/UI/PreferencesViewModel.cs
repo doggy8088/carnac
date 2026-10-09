@@ -181,8 +181,7 @@ namespace Carnac.UI
                                                          "MahApps.Metro",
                                                          "Fody",
                                                          "NSubstitute",
-                                                         "Reactive Extensions",
-                                                         "Squirrel.Windows"
+                                                         "Reactive Extensions"
                                                      };
         public string Authors
         {

@@ -139,10 +139,13 @@
     <value>Right Offset</value>
   </data>
   <data name="Preferences_AutoUpdate" xml:space="preserve">
-    <value>Auto Update</value>
+    <value>Updates</value>
   </data>
   <data name="Preferences_AutoUpdateDescription" xml:space="preserve">
-    <value>auto check updates from GitHub (need to restart this program)</value>
+    <value>Check for updates on startup</value>
+  </data>
+  <data name="Preferences_AutoUpdateToolTip" xml:space="preserve">
+    <value>Once a day, Carnac asks GitHub whether a newer release exists and tells you in the tray. Nothing is downloaded or installed.</value>
   </data>
   <data name="Preferences_CaptureForObs" xml:space="preserve">
     <value>Capture for OBS</value>

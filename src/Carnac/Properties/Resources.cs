@@ -114,6 +114,12 @@ namespace Carnac.Properties {
             }
         }
         
+        public static string Preferences_AutoUpdateToolTip {
+            get {
+                return ResourceManager.GetString("Preferences_AutoUpdateToolTip", resourceCulture);
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to Background Color.
         /// </summary>
