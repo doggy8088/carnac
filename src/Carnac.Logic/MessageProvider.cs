@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -56,7 +56,7 @@ namespace Carnac.Logic
             */
             return GetCompletedShortcuts()
                 .SelectMany(c => c.GetMessages())
-                .Scan(new Message(), (acc, key) => Message.MergeIfNeeded(acc, key))
+                .Scan(new Message(), (acc, key) => Message.MergeIfNeeded(acc, key, GetRepeatedKeyPolicy()))
                 .Where(m =>
                 {
                     if (settings.DetectShortcutsOnly && settings.ShowOnlyModifiers)
@@ -150,6 +150,12 @@ namespace Carnac.Logic
 
                 return new CompositeDisposable(keySubscription, flushTimer);
             });
+        }
+
+        // read for every key press, so a change in the preferences applies to the very next key
+        RepeatedKeyPolicy GetRepeatedKeyPolicy()
+        {
+            return RepeatedKeyPolicy.Create(settings.RepeatedKeyGrouping, settings.RepeatedKeyThreshold);
         }
     }
 }
