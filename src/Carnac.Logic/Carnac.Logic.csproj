@@ -83,6 +83,7 @@
     <Compile Include="IMessageProvider.cs" />
     <Compile Include="Internal\FixedQueue.cs" />
     <Compile Include="IKeyProvider.cs" />
+    <Compile Include="IKeyboardLayoutTranslator.cs" />
     <Compile Include="IPasswordModeService.cs" />
     <Compile Include="IScreenManager.cs" />
     <Compile Include="IShortcutProvider.cs" />
@@ -104,6 +105,7 @@
     <Compile Include="KeyShortcut.cs" />
     <Compile Include="Models\KeyPress.cs" />
     <Compile Include="KeyProvider.cs" />
+    <Compile Include="KeyboardLayoutTranslator.cs" />
     <Compile Include="MessageProvider.cs" />
     <Compile Include="Models\Message.cs" />
     <Compile Include="Models\PopupSettings.cs" />
