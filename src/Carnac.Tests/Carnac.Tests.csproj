@@ -81,6 +81,7 @@
     <Compile Include="InMemorySettingsStorage.cs" />
     <Compile Include="KeyCategoriesFacts.cs" />
     <Compile Include="KeyCombinationParserFacts.cs" />
+    <Compile Include="KeyDisplayStateFacts.cs" />
     <Compile Include="KeyIgnoreListFacts.cs" />
     <Compile Include="KeyLabelsFacts.cs" />
     <Compile Include="KeyPlayer.cs" />
@@ -94,12 +95,14 @@
     <Compile Include="LocalizationResourceFacts.cs" />
     <Compile Include="MessageFacts.cs" />
     <Compile Include="MessageProviderFacts.cs" />
+    <Compile Include="MessageProviderPauseFacts.cs" />
     <Compile Include="MonitorLayoutFacts.cs" />
     <Compile Include="MouseClickHighlightFacts.cs" />
     <Compile Include="Overlay\OverlayPlacementControllerFacts.cs" />
     <Compile Include="Overlay\OverlayPlacementFacts.cs" />
     <Compile Include="Overlay\OverlayStyleControllerFacts.cs" />
     <Compile Include="Overlay\OverlayWindowStylesFacts.cs" />
+    <Compile Include="PasswordModeServiceFacts.cs" />
     <Compile Include="PopupSettingsFacts.cs" />
     <Compile Include="PreviewServiceFacts.cs" />
     <Compile Include="RepeatedKeyPolicyFacts.cs" />
@@ -110,6 +113,8 @@
     <Compile Include="ShortcutProviderFacts.cs" />
     <Compile Include="SpecificationFor.cs" />
     <Compile Include="SpecialKeysFacts.cs" />
+    <Compile Include="TrayMenuFacts.cs" />
+    <Compile Include="TrayStatusTextFacts.cs" />
     <Compile Include="KeyProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UiLanguageFacts.cs" />

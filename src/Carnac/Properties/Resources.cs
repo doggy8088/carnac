@@ -704,5 +704,41 @@ namespace Carnac.Properties {
                 return ResourceManager.GetString("Preferences_CircleDuration", resourceCulture);
             }
         }
+
+        public static string TrayMenu_Pause {
+            get {
+                return ResourceManager.GetString("TrayMenu_Pause", resourceCulture);
+            }
+        }
+
+        public static string TrayMenu_Resume {
+            get {
+                return ResourceManager.GetString("TrayMenu_Resume", resourceCulture);
+            }
+        }
+
+        public static string TrayMenu_Settings {
+            get {
+                return ResourceManager.GetString("TrayMenu_Settings", resourceCulture);
+            }
+        }
+
+        public static string TrayMenu_SilentMode {
+            get {
+                return ResourceManager.GetString("TrayMenu_SilentMode", resourceCulture);
+            }
+        }
+
+        public static string TrayStatus_Paused {
+            get {
+                return ResourceManager.GetString("TrayStatus_Paused", resourceCulture);
+            }
+        }
+
+        public static string TrayStatus_Silent {
+            get {
+                return ResourceManager.GetString("TrayStatus_Silent", resourceCulture);
+            }
+        }
     }
 }

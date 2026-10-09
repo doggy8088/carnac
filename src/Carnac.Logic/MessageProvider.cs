@@ -19,10 +19,27 @@ namespace Carnac.Logic
         readonly IKeyProvider keyProvider;
         readonly PopupSettings settings;
         readonly IConcurrencyService concurrencyService;
+        readonly IKeyDisplayState displayState;
         readonly KeyVisibilityFilter visibilityFilter;
+
+        /// <summary>Creates a provider that is never paused; the application passes the shared state instead.</summary>
+        public MessageProvider(IShortcutProvider shortcutProvider, IKeyProvider keyProvider, PopupSettings settings)
+            : this(shortcutProvider, keyProvider, settings, new ImmediateConcurrencyService(), new KeyDisplayState())
+        {
+        }
+
+        public MessageProvider(IShortcutProvider shortcutProvider, IKeyProvider keyProvider, PopupSettings settings, IKeyDisplayState displayState)
+            : this(shortcutProvider, keyProvider, settings, new ImmediateConcurrencyService(), displayState)
+        {
+        }
 
         /// <param name="warn">Receives a message for every entry of the ignored keys setting that is not understood; null writes to the trace listeners.</param>
         public MessageProvider(IShortcutProvider shortcutProvider, IKeyProvider keyProvider, PopupSettings settings, IConcurrencyService concurrencyService, Action<string> warn = null)
+            : this(shortcutProvider, keyProvider, settings, concurrencyService, new KeyDisplayState(), warn)
+        {
+        }
+
+        public MessageProvider(IShortcutProvider shortcutProvider, IKeyProvider keyProvider, PopupSettings settings, IConcurrencyService concurrencyService, IKeyDisplayState displayState, Action<string> warn = null)
         {
             if (shortcutProvider == null)
                 throw new ArgumentNullException("shortcutProvider");
@@ -32,12 +49,21 @@ namespace Carnac.Logic
                 throw new ArgumentNullException("settings");
             if (concurrencyService == null)
                 throw new ArgumentNullException("concurrencyService");
+            if (displayState == null)
+                throw new ArgumentNullException("displayState");
 
             this.shortcutProvider = shortcutProvider;
             this.keyProvider = keyProvider;
             this.settings = settings;
             this.concurrencyService = concurrencyService;
+            this.displayState = displayState;
             visibilityFilter = new KeyVisibilityFilter(settings, warn);
+        }
+
+        sealed class ImmediateConcurrencyService : IConcurrencyService
+        {
+            public IScheduler MainThreadScheduler { get { return Scheduler.Immediate; } }
+            public IScheduler Default { get { return Scheduler.Default; } }
         }
 
         public IObservable<Message> GetMessageStream()
@@ -60,9 +86,12 @@ namespace Carnac.Logic
             sel many    :  a---b-------------ctrl+r,ctrl+r-------------ctrl+r---a-----↓---↓
             msg merger  :  a---*ab-----------ctrl+r,ctrl+r-------------ctrl+r---a-----↓---*'↓ x2'
             */
+            // While paused, keys are dropped before they are accumulated, so nothing typed during a pause
+            // can show up later merged into the first message after resuming.
             // Modifiers pressed on their own go around the shortcut accumulator: they are not part of a shortcut and
             // pressing Ctrl again between the chords of "Ctrl+K, Ctrl+C" must not break the sequence.
             return keyProvider.GetKeyStream()
+                .Where(key => !displayState.IsPaused)
                 .Publish(keys => GetCompletedShortcuts(keys.Where(key => !key.IsModifierOnly))
                     .SelectMany(c => c.GetMessages())
                     .Merge(keys.Where(key => key.IsModifierOnly).Select(key => new Message(key))))

@@ -54,6 +54,17 @@ The application will check for updates in the background, if a new version has b
 
 If you want to stop `Carnac` from recording certain key strokes, you can enter _silent mode_ by pressing `Ctrl+Alt+P`. To exit _silent mode_ you simply press `Ctrl+Alt+P` again.
 
+#### Tray icon menu
+
+Hover over the Carnac icon in the notification area to see whether Carnac is active, paused or in silent mode. Right-click it for:
+
+- **Settings...** (a left click opens the settings too)
+- **Pause** / **Resume**: no popups are shown while Carnac is paused
+- **Silent mode**: the same switch as `Ctrl+Alt+P`
+- **Exit**
+
+Pause and silent mode are not remembered, Carnac always starts with both switched off.
+
 #### Keymaps and process filter
 
 Carnac names the shortcuts it knows: pressing `Ctrl+Shift+K` in VS Code shows `Ctrl + Shift + K [Delete Line]`. The names come from small YAML files in the `Keymaps` folder next to `Carnac.exe` (with the installer, usually `%LOCALAPPDATA%\Programs\Carnac\Keymaps`). Carnac reads them when it starts, so restart it after changing one. Copy a bundled file such as `chrome.yml` or `vscode.yml` as a starting point.

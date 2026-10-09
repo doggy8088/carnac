@@ -378,4 +378,22 @@
   <data name="About_Version" xml:space="preserve">
     <value>版本</value>
   </data>
+  <data name="TrayMenu_Pause" xml:space="preserve">
+    <value>暫停</value>
+  </data>
+  <data name="TrayMenu_Resume" xml:space="preserve">
+    <value>繼續</value>
+  </data>
+  <data name="TrayMenu_Settings" xml:space="preserve">
+    <value>偏好設定…</value>
+  </data>
+  <data name="TrayMenu_SilentMode" xml:space="preserve">
+    <value>靜音模式</value>
+  </data>
+  <data name="TrayStatus_Paused" xml:space="preserve">
+    <value>已暫停</value>
+  </data>
+  <data name="TrayStatus_Silent" xml:space="preserve">
+    <value>靜音模式</value>
+  </data>
 </root>

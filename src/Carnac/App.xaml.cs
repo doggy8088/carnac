@@ -21,6 +21,7 @@ namespace Carnac
         readonly IScreenManager screenManager = new ScreenManager();
         IPreviewService previewService;
         readonly PopupSettings settings;
+        readonly IKeyDisplayState displayState = new KeyDisplayState();
         KeyShowView keyShowView;
         CarnacTrayIcon trayIcon;
         KeysController carnac;
@@ -54,7 +55,7 @@ namespace Carnac
                 return;
             }
 
-            trayIcon = new CarnacTrayIcon();
+            trayIcon = new CarnacTrayIcon(displayState);
             trayIcon.OpenPreferences += TrayIconOnOpenPreferences;
 
             // One ConcurrencyService (its main thread scheduler wraps the UI thread's synchronization context) is shared by the
@@ -65,8 +66,8 @@ namespace Carnac
             keyShowView.Show();
             previewService = new PreviewService(keyShowViewModel.Messages, PreviewService.CreateSampleProcess());
 
-            var keyProvider = new KeyProvider(InterceptKeys.Current, new PasswordModeService(), new DesktopLockEventService(), settingsProvider, new KeyboardLayoutTranslator());
-            var messageProvider = new MessageProvider(new ShortcutProvider(), keyProvider, settings, concurrencyService);
+            var keyProvider = new KeyProvider(InterceptKeys.Current, new PasswordModeService(displayState), new DesktopLockEventService(), settingsProvider, new KeyboardLayoutTranslator());
+            var messageProvider = new MessageProvider(new ShortcutProvider(), keyProvider, settings, concurrencyService, displayState);
 
             carnac = new KeysController(keyShowViewModel.Messages, messageProvider, concurrencyService, settingsProvider);
             carnac.Start();

@@ -80,6 +80,7 @@
     <Compile Include="Enums\NotificationPlacement.cs" />
     <Compile Include="Enums\RepeatedKeyGrouping.cs" />
     <Compile Include="IConcurrencyService.cs" />
+    <Compile Include="IKeyDisplayState.cs" />
     <Compile Include="IMessageProvider.cs" />
     <Compile Include="Internal\FixedQueue.cs" />
     <Compile Include="IKeyProvider.cs" />
@@ -88,6 +89,7 @@
     <Compile Include="IPreviewService.cs" />
     <Compile Include="IScreenManager.cs" />
     <Compile Include="IShortcutProvider.cs" />
+    <Compile Include="ITrayNotifier.cs" />
     <Compile Include="KeyMonitor\IInterceptKeys.cs" />
     <Compile Include="KeyMonitor\DesktopLockEventService.cs" />
     <Compile Include="KeyMonitor\IDesktopLockEventService.cs" />
@@ -97,6 +99,7 @@
     <Compile Include="KeyMonitor\KeyDirection.cs" />
     <Compile Include="KeyCategories.cs" />
     <Compile Include="KeyCombinationParser.cs" />
+    <Compile Include="KeyDisplayState.cs" />
     <Compile Include="KeyIgnoreList.cs" />
     <Compile Include="KeyVisibilityFilter.cs" />
     <Compile Include="KeyLabels.cs" />
@@ -130,6 +133,7 @@
     <Compile Include="ShortcutCollection.cs" />
     <Compile Include="ShortcutProvider.cs" />
     <Compile Include="SpecialKeys.cs" />
+    <Compile Include="TrayStatusText.cs" />
     <Compile Include="UiLanguages.cs" />
     <Compile Include="Win32Methods.cs" />
     <Compile Include="WindowBoundsClamper.cs" />

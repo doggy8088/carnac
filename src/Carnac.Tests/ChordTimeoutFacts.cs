@@ -297,7 +297,7 @@ namespace Carnac.Tests
             Assert.Equal("shortcutProvider", Assert.Throws<ArgumentNullException>(() => new MessageProvider(null, keyProvider, settings, concurrencyService)).ParamName);
             Assert.Equal("keyProvider", Assert.Throws<ArgumentNullException>(() => new MessageProvider(shortcutProvider, null, settings, concurrencyService)).ParamName);
             Assert.Equal("settings", Assert.Throws<ArgumentNullException>(() => new MessageProvider(shortcutProvider, keyProvider, null, concurrencyService)).ParamName);
-            Assert.Equal("concurrencyService", Assert.Throws<ArgumentNullException>(() => new MessageProvider(shortcutProvider, keyProvider, settings, null)).ParamName);
+            Assert.Equal("concurrencyService", Assert.Throws<ArgumentNullException>(() => new MessageProvider(shortcutProvider, keyProvider, settings, (IConcurrencyService)null)).ParamName);
         }
     }
 }
