@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v7
 
       - name: Read package version and installer from the manifest
         shell: pwsh
@@ -103,7 +103,7 @@ jobs:
           Write-Host 'Uninstall OK'
 
       - name: Upload package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: carnac-chocolatey-${{ env.VERSION }}
           path: deploy/Chocolatey/*.nupkg
