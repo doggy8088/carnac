@@ -4,7 +4,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>carnac</id>
-    <version>2.4.0</version>
+    <version>2.5.0</version>
     <packageSourceUrl>https://github.com/doggy8088/carnac/tree/dev/src/Chocolatey</packageSourceUrl>
     <owners>willh</owners>
     <title>Carnac</title>
@@ -32,7 +32,7 @@ This is the community-maintained fork of Code52's Carnac. The package downloads 
 - Carnac needs .NET Framework 4.5.2 or later, which is included in Windows 10 and Windows 11.
 - Upgrading from the Chocolatey `carnac` 2.3.x packages removes the old Squirrel-based install from `%LocalAppData%\carnac` first, so only one copy of Carnac starts.
 ]]></description>
-    <releaseNotes>https://github.com/doggy8088/carnac/releases/tag/v2.4.0</releaseNotes>
+    <releaseNotes>https://github.com/doggy8088/carnac/releases/tag/v2.5.0</releaseNotes>
   </metadata>
   <files>
     <file src="tools\**" target="tools" />
