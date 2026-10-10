@@ -113,7 +113,7 @@ code, kbd, pre { font-family: var(--mono); }
     linear-gradient(0deg, var(--bg) 0%, rgba(10, 8, 16, 0) 30%);
 }
 .hero-inner { padding-top: clamp(64px, 11vw, 132px); padding-bottom: clamp(40px, 6vw, 72px); }
-.hero-copy { max-width: 620px; }
+.hero-copy { max-width: 640px; }
 .eyebrow {
   display: inline-flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; margin-bottom: 26px;
   border-radius: 999px; border: 1px solid var(--line-2); background: rgba(0, 0, 0, 0.35);
@@ -127,7 +127,7 @@ h1 {
 h1 .grad { background: linear-gradient(100deg, #e9d5ff 0%, var(--accent) 45%, #ff7ad9 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .lead { margin: 0 0 32px; font-size: clamp(17px, 2vw, 19.5px); color: var(--text-2); max-width: 560px; }
 .cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-.cta .cmd { flex: 1 1 320px; max-width: 380px; }
+.cta .cmd { flex: 1 1 320px; max-width: 410px; }
 .hero-meta { margin: 22px 0 0; color: var(--text-3); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .hero-meta span { display: inline-flex; align-items: center; gap: 7px; }
 .hero-meta span::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: .8; }
