@@ -780,6 +780,44 @@ namespace Carnac.Tests
             Assert.Equal(ClickHighlightSettings.DefaultRightColor, viewModel.RightClickColor.Name);
         }
 
+        [Fact]
+        public void show_mouse_keys_is_persisted_and_reset_to_defaults_in_preferences()
+        {
+            var storage = new InMemorySettingsStorage();
+            var provider = new SettingsProvider(storage);
+            var screenManager = Substitute.For<IScreenManager>();
+            screenManager.GetScreens().Returns(new[] { new Carnac.Logic.Native.DetailedScreen { Index = 1, Width = 1920, Height = 1080 } });
+
+            var preferences = new PreferencesViewModel(provider, screenManager);
+            Assert.False(preferences.Settings.ShowMouseKeys);
+
+            preferences.Settings.ShowMouseKeys = true;
+            preferences.SaveCommand.Execute(null);
+            Assert.True(new SettingsProvider(storage).GetSettings<PopupSettings>().ShowMouseKeys);
+
+            preferences.ResetToDefaultsCommand.Execute(null);
+            Assert.False(preferences.Settings.ShowMouseKeys);
+        }
+
+        [Fact]
+        public void preferences_view_binds_show_mouse_keys_and_its_localized_resources()
+        {
+            Assert.False(string.IsNullOrWhiteSpace(Carnac.Properties.Resources.Preferences_ShowMouseKeys));
+            Assert.False(string.IsNullOrWhiteSpace(Carnac.Properties.Resources.Preferences_ShowMouseKeysDescription));
+            Assert.False(string.IsNullOrWhiteSpace(Carnac.Properties.Resources.Preferences_ShowMouseKeysHint));
+
+            var directory = new System.IO.DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            while (directory != null && !System.IO.File.Exists(System.IO.Path.Combine(directory.FullName, "Carnac", "Carnac.csproj")))
+                directory = directory.Parent;
+
+            Assert.NotNull(directory);
+            var xaml = System.IO.File.ReadAllText(System.IO.Path.Combine(directory.FullName, "Carnac", "UI", "PreferencesView.xaml"));
+            Assert.Contains("IsChecked=\"{Binding Settings.ShowMouseKeys}\"", xaml);
+            Assert.Contains("Preferences_ShowMouseKeys", xaml);
+            Assert.Contains("Preferences_ShowMouseKeysDescription", xaml);
+            Assert.Contains("Preferences_ShowMouseKeysHint", xaml);
+        }
+
         PreferencesViewModel CreateViewModel()
         {
             var settingsProvider = Substitute.For<ISettingsProvider>();
