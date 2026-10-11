@@ -137,6 +137,8 @@ namespace Carnac.Logic.MouseMonitor
             }
 
             var modifiers = Control.ModifierKeys;
+            var winPressed = KeyMonitor.HeldModifierKeys.IsKeyPhysicallyDown(Keys.LWin)
+                || KeyMonitor.HeldModifierKeys.IsKeyPhysicallyDown(Keys.RWin);
             return new MouseClick(
                 hookData.X,
                 hookData.Y,
@@ -144,7 +146,8 @@ namespace Carnac.Logic.MouseMonitor
                 wheelDelta,
                 altPressed: (modifiers & Keys.Alt) != 0,
                 controlPressed: (modifiers & Keys.Control) != 0,
-                shiftPressed: (modifiers & Keys.Shift) != 0)
+                shiftPressed: (modifiers & Keys.Shift) != 0,
+                winPressed: winPressed)
             {
                 IsFromMouseHook = true
             };

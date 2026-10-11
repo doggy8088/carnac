@@ -202,7 +202,10 @@ namespace Carnac.Logic
                 KeyDirection.Down,
                 altPressed: click.AltPressed || modifiers.Alt,
                 controlPressed: click.ControlPressed || modifiers.Control,
-                shiftPressed: click.ShiftPressed || modifiers.Shift);
+                shiftPressed: click.ShiftPressed || modifiers.Shift)
+            {
+                WinPressed = click.WinPressed || modifiers.Win
+            };
         }
 
         // Keeps track of the modifier keys that are down, and tells which key events are shown
@@ -273,7 +276,7 @@ namespace Carnac.Logic
             }
 
             var modifiers = heldModifierKeys.GetState();
-            var isWinKeyPressed = modifiers.Win;
+            var isWinKeyPressed = modifiers.Win || interceptKeyEventArgs.WinPressed;
             string[] inputs;
             if (interceptKeyEventArgs.IsModifier())
             {

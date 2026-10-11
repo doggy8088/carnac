@@ -575,10 +575,12 @@ namespace Carnac.Tests
                 keyEvents.OnNext(new Carnac.Logic.KeyMonitor.InterceptKeyEventArgs(Keys.LWin, Carnac.Logic.KeyMonitor.KeyDirection.Down, false, false, false));
                 mouse.Emit(new MouseClick(0, 0, MouseButtons.None, wheelDelta: -120));
                 keyEvents.OnNext(new Carnac.Logic.KeyMonitor.InterceptKeyEventArgs(Keys.LWin, Carnac.Logic.KeyMonitor.KeyDirection.Up, false, false, false));
+
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.Left, winPressed: true) { IsFromMouseHook = true });
             }
 
             Assert.Equal(
-                new[] { "Ctrl + WheelUp", "Shift + LButton", "Alt + RButton", "Win + WheelDown" },
+                new[] { "Ctrl + WheelUp", "Shift + LButton", "Alt + RButton", "Win + WheelDown", "Win + LButton" },
                 receivedKeys.Select(k => string.Concat(k.GetTextParts())).ToArray());
         }
 
