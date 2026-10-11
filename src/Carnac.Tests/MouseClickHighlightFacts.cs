@@ -457,7 +457,19 @@ namespace Carnac.Tests
             }
         }
 
-        static MouseClick CreateClick(int message, int x, int y, uint mouseData = 0)
+        [Fact]
+        public void physical_modifier_state_is_snapshotted_with_the_click()
+        {
+            var down = new HashSet<Keys> { Keys.LControlKey, Keys.RMenu, Keys.LShiftKey, Keys.RWin };
+            var click = CreateClick(WM_LBUTTONDOWN, 10, 20, 0, down.Contains);
+
+            Assert.True(click.ControlPressed);
+            Assert.True(click.AltPressed);
+            Assert.True(click.ShiftPressed);
+            Assert.True(click.WinPressed);
+        }
+
+        static MouseClick CreateClick(int message, int x, int y, uint mouseData = 0, Func<Keys, bool> isKeyDown = null)
         {
             // the position and mouseData are at the start of the MSLLHOOKSTRUCT the hook is given
             var hookData = Marshal.AllocHGlobal(32);
@@ -466,7 +478,7 @@ namespace Carnac.Tests
                 Marshal.WriteInt32(hookData, 0, x);
                 Marshal.WriteInt32(hookData, 4, y);
                 Marshal.WriteInt32(hookData, 8, unchecked((int)mouseData));
-                return InterceptMouse.CreateClick(new IntPtr(message), hookData);
+                return InterceptMouse.CreateClick(new IntPtr(message), hookData, isKeyDown);
             }
             finally
             {

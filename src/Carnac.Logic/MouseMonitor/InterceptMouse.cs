@@ -87,7 +87,7 @@ namespace Carnac.Logic.MouseMonitor
         }
 
         /// <summary>The mouse action a mouse hook message stands for, or null for messages that are not button presses or wheel scrolls.</summary>
-        public static MouseClick CreateClick(IntPtr wParam, IntPtr lParam)
+        public static MouseClick CreateClick(IntPtr wParam, IntPtr lParam, Func<Keys, bool> isKeyDown = null)
         {
             var message = wParam.ToInt64();
             switch (message)
@@ -136,17 +136,19 @@ namespace Carnac.Logic.MouseMonitor
                     break;
             }
 
-            var modifiers = Control.ModifierKeys;
-            var winPressed = KeyMonitor.HeldModifierKeys.IsKeyPhysicallyDown(Keys.LWin)
-                || KeyMonitor.HeldModifierKeys.IsKeyPhysicallyDown(Keys.RWin);
+            var checkKeyDown = isKeyDown ?? KeyMonitor.HeldModifierKeys.IsKeyPhysicallyDown;
+            var altPressed = checkKeyDown(Keys.LMenu) || checkKeyDown(Keys.RMenu) || checkKeyDown(Keys.Menu);
+            var controlPressed = checkKeyDown(Keys.LControlKey) || checkKeyDown(Keys.RControlKey) || checkKeyDown(Keys.ControlKey);
+            var shiftPressed = checkKeyDown(Keys.LShiftKey) || checkKeyDown(Keys.RShiftKey) || checkKeyDown(Keys.ShiftKey);
+            var winPressed = checkKeyDown(Keys.LWin) || checkKeyDown(Keys.RWin);
             return new MouseClick(
                 hookData.X,
                 hookData.Y,
                 button,
                 wheelDelta,
-                altPressed: (modifiers & Keys.Alt) != 0,
-                controlPressed: (modifiers & Keys.Control) != 0,
-                shiftPressed: (modifiers & Keys.Shift) != 0,
+                altPressed: altPressed,
+                controlPressed: controlPressed,
+                shiftPressed: shiftPressed,
                 winPressed: winPressed)
             {
                 IsFromMouseHook = true
