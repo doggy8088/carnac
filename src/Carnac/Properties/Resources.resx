@@ -165,6 +165,9 @@
   <data name="Preferences_ResetToDefaults" xml:space="preserve">
     <value>Reset to Defaults</value>
   </data>
+  <data name="Preferences_Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
   <data name="Preferences_Save" xml:space="preserve">
     <value>Save</value>
   </data>

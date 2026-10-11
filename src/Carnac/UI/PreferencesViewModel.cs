@@ -83,7 +83,8 @@ namespace Carnac.UI
 
             LoadHotkeys();
 
-            SaveCommand = new DelegateCommand(SaveSettings);
+            ApplyCommand = new DelegateCommand(SaveSettings);
+            SaveCommand = new DelegateCommand(SaveAndClose);
             ResetToDefaultsCommand = new DelegateCommand(ResetToDefaults);
             VisitCommand = new DelegateCommand(Visit);
             ClearSilentModeHotkeyCommand = new DelegateCommand(() => SetHotkey(h => SilentModeHotkey = h, string.Empty));
@@ -96,9 +97,13 @@ namespace Carnac.UI
                 OnPropertyChanged(e.PropertyName);
         }
 
+        public event EventHandler CloseRequested;
+
         public ICommand VisitCommand { get; private set; }
 
         public ICommand ResetToDefaultsCommand { get; private set; }
+
+        public ICommand ApplyCommand { get; private set; }
 
         public ICommand SaveCommand { get; private set; }
 
@@ -315,6 +320,14 @@ namespace Carnac.UI
             Settings.SilentModeHotkey = SilentModeHotkey;
             Settings.PauseHotkey = PauseHotkey;
             settingsProvider.SaveSettings(Settings);
+        }
+
+        void SaveAndClose()
+        {
+            SaveSettings();
+            var handler = CloseRequested;
+            if (handler != null)
+                handler(this, EventArgs.Empty);
         }
 
         void ResetToDefaults()

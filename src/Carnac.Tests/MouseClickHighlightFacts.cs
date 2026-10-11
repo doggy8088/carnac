@@ -46,9 +46,9 @@ namespace Carnac.Tests
         public void mouse_clicks_are_not_shown_unless_asked_for_and_the_defaults_are_sensible()
         {
             Assert.Equal(false, DefaultOf("ShowMouseClicks"));
-            Assert.Equal("OrangeRed", DefaultOf("LeftClickColor"));
+            Assert.Equal("DodgerBlue", DefaultOf("LeftClickColor"));
             Assert.Equal("Gold", DefaultOf("MiddleClickColor"));
-            Assert.Equal("RoyalBlue", DefaultOf("RightClickColor"));
+            Assert.Equal("SeaGreen", DefaultOf("RightClickColor"));
 
             var size = (int)DefaultOf("ClickCircleSize");
             var duration = (int)DefaultOf("ClickCircleDuration");
@@ -69,7 +69,7 @@ namespace Carnac.Tests
             var highlight = Assert.Single(highlights);
             Assert.Equal(50, highlight.Location.X);
             Assert.Equal(30, highlight.Location.Y);
-            Assert.Equal("OrangeRed", highlight.ColorName);
+            Assert.Equal("DodgerBlue", highlight.ColorName);
             Assert.Equal(60, highlight.Diameter);
             Assert.Equal(TimeSpan.FromMilliseconds(600), highlight.Duration);
         }
@@ -96,7 +96,7 @@ namespace Carnac.Tests
         {
             settings.LeftClickColor = "NotAColor";
             settings.MiddleClickColor = null;
-            settings.RightClickColor = "royalblue";
+            settings.RightClickColor = "seagreen";
 
             using (Subscribe())
             {
@@ -105,7 +105,7 @@ namespace Carnac.Tests
                 mouse.Click(1, 1, MouseButtons.Right);
             }
 
-            Assert.Equal(new[] { "OrangeRed", "Gold", "RoyalBlue" }, highlights.ConvertAll(h => h.ColorName).ToArray());
+            Assert.Equal(new[] { "DodgerBlue", "Gold", "SeaGreen" }, highlights.ConvertAll(h => h.ColorName).ToArray());
         }
 
         [Fact]
@@ -147,7 +147,7 @@ namespace Carnac.Tests
                 mouse.Click(1, 1, MouseButtons.Left);
             }
 
-            Assert.Equal("OrangeRed", highlights[0].ColorName);
+            Assert.Equal("DodgerBlue", highlights[0].ColorName);
             Assert.Equal("Purple", highlights[1].ColorName);
             Assert.Equal(100, highlights[1].Diameter);
         }

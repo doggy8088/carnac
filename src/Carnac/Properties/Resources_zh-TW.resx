@@ -165,6 +165,9 @@
   <data name="Preferences_ResetToDefaults" xml:space="preserve">
     <value>重設為預設值</value>
   </data>
+  <data name="Preferences_Apply" xml:space="preserve">
+    <value>套用</value>
+  </data>
   <data name="Preferences_Save" xml:space="preserve">
     <value>儲存</value>
   </data>

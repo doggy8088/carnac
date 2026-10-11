@@ -32,6 +32,12 @@ namespace Carnac.UI
             // ScrollViewer (including the one inside MahApps's tab strip template) marks MouseLeftButtonDown as handled
             // when it takes focus, so listen to handled events too and filter interactive controls explicitly below.
             AddHandler(MouseLeftButtonDownEvent, new MouseButtonEventHandler(OnMouseLeftButtonDown), true);
+            viewModel.CloseRequested += OnCloseRequested;
+        }
+
+        void OnCloseRequested(object sender, EventArgs e)
+        {
+            Close();
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -47,6 +53,7 @@ namespace Carnac.UI
 
         protected override void OnClosed(EventArgs e)
         {
+            viewModel.CloseRequested -= OnCloseRequested;
             viewModel.StopPreview();
 
             base.OnClosed(e);

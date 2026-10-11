@@ -776,5 +776,11 @@ namespace Carnac.Properties {
                 return ResourceManager.GetString("Preferences_ClearHotkey", resourceCulture);
             }
         }
+
+        public static string Preferences_Apply {
+            get {
+                return ResourceManager.GetString("Preferences_Apply", resourceCulture);
+            }
+        }
     }
 }

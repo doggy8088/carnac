@@ -63,25 +63,31 @@ WinGet 套件 ID 為 `doggy8088.Carnac`，透過 `wingetcreate` 將新版本的 
 2. **架構覆寫 (`|x64`)**：
    - Inno Setup 產生的 `Carnac-<Version>-Setup.exe` 預設會被 `wingetcreate` 偵測為 `x86`，但 `winget-pkgs` 上既有的 `doggy8088.Carnac.installer.yaml` 定義為 `Architecture: x64`。
    - 因此傳遞 `--urls` 參數時**必須在 URL 尾端加上 `|x64`**，否則會因無法配對既有 installer 節點而失敗（`Multiple matches found for X86 Inno installer`）。
+3. **保留 `ReleaseNotes` 欄位（避免 `Manifest-Metadata-Consistency` 警告）**：
+   - 由於 `doggy8088.Carnac` 自 `2.4.0` 起在 `doggy8088.Carnac.locale.en-US.yaml` 中包含 `ReleaseNotes` 欄位，而 `wingetcreate update` 預設只會更新 `ReleaseNotesUrl` 並移除 `ReleaseNotes`，導致 `wingetvalidator-prod[bot]` 報錯：`Inconsistencies detected in package doggy8088.Carnac ... Missing property ReleaseNotes`。
+   - 因此請先使用 `wingetcreate update` 在本機產生 `manifests/`（**不加 `--submit`**），補上 `ReleaseNotes` 後再執行 `wingetcreate submit`。
 
 ### 執行步驟
-1. **更新並提交 WinGet PR**：
+1. **產生更新後的本機 WinGet Manifests**：
    ```powershell
    $version = "<Version>"
    $token = gh auth token
    & $wc update doggy8088.Carnac `
      --version $version `
      --urls "https://github.com/doggy8088/carnac/releases/download/v$version/Carnac-$version-Setup.exe|x64" `
-     --submit `
-     --no-open `
      --token $token
    ```
-2. **清理暫存的 `manifests` 目錄**：
+2. **在 `doggy8088.Carnac.locale.en-US.yaml` 補上 `ReleaseNotes` 並提交 PR**：
+   - 編輯 `.\manifests\d\doggy8088\Carnac\<Version>\doggy8088.Carnac.locale.en-US.yaml`，在 `ReleaseNotesUrl:` 前方加入本版重點 `ReleaseNotes: |-` 區塊，接著提交：
+   ```powershell
+   & $wc submit .\manifests\d\doggy8088\Carnac\$version --no-open --token $token
+   ```
+3. **清理暫存的 `manifests` 目錄**：
    - `wingetcreate` 會在當前工作目錄產生 `manifests/d/doggy8088/Carnac/<Version>`，提交成功後請將其移除以保持儲存庫乾淨：
      ```powershell
      Remove-Item -Path .\manifests -Recurse -Force -ErrorAction SilentlyContinue
      ```
-3. **記錄 PR 連結**：
+4. **記錄 PR 連結**：
    - 記錄終端機輸出的 `https://github.com/microsoft/winget-pkgs/pull/<PR_NUMBER>` 連結並回報給使用者。
 
 ---

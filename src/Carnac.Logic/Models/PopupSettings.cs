@@ -104,6 +104,7 @@ namespace Carnac.Logic.Models
         [NotifyProperty(AlsoNotifyFor = new[] { "Margins" })]
         public int TopOffset { get; set; }
 
+        [DefaultValue(40)]
         [NotifyProperty(AlsoNotifyFor = new[] { "Margins" })]
         public int BottomOffset { get; set; }
 
@@ -193,6 +194,8 @@ namespace Carnac.Logic.Models
         public bool ShowApplicationIcon { get; set; }
         public bool SettingsConfigured { get; set; }
         public bool ShowOnlyModifiers { get; set; }
+
+        [DefaultValue(true)]
         public bool ShowSpaceAsUnicode { get; set; }
 
         /// <summary>

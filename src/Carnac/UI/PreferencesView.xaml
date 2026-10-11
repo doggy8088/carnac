@@ -335,6 +335,8 @@
                         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                             <Button Margin="0,0,8,0" Style="{StaticResource SecondaryActionButtonStyle}"
                                     Content="{x:Static properties:Resources.Preferences_ResetToDefaults}" Command="{Binding ResetToDefaultsCommand}" />
+                            <Button Margin="0,0,8,0" MinWidth="92" Style="{StaticResource SecondaryActionButtonStyle}"
+                                    Content="{x:Static properties:Resources.Preferences_Apply}" Command="{Binding ApplyCommand}" />
                             <Button Style="{StaticResource PrimaryActionButtonStyle}"
                                     Content="{x:Static properties:Resources.Preferences_Save}" Command="{Binding SaveCommand}" />
                         </StackPanel>
@@ -493,6 +495,8 @@
                         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                             <Button Margin="0,0,8,0" Style="{StaticResource SecondaryActionButtonStyle}"
                                     Content="{x:Static properties:Resources.Preferences_ResetToDefaults}" Command="{Binding ResetToDefaultsCommand}" />
+                            <Button Margin="0,0,8,0" MinWidth="92" Style="{StaticResource SecondaryActionButtonStyle}"
+                                    Content="{x:Static properties:Resources.Preferences_Apply}" Command="{Binding ApplyCommand}" />
                             <Button Style="{StaticResource PrimaryActionButtonStyle}"
                                     Content="{x:Static properties:Resources.Preferences_Save}" Command="{Binding SaveCommand}" />
                         </StackPanel>
@@ -556,6 +560,8 @@
                         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                             <Button Margin="0,0,8,0" Style="{StaticResource SecondaryActionButtonStyle}"
                                     Content="{x:Static properties:Resources.Preferences_ResetToDefaults}" Command="{Binding ResetToDefaultsCommand}" />
+                            <Button Margin="0,0,8,0" MinWidth="92" Style="{StaticResource SecondaryActionButtonStyle}"
+                                    Content="{x:Static properties:Resources.Preferences_Apply}" Command="{Binding ApplyCommand}" />
                             <Button Style="{StaticResource PrimaryActionButtonStyle}"
                                     Content="{x:Static properties:Resources.Preferences_Save}" Command="{Binding SaveCommand}" />
                         </StackPanel>

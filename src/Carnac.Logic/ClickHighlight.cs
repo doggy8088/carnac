@@ -44,9 +44,9 @@ namespace Carnac.Logic
     /// <summary>What the click highlight settings mean when they are used; saved settings can be anything.</summary>
     public static class ClickHighlightSettings
     {
-        public const string DefaultLeftColor = "OrangeRed";
+        public const string DefaultLeftColor = "DodgerBlue";
         public const string DefaultMiddleColor = "Gold";
-        public const string DefaultRightColor = "RoyalBlue";
+        public const string DefaultRightColor = "SeaGreen";
         public const int DefaultDiameter = 60;
         public const int DefaultDurationMilliseconds = 600;
 

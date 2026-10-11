@@ -42,6 +42,8 @@ namespace Carnac.Tests
             Assert.Equal(3, settings.ItemPadding);
             Assert.Equal(new CornerRadius(15), settings.ItemBorderCornerRadius);
             Assert.Equal(new Thickness(3), settings.ItemBorderPadding);
+            Assert.Equal(40, settings.BottomOffset);
+            Assert.True(settings.ShowSpaceAsUnicode);
         }
 
         [Fact]

@@ -379,6 +379,36 @@ namespace Carnac.Tests.ViewModels
                 Assert.True(raised.IndexOf("ScreenDeviceName") >= 0, "no notification for ScreenDeviceName");
                 Assert.True(raised.IndexOf("Screen") > raised.IndexOf("ScreenDeviceName"));
             }
+
+            [Fact]
+            public void applying_saves_the_settings_without_closing_the_window()
+            {
+                ISettingsProvider settingsService;
+                var popupSettings = new PopupSettings { FontColor = "White", ItemBackgroundColor = "Black" };
+                var subject = Create(popupSettings, out settingsService, Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080, true));
+                var closed = false;
+                subject.CloseRequested += (sender, e) => closed = true;
+
+                subject.ApplyCommand.Execute(null);
+
+                settingsService.Received(1).SaveSettings(popupSettings);
+                Assert.False(closed);
+            }
+
+            [Fact]
+            public void saving_saves_the_settings_and_requests_closing_the_window()
+            {
+                ISettingsProvider settingsService;
+                var popupSettings = new PopupSettings { FontColor = "White", ItemBackgroundColor = "Black" };
+                var subject = Create(popupSettings, out settingsService, Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080, true));
+                var closed = false;
+                subject.CloseRequested += (sender, e) => closed = true;
+
+                subject.SaveCommand.Execute(null);
+
+                settingsService.Received(1).SaveSettings(popupSettings);
+                Assert.True(closed);
+            }
         }
     }
 }

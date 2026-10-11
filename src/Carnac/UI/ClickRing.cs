@@ -134,7 +134,7 @@ namespace Carnac.UI
             catch (Exception)
             {
                 // the name has been checked against the known colors, this is only a safety net
-                return Colors.OrangeRed;
+                return Colors.DodgerBlue;
             }
         }
     }
