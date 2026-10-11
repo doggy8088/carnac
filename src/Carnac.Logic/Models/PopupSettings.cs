@@ -140,10 +140,10 @@ namespace Carnac.Logic.Models
         [DefaultValue("")]
         public string IgnoredKeys { get; set; }
 
-        [DefaultValue(false)]
+        [DefaultValue(true)]
         public bool ShowMouseKeys { get; set; }
 
-        [DefaultValue(false)]
+        [DefaultValue(true)]
         public bool ShowMouseClicks { get; set; }
 
         [DefaultValue(ClickHighlightSettings.DefaultLeftColor)]
@@ -214,7 +214,7 @@ namespace Carnac.Logic.Models
         [DefaultValue(RepeatedKeyPolicy.DefaultTypedCharacterThreshold)]
         public int RepeatedKeyThreshold { get; set; }
 
-        [DefaultValue(false)]
+        [DefaultValue(true)]
         public bool ShowModifierKeyPresses { get; set; }
     }
 }

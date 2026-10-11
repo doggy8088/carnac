@@ -85,8 +85,13 @@ namespace Carnac.Tests
         }
 
         [Fact]
-        public async Task modifiers_on_their_own_are_not_shown_by_default()
+        public async Task modifiers_on_their_own_are_shown_by_default_and_hidden_when_turned_off()
         {
+            var attribute = (System.ComponentModel.DefaultValueAttribute)Attribute.GetCustomAttribute(
+                typeof(PopupSettings).GetProperty("ShowModifierKeyPresses"),
+                typeof(System.ComponentModel.DefaultValueAttribute));
+            Assert.Equal(true, attribute.Value);
+
             settings.ShowModifierKeyPresses = false;
 
             var keyPresses = await Play(Down(Keys.LControlKey), Up(Keys.LControlKey), Down(Keys.LMenu), Down(Keys.LWin));

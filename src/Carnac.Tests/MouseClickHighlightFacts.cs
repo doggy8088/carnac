@@ -43,9 +43,9 @@ namespace Carnac.Tests
         }
 
         [Fact]
-        public void mouse_clicks_are_not_shown_unless_asked_for_and_the_defaults_are_sensible()
+        public void mouse_clicks_are_shown_by_default_and_the_defaults_are_sensible()
         {
-            Assert.Equal(false, DefaultOf("ShowMouseClicks"));
+            Assert.Equal(true, DefaultOf("ShowMouseClicks"));
             Assert.Equal("DodgerBlue", DefaultOf("LeftClickColor"));
             Assert.Equal("Gold", DefaultOf("MiddleClickColor"));
             Assert.Equal("SeaGreen", DefaultOf("RightClickColor"));
@@ -496,10 +496,10 @@ namespace Carnac.Tests
         readonly Carnac.Logic.Models.ProcessInfo process = new Carnac.Logic.Models.ProcessInfo("devenv");
 
         [Fact]
-        public void mouse_keys_are_not_shown_unless_asked_for()
+        public void mouse_keys_are_shown_by_default_and_hidden_when_turned_off()
         {
             var attribute = (DefaultValueAttribute)Attribute.GetCustomAttribute(typeof(PopupSettings).GetProperty("ShowMouseKeys"), typeof(DefaultValueAttribute));
-            Assert.Equal(false, attribute.Value);
+            Assert.Equal(true, attribute.Value);
 
             settings.ShowMouseKeys = false;
             using (Subscribe())
@@ -812,14 +812,14 @@ namespace Carnac.Tests
             screenManager.GetScreens().Returns(new[] { new Carnac.Logic.Native.DetailedScreen { Index = 1, Width = 1920, Height = 1080 } });
 
             var preferences = new PreferencesViewModel(provider, screenManager);
-            Assert.False(preferences.Settings.ShowMouseKeys);
+            Assert.True(preferences.Settings.ShowMouseKeys);
 
-            preferences.Settings.ShowMouseKeys = true;
+            preferences.Settings.ShowMouseKeys = false;
             preferences.SaveCommand.Execute(null);
-            Assert.True(new SettingsProvider(storage).GetSettings<PopupSettings>().ShowMouseKeys);
+            Assert.False(new SettingsProvider(storage).GetSettings<PopupSettings>().ShowMouseKeys);
 
             preferences.ResetToDefaultsCommand.Execute(null);
-            Assert.False(preferences.Settings.ShowMouseKeys);
+            Assert.True(preferences.Settings.ShowMouseKeys);
         }
 
         [Fact]
