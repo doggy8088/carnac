@@ -418,30 +418,333 @@ namespace Carnac.Tests
             var click = CreateClick(WM_LBUTTONDOWN, -1920, 1080);
             Assert.Equal(-1920, click.X);
             Assert.Equal(1080, click.Y);
+            Assert.True(click.IsFromMouseHook);
+        }
+
+        [Fact]
+        public void x_button_presses_are_clicks_for_xbutton1_and_xbutton2()
+        {
+            Assert.Equal(MouseButtons.XButton1, CreateClick(WM_XBUTTONDOWN, 10, 20, 1u << 16).Button);
+            Assert.Equal(MouseButtons.XButton2, CreateClick(WM_XBUTTONDOWN, 10, 20, 2u << 16).Button);
+            Assert.Null(CreateClick(WM_XBUTTONDOWN, 10, 20, 3u << 16));
+        }
+
+        [Fact]
+        public void mouse_wheel_messages_carry_the_signed_wheel_delta()
+        {
+            var wheelUp = CreateClick(WM_MOUSEWHEEL, 10, 20, unchecked((uint)(120 << 16)));
+            Assert.Equal(MouseButtons.None, wheelUp.Button);
+            Assert.Equal(120, wheelUp.WheelDelta);
+
+            var wheelDown = CreateClick(WM_MOUSEWHEEL, 10, 20, unchecked((uint)((ushort)(short)-120 << 16)));
+            Assert.Equal(MouseButtons.None, wheelDown.Button);
+            Assert.Equal(-120, wheelDown.WheelDelta);
+
+            Assert.Null(CreateClick(WM_MOUSEWHEEL, 10, 20, 0));
         }
 
         [Fact]
         public void everything_else_is_not_a_click_and_its_data_is_not_read()
         {
-            foreach (var message in new[] { WM_MOUSEMOVE, WM_LBUTTONUP, WM_MOUSEWHEEL, WM_XBUTTONDOWN })
+            foreach (var message in new[] { WM_MOUSEMOVE, WM_LBUTTONUP })
+            {
+                Assert.Null(InterceptMouse.CreateClick(new IntPtr(message), IntPtr.Zero));
+            }
+
+            foreach (var message in new[] { WM_LBUTTONDOWN, WM_MOUSEWHEEL, WM_XBUTTONDOWN })
             {
                 Assert.Null(InterceptMouse.CreateClick(new IntPtr(message), IntPtr.Zero));
             }
         }
 
-        static MouseClick CreateClick(int message, int x, int y)
+        [Fact]
+        public void physical_modifier_state_is_snapshotted_with_the_click()
         {
-            // the position is the start of the MSLLHOOKSTRUCT the hook is given
+            var down = new HashSet<Keys> { Keys.LControlKey, Keys.RMenu, Keys.LShiftKey, Keys.RWin };
+            var click = CreateClick(WM_LBUTTONDOWN, 10, 20, 0, down.Contains);
+
+            Assert.True(click.ControlPressed);
+            Assert.True(click.AltPressed);
+            Assert.True(click.ShiftPressed);
+            Assert.True(click.WinPressed);
+        }
+
+        static MouseClick CreateClick(int message, int x, int y, uint mouseData = 0, Func<Keys, bool> isKeyDown = null)
+        {
+            // the position and mouseData are at the start of the MSLLHOOKSTRUCT the hook is given
             var hookData = Marshal.AllocHGlobal(32);
             try
             {
                 Marshal.WriteInt32(hookData, 0, x);
                 Marshal.WriteInt32(hookData, 4, y);
-                return InterceptMouse.CreateClick(new IntPtr(message), hookData);
+                Marshal.WriteInt32(hookData, 8, unchecked((int)mouseData));
+                return InterceptMouse.CreateClick(new IntPtr(message), hookData, isKeyDown);
             }
             finally
             {
                 Marshal.FreeHGlobal(hookData);
+            }
+        }
+    }
+
+    public class MouseKeyFacts
+    {
+        readonly Subject<Carnac.Logic.KeyMonitor.InterceptKeyEventArgs> keyEvents = new Subject<Carnac.Logic.KeyMonitor.InterceptKeyEventArgs>();
+        readonly FakeMouse mouse = new FakeMouse();
+        readonly PopupSettings settings = new PopupSettings { ShowMouseKeys = true };
+        readonly List<KeyPress> receivedKeys = new List<KeyPress>();
+        readonly Carnac.Logic.Models.ProcessInfo process = new Carnac.Logic.Models.ProcessInfo("devenv");
+
+        [Fact]
+        public void mouse_keys_are_not_shown_unless_asked_for()
+        {
+            var attribute = (DefaultValueAttribute)Attribute.GetCustomAttribute(typeof(PopupSettings).GetProperty("ShowMouseKeys"), typeof(DefaultValueAttribute));
+            Assert.Equal(false, attribute.Value);
+
+            settings.ShowMouseKeys = false;
+            using (Subscribe())
+            {
+                Assert.Equal(0, mouse.ActiveSubscriptions);
+                mouse.Emit(new MouseClick(10, 20, MouseButtons.Left));
+                Assert.Empty(receivedKeys);
+            }
+        }
+
+        [Fact]
+        public void the_mouse_is_only_listened_to_while_show_mouse_keys_is_on_and_again_when_switched_back_on()
+        {
+            settings.ShowMouseKeys = false;
+
+            using (Subscribe())
+            {
+                Assert.Equal(0, mouse.ActiveSubscriptions);
+
+                settings.ShowMouseKeys = true;
+                Assert.Equal(1, mouse.ActiveSubscriptions);
+                mouse.Emit(new MouseClick(10, 20, MouseButtons.Left));
+
+                settings.ShowMouseKeys = false;
+                Assert.Equal(0, mouse.ActiveSubscriptions);
+                mouse.Emit(new MouseClick(10, 20, MouseButtons.Right));
+
+                settings.ShowMouseKeys = true;
+                Assert.Equal(1, mouse.ActiveSubscriptions);
+                mouse.Emit(new MouseClick(10, 20, MouseButtons.Middle));
+            }
+
+            Assert.Equal(new[] { "LButton", "MButton" }, receivedKeys.Select(k => string.Concat(k.GetTextParts())).ToArray());
+        }
+
+        [Fact]
+        public void all_mouse_buttons_and_wheel_scrolls_produce_their_mouse_key_names()
+        {
+            using (Subscribe())
+            {
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.Left));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.Right));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.Middle));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.XButton1));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.XButton2));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.None, wheelDelta: 120));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.None, wheelDelta: -120));
+            }
+
+            Assert.Equal(
+                new[] { "LButton", "RButton", "MButton", "XButton1", "XButton2", "WheelUp", "WheelDown" },
+                receivedKeys.Select(k => string.Concat(k.GetTextParts())).ToArray());
+            Assert.True(receivedKeys.All(k => k.IsMouseKey));
+        }
+
+        [Fact]
+        public void mouse_wheel_keys_do_not_collide_with_hardware_volume_keys()
+        {
+            using (Subscribe())
+            {
+                keyEvents.OnNext(new Carnac.Logic.KeyMonitor.InterceptKeyEventArgs(Keys.VolumeUp, Carnac.Logic.KeyMonitor.KeyDirection.Down, false, false, false));
+                keyEvents.OnNext(new Carnac.Logic.KeyMonitor.InterceptKeyEventArgs(Keys.VolumeDown, Carnac.Logic.KeyMonitor.KeyDirection.Down, false, false, false));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.None, wheelDelta: 120));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.None, wheelDelta: -120));
+            }
+
+            Assert.Equal(
+                new[] { "VolumeUp", "VolumeDown", "WheelUp", "WheelDown" },
+                receivedKeys.Select(k => string.Concat(k.GetTextParts())).ToArray());
+            Assert.False(receivedKeys[0].IsMouseKey);
+            Assert.False(receivedKeys[1].IsMouseKey);
+            Assert.True(receivedKeys[2].IsMouseKey);
+            Assert.True(receivedKeys[3].IsMouseKey);
+        }
+
+        [Fact]
+        public void held_modifiers_are_combined_with_mouse_actions()
+        {
+            using (Subscribe())
+            {
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.None, wheelDelta: 120, controlPressed: true));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.Left, shiftPressed: true));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.Right, altPressed: true));
+
+                keyEvents.OnNext(new Carnac.Logic.KeyMonitor.InterceptKeyEventArgs(Keys.LWin, Carnac.Logic.KeyMonitor.KeyDirection.Down, false, false, false));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.None, wheelDelta: -120));
+                keyEvents.OnNext(new Carnac.Logic.KeyMonitor.InterceptKeyEventArgs(Keys.LWin, Carnac.Logic.KeyMonitor.KeyDirection.Up, false, false, false));
+
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.Left, winPressed: true) { IsFromMouseHook = true });
+            }
+
+            Assert.Equal(
+                new[] { "Ctrl + WheelUp", "Shift + LButton", "Alt + RButton", "Win + WheelDown", "Win + LButton" },
+                receivedKeys.Select(k => string.Concat(k.GetTextParts())).ToArray());
+        }
+
+        [Fact]
+        public void mouse_actions_do_not_merge_into_typed_text_and_collapse_repeats_with_x_count()
+        {
+            using (Subscribe())
+            {
+                keyEvents.OnNext(new Carnac.Logic.KeyMonitor.InterceptKeyEventArgs(Keys.A, Carnac.Logic.KeyMonitor.KeyDirection.Down, false, false, false));
+                keyEvents.OnNext(new Carnac.Logic.KeyMonitor.InterceptKeyEventArgs(Keys.B, Carnac.Logic.KeyMonitor.KeyDirection.Down, false, false, false));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.Left));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.None, wheelDelta: 120));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.None, wheelDelta: 120));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.None, wheelDelta: 120));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.None, wheelDelta: 120, controlPressed: true));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.None, wheelDelta: 120, controlPressed: true));
+            }
+
+            var messages = new List<Carnac.Logic.Models.Message>();
+            var current = new Carnac.Logic.Models.Message();
+            foreach (var key in receivedKeys)
+            {
+                var next = Carnac.Logic.Models.Message.MergeIfNeeded(current, new Carnac.Logic.Models.Message(key));
+                if (next.Previous == current && messages.Count > 0)
+                    messages[messages.Count - 1] = next;
+                else
+                    messages.Add(next);
+                current = next;
+            }
+
+            Assert.Equal(
+                new[] { "ab", "LButton", "WheelUp x 3 ", "Ctrl + WheelUp x 2 " },
+                messages.Select(m => string.Concat(m.Text)).ToArray());
+        }
+
+        [Fact]
+        public void a_standalone_modifier_is_replaced_by_the_mouse_shortcut_it_is_held_for()
+        {
+            settings.ShowModifierKeyPresses = true;
+
+            using (Subscribe())
+            {
+                keyEvents.OnNext(new Carnac.Logic.KeyMonitor.InterceptKeyEventArgs(Keys.LControlKey, Carnac.Logic.KeyMonitor.KeyDirection.Down, false, true, false));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.None, wheelDelta: 120, controlPressed: true));
+                keyEvents.OnNext(new Carnac.Logic.KeyMonitor.InterceptKeyEventArgs(Keys.LControlKey, Carnac.Logic.KeyMonitor.KeyDirection.Up, false, false, false));
+            }
+
+            Assert.Equal(2, receivedKeys.Count);
+            var ctrlOnly = new Carnac.Logic.Models.Message(receivedKeys[0]);
+            var merged = Carnac.Logic.Models.Message.MergeIfNeeded(ctrlOnly, new Carnac.Logic.Models.Message(receivedKeys[1]));
+            Assert.Same(ctrlOnly, merged.Previous);
+            Assert.Equal(new[] { "Ctrl", " + ", "WheelUp" }, merged.Text.ToArray());
+        }
+
+        [Fact]
+        public void mouse_keys_stay_visible_when_keyboard_categories_are_unchecked_unless_explicitly_ignored()
+        {
+            settings.VisibleKeyCategories = Carnac.Logic.Enums.KeyCategory.Letters;
+            var filter = new KeyVisibilityFilter(settings);
+
+            using (Subscribe())
+            {
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.Left));
+                mouse.Emit(new MouseClick(0, 0, MouseButtons.None, wheelDelta: 120));
+            }
+
+            var leftClickMessage = new Carnac.Logic.Models.Message(receivedKeys[0]);
+            var wheelUpMessage = new Carnac.Logic.Models.Message(receivedKeys[1]);
+            Assert.True(filter.IsVisible(leftClickMessage));
+            Assert.True(filter.IsVisible(wheelUpMessage));
+
+            settings.IgnoredKeys = "WheelUp";
+            Assert.True(filter.IsVisible(leftClickMessage));
+            Assert.False(filter.IsVisible(wheelUpMessage));
+        }
+
+        [Fact]
+        public void mouse_wheel_keys_cannot_be_used_as_pause_or_silent_mode_hotkeys()
+        {
+            KeyPressDefinition hotkey;
+            string error;
+            Assert.False(HotkeyParser.TryParse("Ctrl+WheelUp", out hotkey, out error));
+            Assert.Equal("Mouse buttons can't be used in a hotkey.", error);
+            Assert.False(HotkeyParser.TryParse("Ctrl+WheelDown", out hotkey, out error));
+            Assert.Equal("Mouse buttons can't be used in a hotkey.", error);
+        }
+
+        IDisposable Subscribe()
+        {
+            var interceptKeys = Substitute.For<Carnac.Logic.KeyMonitor.IInterceptKeys>();
+            interceptKeys.GetKeyStream().Returns(keyEvents);
+
+            var desktopLock = Substitute.For<Carnac.Logic.KeyMonitor.IDesktopLockEventService>();
+            desktopLock.GetSessionSwitchStream().Returns(Observable.Never<Microsoft.Win32.SessionSwitchEventArgs>());
+
+            var settingsProvider = Substitute.For<ISettingsProvider>();
+            settingsProvider.GetSettings<PopupSettings>().Returns(settings);
+
+            var processProvider = Substitute.For<IProcessProvider>();
+            processProvider.GetAssociatedProcess().Returns((System.Diagnostics.Process)null);
+
+            var provider = new KeyProvider(
+                interceptKeys,
+                new PasswordModeService(new KeyDisplayState(), settings),
+                desktopLock,
+                settingsProvider,
+                new FakeProcessProvider(process),
+                NullLogger.Instance,
+                null,
+                mouse,
+                Scheduler.Immediate);
+
+            return provider.GetKeyStream().Subscribe(receivedKeys.Add);
+        }
+
+        sealed class FakeProcessProvider : IProcessProvider
+        {
+            readonly System.Diagnostics.Process current = System.Diagnostics.Process.GetCurrentProcess();
+
+            public FakeProcessProvider(Carnac.Logic.Models.ProcessInfo unused)
+            {
+            }
+
+            public System.Diagnostics.Process GetAssociatedProcess()
+            {
+                return current;
+            }
+        }
+
+        sealed class FakeMouse : IInterceptMouse
+        {
+            readonly Subject<MouseClick> clicks = new Subject<MouseClick>();
+
+            public int ActiveSubscriptions { get; private set; }
+
+            public void Emit(MouseClick click)
+            {
+                clicks.OnNext(click);
+            }
+
+            public IObservable<MouseClick> GetClickStream()
+            {
+                return Observable.Create<MouseClick>(observer =>
+                {
+                    ActiveSubscriptions++;
+                    var subscription = clicks.Subscribe(observer);
+                    return Disposable.Create(() =>
+                    {
+                        ActiveSubscriptions--;
+                        subscription.Dispose();
+                    });
+                });
             }
         }
     }
@@ -498,6 +801,44 @@ namespace Carnac.Tests
             Assert.Equal("RoyalBlue", viewModel.LeftClickColor.Name);
             Assert.Equal(ClickHighlightSettings.DefaultMiddleColor, viewModel.MiddleClickColor.Name);
             Assert.Equal(ClickHighlightSettings.DefaultRightColor, viewModel.RightClickColor.Name);
+        }
+
+        [Fact]
+        public void show_mouse_keys_is_persisted_and_reset_to_defaults_in_preferences()
+        {
+            var storage = new InMemorySettingsStorage();
+            var provider = new SettingsProvider(storage);
+            var screenManager = Substitute.For<IScreenManager>();
+            screenManager.GetScreens().Returns(new[] { new Carnac.Logic.Native.DetailedScreen { Index = 1, Width = 1920, Height = 1080 } });
+
+            var preferences = new PreferencesViewModel(provider, screenManager);
+            Assert.False(preferences.Settings.ShowMouseKeys);
+
+            preferences.Settings.ShowMouseKeys = true;
+            preferences.SaveCommand.Execute(null);
+            Assert.True(new SettingsProvider(storage).GetSettings<PopupSettings>().ShowMouseKeys);
+
+            preferences.ResetToDefaultsCommand.Execute(null);
+            Assert.False(preferences.Settings.ShowMouseKeys);
+        }
+
+        [Fact]
+        public void preferences_view_binds_show_mouse_keys_and_its_localized_resources()
+        {
+            Assert.False(string.IsNullOrWhiteSpace(Carnac.Properties.Resources.Preferences_ShowMouseKeys));
+            Assert.False(string.IsNullOrWhiteSpace(Carnac.Properties.Resources.Preferences_ShowMouseKeysDescription));
+            Assert.False(string.IsNullOrWhiteSpace(Carnac.Properties.Resources.Preferences_ShowMouseKeysHint));
+
+            var directory = new System.IO.DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+            while (directory != null && !System.IO.File.Exists(System.IO.Path.Combine(directory.FullName, "Carnac", "Carnac.csproj")))
+                directory = directory.Parent;
+
+            Assert.NotNull(directory);
+            var xaml = System.IO.File.ReadAllText(System.IO.Path.Combine(directory.FullName, "Carnac", "UI", "PreferencesView.xaml"));
+            Assert.Contains("IsChecked=\"{Binding Settings.ShowMouseKeys}\"", xaml);
+            Assert.Contains("Preferences_ShowMouseKeys", xaml);
+            Assert.Contains("Preferences_ShowMouseKeysDescription", xaml);
+            Assert.Contains("Preferences_ShowMouseKeysHint", xaml);
         }
 
         PreferencesViewModel CreateViewModel()

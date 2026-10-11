@@ -199,12 +199,13 @@ namespace Carnac
             // One ConcurrencyService (its main thread scheduler wraps the UI thread's synchronization context) is shared by the
             // message provider, which schedules the chord timeout on it, and the controller that shows the messages.
             var concurrencyService = new ConcurrencyService();
+            var interceptMouse = new InterceptMouse();
             var keyShowViewModel = new KeyShowViewModel(settings);
-            keyShowView = new KeyShowView(keyShowViewModel, screenManager, new SystemEventsDisplaySettingsMonitor(), concurrencyService, new InterceptMouse());
+            keyShowView = new KeyShowView(keyShowViewModel, screenManager, new SystemEventsDisplaySettingsMonitor(), concurrencyService, interceptMouse);
             keyShowView.Show();
             previewService = new PreviewService(keyShowViewModel.Messages, PreviewService.CreateSampleProcess());
 
-            var keyProvider = new KeyProvider(InterceptKeys.Current, new PasswordModeService(displayState, settings), new DesktopLockEventService(), settingsProvider, new SystemProcessProvider(), logger, new KeyboardLayoutTranslator());
+            var keyProvider = new KeyProvider(InterceptKeys.Current, new PasswordModeService(displayState, settings), new DesktopLockEventService(), settingsProvider, new SystemProcessProvider(), logger, new KeyboardLayoutTranslator(), interceptMouse, concurrencyService.MainThreadScheduler);
             var messageProvider = new MessageProvider(new ShortcutProvider(), keyProvider, settings, concurrencyService, displayState);
 
             carnac = new KeysController(keyShowViewModel.Messages, messageProvider, concurrencyService, settingsProvider, logger);

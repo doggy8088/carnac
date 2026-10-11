@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Carnac.Logic.Enums;
+using Carnac.Logic.MouseMonitor;
 
 namespace Carnac.Logic
 {
@@ -92,7 +93,9 @@ namespace Carnac.Logic
             {Keys.RShiftKey, "Shift"},
             {Keys.LWin, "Win"},
             {Keys.RWin, "Win"},
-            {Keys.PageDown, "PageDown"}
+            {Keys.PageDown, "PageDown"},
+            {MouseKeys.WheelUp, "WheelUp"},
+            {MouseKeys.WheelDown, "WheelDown"}
         };
 
         /// <summary>

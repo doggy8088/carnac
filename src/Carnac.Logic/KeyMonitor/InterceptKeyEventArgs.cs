@@ -19,6 +19,7 @@ namespace Carnac.Logic.KeyMonitor
         public bool AltPressed { get; private set; }
         public bool ControlPressed { get; private set; }
         public bool ShiftPressed { get; private set; }
+        public bool WinPressed { get; internal set; }
         public Keys Key { get; private set; }
         public KeyDirection KeyDirection { get; private set; }
 

@@ -55,7 +55,7 @@ namespace Carnac.Logic
             if (ignoreList.IsIgnored(ignoredKeys, key))
                 return false;
 
-            if (isPartOfShortcut || key.HasModifierPressed)
+            if (isPartOfShortcut || key.HasModifierPressed || key.IsMouseKey)
                 return true;
 
             return (categories & KeyCategories.For(key.Key)) != KeyCategory.None;
