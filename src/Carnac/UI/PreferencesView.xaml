@@ -336,6 +336,8 @@
                             <Button Margin="0,0,8,0" Style="{StaticResource SecondaryActionButtonStyle}"
                                     Content="{x:Static properties:Resources.Preferences_ResetToDefaults}" Command="{Binding ResetToDefaultsCommand}" />
                             <Button Margin="0,0,8,0" MinWidth="92" Style="{StaticResource SecondaryActionButtonStyle}"
+                                    Content="{x:Static properties:Resources.Preferences_Cancel}" Command="{Binding CancelCommand}" />
+                            <Button Margin="0,0,8,0" MinWidth="92" Style="{StaticResource SecondaryActionButtonStyle}"
                                     Content="{x:Static properties:Resources.Preferences_Apply}" Command="{Binding ApplyCommand}" />
                             <Button Style="{StaticResource PrimaryActionButtonStyle}"
                                     Content="{x:Static properties:Resources.Preferences_Save}" Command="{Binding SaveCommand}" />
@@ -496,6 +498,8 @@
                             <Button Margin="0,0,8,0" Style="{StaticResource SecondaryActionButtonStyle}"
                                     Content="{x:Static properties:Resources.Preferences_ResetToDefaults}" Command="{Binding ResetToDefaultsCommand}" />
                             <Button Margin="0,0,8,0" MinWidth="92" Style="{StaticResource SecondaryActionButtonStyle}"
+                                    Content="{x:Static properties:Resources.Preferences_Cancel}" Command="{Binding CancelCommand}" />
+                            <Button Margin="0,0,8,0" MinWidth="92" Style="{StaticResource SecondaryActionButtonStyle}"
                                     Content="{x:Static properties:Resources.Preferences_Apply}" Command="{Binding ApplyCommand}" />
                             <Button Style="{StaticResource PrimaryActionButtonStyle}"
                                     Content="{x:Static properties:Resources.Preferences_Save}" Command="{Binding SaveCommand}" />
@@ -567,6 +571,8 @@
                         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                             <Button Margin="0,0,8,0" Style="{StaticResource SecondaryActionButtonStyle}"
                                     Content="{x:Static properties:Resources.Preferences_ResetToDefaults}" Command="{Binding ResetToDefaultsCommand}" />
+                            <Button Margin="0,0,8,0" MinWidth="92" Style="{StaticResource SecondaryActionButtonStyle}"
+                                    Content="{x:Static properties:Resources.Preferences_Cancel}" Command="{Binding CancelCommand}" />
                             <Button Margin="0,0,8,0" MinWidth="92" Style="{StaticResource SecondaryActionButtonStyle}"
                                     Content="{x:Static properties:Resources.Preferences_Apply}" Command="{Binding ApplyCommand}" />
                             <Button Style="{StaticResource PrimaryActionButtonStyle}"

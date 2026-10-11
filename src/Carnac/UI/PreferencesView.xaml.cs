@@ -54,6 +54,7 @@ namespace Carnac.UI
         protected override void OnClosed(EventArgs e)
         {
             viewModel.CloseRequested -= OnCloseRequested;
+            viewModel.RevertUnappliedChanges();
             viewModel.StopPreview();
 
             base.OnClosed(e);

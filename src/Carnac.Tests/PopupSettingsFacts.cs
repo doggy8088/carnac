@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Carnac.Logic.Enums;
 using Carnac.Logic.Models;
 using NSubstitute;
@@ -205,6 +206,68 @@ namespace Carnac.Tests
 
             Assert.Contains("VisibleKeyCategories", changed);
             Assert.Contains("IgnoredKeys", changed);
+        }
+
+        [Fact]
+        public void clone_and_copy_from_round_trip_every_writable_property()
+        {
+            var source = new PopupSettings
+            {
+                ItemMaxWidth = 512,
+                ItemOpacity = 0.75,
+                ItemFadeDelay = 8,
+                ItemBackgroundColor = "Navy",
+                FontColor = "Yellow",
+                FontSize = 28,
+                FontFamily = "Consolas",
+                ItemCornerRadius = 12,
+                ItemPadding = 6,
+                Screen = 2,
+                ScreenDeviceName = @"\\.\DISPLAY2",
+                Placement = NotificationPlacement.TopRight,
+                AutoUpdate = true,
+                Language = "zh-TW",
+                CaptureFriendlyWindow = true,
+                TopOffset = 10,
+                BottomOffset = 20,
+                LeftOffset = 30,
+                RightOffset = 40,
+                ProcessFilterExpression = "notepad",
+                VisibleKeyCategories = KeyCategory.Letters | KeyCategory.Digits,
+                IgnoredKeys = "W,A,S,D",
+                ShowMouseKeys = false,
+                ShowMouseClicks = false,
+                LeftClickColor = "Green",
+                MiddleClickColor = "Cyan",
+                RightClickColor = "Magenta",
+                ClickCircleSize = 90,
+                ClickCircleDuration = 600,
+                SilentModeHotkey = "Ctrl+Alt+S",
+                PauseHotkey = "Ctrl+Alt+O",
+                UseKeyboardLayoutNames = false,
+                DetectShortcutsOnly = true,
+                ShowApplicationIcon = true,
+                SettingsConfigured = true,
+                ShowOnlyModifiers = true,
+                ShowSpaceAsUnicode = false,
+                ShowShortcutDescription = false,
+                RepeatedKeyGrouping = RepeatedKeyGrouping.Never,
+                RepeatedKeyThreshold = 5,
+                ShowModifierKeyPresses = false
+            };
+
+            var clone = source.Clone();
+            var target = new PopupSettings();
+            target.CopyFrom(clone);
+
+            var writableProperties = typeof(PopupSettings)
+                .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                .Where(p => p.CanRead && p.CanWrite);
+
+            foreach (var prop in writableProperties)
+            {
+                Assert.Equal(prop.GetValue(source, null), prop.GetValue(target, null));
+            }
         }
     }
 }

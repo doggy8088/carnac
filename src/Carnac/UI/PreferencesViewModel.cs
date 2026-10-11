@@ -26,6 +26,8 @@ namespace Carnac.UI
         IDisposable preview;
         AvailableColor fontColor;
         AvailableColor itemBackgroundColor;
+        PopupSettings committedSettings;
+        bool wasResetToDefaults;
 
         public PreferencesViewModel(ISettingsProvider settingsProvider, IScreenManager screenManager)
             : this(settingsProvider, screenManager, new PreviewService(new ObservableCollection<Message>(), PreviewService.CreateSampleProcess()))
@@ -45,6 +47,7 @@ namespace Carnac.UI
             ScreenLayoutHeight = screenLayout.Height;
 
             Settings = settingsProvider.GetSettings<PopupSettings>();
+            committedSettings = Settings.Clone();
 
             KeyCategoryOptions = CreateKeyCategoryOptions(Settings);
 
@@ -85,6 +88,7 @@ namespace Carnac.UI
 
             ApplyCommand = new DelegateCommand(SaveSettings);
             SaveCommand = new DelegateCommand(SaveAndClose);
+            CancelCommand = new DelegateCommand(Cancel);
             ResetToDefaultsCommand = new DelegateCommand(ResetToDefaults);
             VisitCommand = new DelegateCommand(Visit);
             ClearSilentModeHotkeyCommand = new DelegateCommand(() => SetHotkey(h => SilentModeHotkey = h, string.Empty));
@@ -102,6 +106,8 @@ namespace Carnac.UI
         public ICommand VisitCommand { get; private set; }
 
         public ICommand ResetToDefaultsCommand { get; private set; }
+
+        public ICommand CancelCommand { get; private set; }
 
         public ICommand ApplyCommand { get; private set; }
 
@@ -314,25 +320,71 @@ namespace Carnac.UI
             PlaceScreen();
 
             Settings.SettingsConfigured = true;
-            Settings.FontColor = FontColor.Name;
-            Settings.ItemBackgroundColor = ItemBackgroundColor.Name;
+            if (FontColor != null)
+                Settings.FontColor = FontColor.Name;
+            if (ItemBackgroundColor != null)
+                Settings.ItemBackgroundColor = ItemBackgroundColor.Name;
             // The hotkeys are read from the settings on every key press, so they are in effect right away.
             Settings.SilentModeHotkey = SilentModeHotkey;
             Settings.PauseHotkey = PauseHotkey;
             settingsProvider.SaveSettings(Settings);
+            committedSettings = Settings.Clone();
+            wasResetToDefaults = false;
         }
 
         void SaveAndClose()
         {
             SaveSettings();
+            RequestClose();
+        }
+
+        void Cancel()
+        {
+            RevertUnappliedChanges();
+            RequestClose();
+        }
+
+        void RequestClose()
+        {
             var handler = CloseRequested;
             if (handler != null)
                 handler(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Restores <see cref="Settings"/> to the state they had when Preferences was opened or when <see cref="ApplyCommand"/>
+        /// or <see cref="SaveCommand"/> last ran, discarding any unapplied live-preview changes.
+        /// </summary>
+        public void RevertUnappliedChanges()
+        {
+            Settings.CopyFrom(committedSettings);
+            if (wasResetToDefaults)
+            {
+                settingsProvider.SaveSettings(Settings);
+                wasResetToDefaults = false;
+            }
+            SyncFromSettings();
+        }
+
         void ResetToDefaults()
         {
             settingsProvider.ResetToDefaults<PopupSettings>();
+            wasResetToDefaults = true;
+            SyncFromSettings();
+        }
+
+        void SyncFromSettings()
+        {
+            fontColor = AvailableColors.FirstOrDefault(c => c.Name == Settings.FontColor);
+            OnPropertyChanged("FontColor");
+
+            itemBackgroundColor = AvailableColors.FirstOrDefault(c => c.Name == Settings.ItemBackgroundColor);
+            OnPropertyChanged("ItemBackgroundColor");
+
+            foreach (var option in KeyCategoryOptions)
+                option.Refresh();
+
+            PlaceScreen();
             LoadHotkeys();
         }
 

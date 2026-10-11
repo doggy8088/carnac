@@ -216,5 +216,61 @@ namespace Carnac.Logic.Models
 
         [DefaultValue(true)]
         public bool ShowModifierKeyPresses { get; set; }
+
+        public PopupSettings Clone()
+        {
+            var copy = new PopupSettings();
+            copy.CopyFrom(this);
+            return copy;
+        }
+
+        public void CopyFrom(PopupSettings other)
+        {
+            if (other == null)
+                throw new ArgumentNullException("other");
+
+            ItemMaxWidth = other.ItemMaxWidth;
+            ItemOpacity = other.ItemOpacity;
+            ItemFadeDelay = other.ItemFadeDelay;
+            ItemBackgroundColor = other.ItemBackgroundColor;
+            FontColor = other.FontColor;
+            FontSize = other.FontSize;
+            FontFamily = other.FontFamily;
+            ItemCornerRadius = other.ItemCornerRadius;
+            ItemPadding = other.ItemPadding;
+            // The device name first: it is what selects the screen, the number is only kept for older versions.
+            ScreenDeviceName = other.ScreenDeviceName;
+            Screen = other.Screen;
+            Placement = other.Placement;
+            AutoUpdate = other.AutoUpdate;
+            Language = other.Language;
+            CaptureFriendlyWindow = other.CaptureFriendlyWindow;
+            TopOffset = other.TopOffset;
+            BottomOffset = other.BottomOffset;
+            LeftOffset = other.LeftOffset;
+            RightOffset = other.RightOffset;
+            ProcessFilterExpression = other.ProcessFilterExpression;
+            VisibleKeyCategories = other.VisibleKeyCategories;
+            IgnoredKeys = other.IgnoredKeys;
+            ShowMouseKeys = other.ShowMouseKeys;
+            ShowMouseClicks = other.ShowMouseClicks;
+            LeftClickColor = other.LeftClickColor;
+            MiddleClickColor = other.MiddleClickColor;
+            RightClickColor = other.RightClickColor;
+            ClickCircleSize = other.ClickCircleSize;
+            ClickCircleDuration = other.ClickCircleDuration;
+            SilentModeHotkey = other.SilentModeHotkey;
+            PauseHotkey = other.PauseHotkey;
+            UseKeyboardLayoutNames = other.UseKeyboardLayoutNames;
+            DetectShortcutsOnly = other.DetectShortcutsOnly;
+            ShowApplicationIcon = other.ShowApplicationIcon;
+            SettingsConfigured = other.SettingsConfigured;
+            ShowOnlyModifiers = other.ShowOnlyModifiers;
+            ShowSpaceAsUnicode = other.ShowSpaceAsUnicode;
+            ShowShortcutDescription = other.ShowShortcutDescription;
+            RepeatedKeyGrouping = other.RepeatedKeyGrouping;
+            RepeatedKeyThreshold = other.RepeatedKeyThreshold;
+            ShowModifierKeyPresses = other.ShowModifierKeyPresses;
+        }
     }
 }

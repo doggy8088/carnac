@@ -40,5 +40,10 @@ namespace Carnac.UI
                 OnPropertyChanged("IsSelected");
             }
         }
+
+        public void Refresh()
+        {
+            OnPropertyChanged("IsSelected");
+        }
     }
 }

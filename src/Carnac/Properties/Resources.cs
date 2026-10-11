@@ -800,5 +800,11 @@ namespace Carnac.Properties {
                 return ResourceManager.GetString("Preferences_Apply", resourceCulture);
             }
         }
+
+        public static string Preferences_Cancel {
+            get {
+                return ResourceManager.GetString("Preferences_Cancel", resourceCulture);
+            }
+        }
     }
 }

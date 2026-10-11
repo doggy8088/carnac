@@ -409,6 +409,124 @@ namespace Carnac.Tests.ViewModels
                 settingsService.Received(1).SaveSettings(popupSettings);
                 Assert.True(closed);
             }
+
+            [Fact]
+            public void canceling_reverts_unapplied_changes_and_requests_closing_the_window()
+            {
+                ISettingsProvider settingsService;
+                var first = Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080, true);
+                var second = Screen(2, @"\\.\DISPLAY2", 1920, 0, 1920, 1080);
+                var popupSettings = new PopupSettings
+                {
+                    FontColor = "White",
+                    ItemBackgroundColor = "Black",
+                    FontSize = 40,
+                    TopOffset = 10,
+                    Screen = 1,
+                    ScreenDeviceName = @"\\.\DISPLAY1",
+                    Placement = NotificationPlacement.BottomLeft,
+                    SilentModeHotkey = "Ctrl+Alt+P",
+                    PauseHotkey = string.Empty
+                };
+                var subject = Create(popupSettings, out settingsService, first, second);
+                var closed = false;
+                subject.CloseRequested += (sender, e) => closed = true;
+
+                subject.FontColor = subject.AvailableColors.First(c => c.Name == "Red");
+                subject.ItemBackgroundColor = subject.AvailableColors.First(c => c.Name == "Blue");
+                subject.Settings.FontSize = 24;
+                subject.Settings.TopOffset = 99;
+                subject.SelectScreenAndPlacement(second, NotificationPlacement.TopRight);
+                subject.CapturePauseHotkey(System.Windows.Forms.Keys.O, true, true, false, false);
+
+                subject.CancelCommand.Execute(null);
+
+                Assert.True(closed);
+                settingsService.DidNotReceive().SaveSettings(Arg.Any<PopupSettings>());
+                Assert.Equal("White", popupSettings.FontColor);
+                Assert.Equal("Black", popupSettings.ItemBackgroundColor);
+                Assert.Equal(40, popupSettings.FontSize);
+                Assert.Equal(10, popupSettings.TopOffset);
+                Assert.Equal(1, popupSettings.Screen);
+                Assert.Equal(@"\\.\DISPLAY1", popupSettings.ScreenDeviceName);
+                Assert.Equal(NotificationPlacement.BottomLeft, popupSettings.Placement);
+                Assert.Equal("White", subject.FontColor.Name);
+                Assert.Equal("Black", subject.ItemBackgroundColor.Name);
+                Assert.Same(first, subject.SelectedScreen);
+                Assert.True(first.NotificationPlacementBottomLeft);
+                Assert.False(second.NotificationPlacementTopRight);
+                Assert.Equal(string.Empty, subject.PauseHotkey);
+            }
+
+            [Fact]
+            public void reverting_after_apply_restores_the_applied_settings_instead_of_the_initial_ones()
+            {
+                ISettingsProvider settingsService;
+                var popupSettings = new PopupSettings
+                {
+                    FontColor = "White",
+                    ItemBackgroundColor = "Black",
+                    FontSize = 40
+                };
+                var subject = Create(popupSettings, out settingsService, Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080, true));
+
+                subject.Settings.FontSize = 32;
+                subject.FontColor = subject.AvailableColors.First(c => c.Name == "Green");
+                subject.ApplyCommand.Execute(null);
+
+                subject.Settings.FontSize = 18;
+                subject.FontColor = subject.AvailableColors.First(c => c.Name == "Red");
+                subject.RevertUnappliedChanges();
+
+                Assert.Equal(32, popupSettings.FontSize);
+                Assert.Equal("Green", popupSettings.FontColor);
+                Assert.Equal("Green", subject.FontColor.Name);
+            }
+
+            [Fact]
+            public void reverting_after_save_keeps_the_saved_settings()
+            {
+                ISettingsProvider settingsService;
+                var popupSettings = new PopupSettings
+                {
+                    FontColor = "White",
+                    ItemBackgroundColor = "Black",
+                    FontSize = 40
+                };
+                var subject = Create(popupSettings, out settingsService, Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080, true));
+
+                subject.Settings.FontSize = 26;
+                subject.SaveCommand.Execute(null);
+                subject.RevertUnappliedChanges();
+
+                Assert.Equal(26, popupSettings.FontSize);
+            }
+
+            [Fact]
+            public void canceling_after_reset_to_defaults_restores_the_previously_saved_settings()
+            {
+                var storage = new InMemorySettingsStorage();
+                var provider = new SettingsProvider(storage);
+                var settings = provider.GetSettings<PopupSettings>();
+                settings.FontSize = 28;
+                settings.FontColor = "Yellow";
+                settings.ItemBackgroundColor = "Navy";
+                provider.SaveSettings(settings);
+
+                var screenManager = Substitute.For<IScreenManager>();
+                screenManager.GetScreens().Returns(new List<DetailedScreen> { Screen(1, @"\\.\DISPLAY1", 0, 0, 1920, 1080, true) });
+                var subject = new PreferencesViewModel(provider, screenManager, Substitute.For<IPreviewService>());
+
+                subject.ResetToDefaultsCommand.Execute(null);
+                Assert.Equal(40, settings.FontSize);
+
+                subject.CancelCommand.Execute(null);
+
+                Assert.Equal(28, settings.FontSize);
+                Assert.Equal("Yellow", settings.FontColor);
+                Assert.Equal("Navy", settings.ItemBackgroundColor);
+                Assert.Equal(28, new SettingsProvider(storage).GetSettings<PopupSettings>().FontSize);
+            }
         }
     }
 }
