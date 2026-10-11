@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using Carnac.Logic.MouseMonitor;
 
 namespace Carnac.Logic
 {
@@ -16,6 +17,7 @@ namespace Carnac.Logic
         static readonly HashSet<Keys> NotUsableAsKey = new HashSet<Keys>
         {
             Keys.None, Keys.LButton, Keys.RButton, Keys.MButton, Keys.XButton1, Keys.XButton2,
+            MouseKeys.WheelUp, MouseKeys.WheelDown,
             Keys.ShiftKey, Keys.LShiftKey, Keys.RShiftKey,
             Keys.ControlKey, Keys.LControlKey, Keys.RControlKey,
             Keys.Menu, Keys.LMenu, Keys.RMenu,
@@ -25,7 +27,8 @@ namespace Carnac.Logic
 
         static readonly HashSet<Keys> MouseButtons = new HashSet<Keys>
         {
-            Keys.LButton, Keys.RButton, Keys.MButton, Keys.XButton1, Keys.XButton2
+            Keys.LButton, Keys.RButton, Keys.MButton, Keys.XButton1, Keys.XButton2,
+            MouseKeys.WheelUp, MouseKeys.WheelDown
         };
 
         // Several names share one value (PageDown/Next, Enter/Return, ...): pick one name so that formatting is stable.

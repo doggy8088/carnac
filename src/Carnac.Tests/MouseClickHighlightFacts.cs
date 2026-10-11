@@ -669,6 +669,17 @@ namespace Carnac.Tests
             Assert.False(filter.IsVisible(wheelUpMessage));
         }
 
+        [Fact]
+        public void mouse_wheel_keys_cannot_be_used_as_pause_or_silent_mode_hotkeys()
+        {
+            KeyPressDefinition hotkey;
+            string error;
+            Assert.False(HotkeyParser.TryParse("Ctrl+WheelUp", out hotkey, out error));
+            Assert.Equal("Mouse buttons can't be used in a hotkey.", error);
+            Assert.False(HotkeyParser.TryParse("Ctrl+WheelDown", out hotkey, out error));
+            Assert.Equal("Mouse buttons can't be used in a hotkey.", error);
+        }
+
         IDisposable Subscribe()
         {
             var interceptKeys = Substitute.For<Carnac.Logic.KeyMonitor.IInterceptKeys>();
