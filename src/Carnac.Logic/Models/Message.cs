@@ -36,7 +36,7 @@ namespace Carnac.Logic.Models
             processName = key.Process.ProcessName;
             processIcon = key.Process.ProcessIcon;
             isModifierOnly = key.IsModifierOnly;
-            canBeMerged = !key.IsShortcutLike && !isModifierOnly;
+            canBeMerged = !key.IsShortcutLike && !isModifierOnly && !key.IsMouseKey;
             isModifier = key.IsShortcutLike || isModifierOnly;
 
             keys = new ReadOnlyCollection<KeyPress>(new[] { key });

@@ -345,6 +345,15 @@
   <data name="Preferences_TabMouse" xml:space="preserve">
     <value>Mouse</value>
   </data>
+  <data name="Preferences_ShowMouseKeys" xml:space="preserve">
+    <value>Show Mouse Keys</value>
+  </data>
+  <data name="Preferences_ShowMouseKeysDescription" xml:space="preserve">
+    <value>Show mouse buttons and scroll wheel in the popup</value>
+  </data>
+  <data name="Preferences_ShowMouseKeysHint" xml:space="preserve">
+    <value>Displays mouse clicks, side buttons, and wheel scrolling (with any held modifiers such as Ctrl or Shift) as mouse icons in the keystroke popup.</value>
+  </data>
   <data name="Preferences_ShowMouseClicks" xml:space="preserve">
     <value>Show Mouse Clicks</value>
   </data>

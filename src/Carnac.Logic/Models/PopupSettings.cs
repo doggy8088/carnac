@@ -141,6 +141,9 @@ namespace Carnac.Logic.Models
         public string IgnoredKeys { get; set; }
 
         [DefaultValue(false)]
+        public bool ShowMouseKeys { get; set; }
+
+        [DefaultValue(false)]
         public bool ShowMouseClicks { get; set; }
 
         [DefaultValue(ClickHighlightSettings.DefaultLeftColor)]

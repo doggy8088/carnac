@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Carnac.Logic.KeyMonitor;
 using Carnac.Logic.Models;
+using Carnac.Logic.MouseMonitor;
 using Microsoft.Win32;
 using System.Windows.Media;
 using SettingsProviderNet;
@@ -26,6 +29,8 @@ namespace Carnac.Logic
         readonly IKeyboardLayoutTranslator keyboardLayoutTranslator;
         readonly IProcessProvider processProvider;
         readonly ILogger logger;
+        readonly IInterceptMouse interceptMouse;
+        readonly IScheduler mouseScheduler;
         readonly object filterSync = new object();
         readonly HashSet<string> iconFailuresLogged = new HashSet<string>();
         string currentFilter = null;
@@ -48,7 +53,7 @@ namespace Carnac.Logic
         {
         }
 
-        public KeyProvider(IInterceptKeys interceptKeysSource, IPasswordModeService passwordModeService, IDesktopLockEventService desktopLockEventService, ISettingsProvider settingsProvider, IProcessProvider processProvider, ILogger logger, IKeyboardLayoutTranslator keyboardLayoutTranslator = null)
+        public KeyProvider(IInterceptKeys interceptKeysSource, IPasswordModeService passwordModeService, IDesktopLockEventService desktopLockEventService, ISettingsProvider settingsProvider, IProcessProvider processProvider, ILogger logger, IKeyboardLayoutTranslator keyboardLayoutTranslator = null, IInterceptMouse interceptMouse = null, IScheduler mouseScheduler = null)
         {
             if (settingsProvider == null)
             {
@@ -72,6 +77,8 @@ namespace Carnac.Logic
             this.passwordModeService = passwordModeService;
             this.desktopLockEventService = desktopLockEventService;
             this.keyboardLayoutTranslator = keyboardLayoutTranslator;
+            this.interceptMouse = interceptMouse;
+            this.mouseScheduler = mouseScheduler ?? Scheduler.Immediate;
 
             settings = settingsProvider.GetSettings<PopupSettings>();
         }
@@ -127,8 +134,11 @@ namespace Carnac.Logic
                         heldModifierKeys.Clear();
                 }, observer.OnError);
 
-                var keyStreamSubsription = interceptKeysSource.GetKeyStream()
+                var keyEvents = interceptKeysSource.GetKeyStream()
                     .Where(k => ShouldShowKeyPress(k, heldModifierKeys))
+                    .Merge(GetMouseKeyStream(heldModifierKeys));
+
+                var keyStreamSubsription = keyEvents
                     .Select(k => ToCarnacKeyPress(k, heldModifierKeys))
                     .Where(keypress => keypress != null)
                     .Where(k => !passwordModeService.CheckPasswordMode(k.InterceptKeyEventArgs))
@@ -138,6 +148,61 @@ namespace Carnac.Logic
 
                 return new CompositeDisposable(sessionSwitchStreamSubscription, keyStreamSubsription);
             });
+        }
+
+        IObservable<InterceptKeyEventArgs> GetMouseKeyStream(HeldModifierKeys heldModifierKeys)
+        {
+            if (interceptMouse == null || settings == null)
+                return Observable.Empty<InterceptKeyEventArgs>();
+
+            var settingChanged = Observable
+                .FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
+                    handler => settings.PropertyChanged += handler,
+                    handler => settings.PropertyChanged -= handler)
+                .Where(e => e.EventArgs.PropertyName == "ShowMouseKeys");
+
+            // The mouse is only listened to while the setting is on: switching it off drops the subscription
+            // (and with it the hook), switching it on again subscribes again.
+            return settingChanged
+                .Select(e => settings.ShowMouseKeys)
+                .StartWith(settings.ShowMouseKeys)
+                .DistinctUntilChanged()
+                .Select(showMouseKeys => showMouseKeys ? GetMouseClicks() : Observable.Never<MouseClick>())
+                .Switch()
+                .Select(click => ToMouseKeyEventArgs(click, heldModifierKeys))
+                .Where(key => key != null);
+        }
+
+        IObservable<MouseClick> GetMouseClicks()
+        {
+            return interceptMouse.GetClickStream()
+                .SubscribeOn(mouseScheduler)
+                .Catch<MouseClick, Exception>(exception =>
+                {
+                    Debug.WriteLine("Carnac cannot listen to the mouse: " + exception.Message);
+                    return Observable.Never<MouseClick>();
+                })
+                .ObserveOn(mouseScheduler);
+        }
+
+        InterceptKeyEventArgs ToMouseKeyEventArgs(MouseClick click, HeldModifierKeys heldModifierKeys)
+        {
+            var key = MouseKeys.FromMouseClick(click);
+            if (key == Keys.None)
+                return null;
+
+            if (click.IsFromMouseHook)
+            {
+                heldModifierKeys.ForgetReleased(IsKeyDown, Keys.None);
+            }
+
+            var modifiers = heldModifierKeys.GetState();
+            return new InterceptKeyEventArgs(
+                key,
+                KeyDirection.Down,
+                altPressed: click.AltPressed || modifiers.Alt,
+                controlPressed: click.ControlPressed || modifiers.Control,
+                shiftPressed: click.ShiftPressed || modifiers.Shift);
         }
 
         // Keeps track of the modifier keys that are down, and tells which key events are shown
@@ -306,6 +371,9 @@ namespace Carnac.Logic
         // Ctrl+Alt+P that switches it on looks like.
         KeyPress NameByKeyboardLayout(KeyPress keyPress)
         {
+            if (keyPress.IsMouseKey)
+                return keyPress;
+
             var eventArgs = keyPress.InterceptKeyEventArgs;
 
             // Ctrl or Alt alone, or the Windows key, make a shortcut; Ctrl and Alt together may be AltGr
@@ -343,6 +411,9 @@ namespace Carnac.Logic
 
         string GetShortcutKeyName(Keys key)
         {
+            if (MouseKeys.IsMouseKey(key))
+                return key.Sanitise();
+
             // a key that types nothing on its own (a dead key) has no name on the layout: the one it always had
             var layoutText = IsNamedLikeItsLatinLetter(key) ? null : GetLayoutText(key, false, false);
             return string.IsNullOrEmpty(layoutText) ? key.Sanitise() : layoutText;

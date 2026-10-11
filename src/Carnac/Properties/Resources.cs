@@ -681,6 +681,24 @@ namespace Carnac.Properties {
             }
         }
 
+        public static string Preferences_ShowMouseKeys {
+            get {
+                return ResourceManager.GetString("Preferences_ShowMouseKeys", resourceCulture);
+            }
+        }
+
+        public static string Preferences_ShowMouseKeysDescription {
+            get {
+                return ResourceManager.GetString("Preferences_ShowMouseKeysDescription", resourceCulture);
+            }
+        }
+
+        public static string Preferences_ShowMouseKeysHint {
+            get {
+                return ResourceManager.GetString("Preferences_ShowMouseKeysHint", resourceCulture);
+            }
+        }
+
         public static string Preferences_LeftButton {
             get {
                 return ResourceManager.GetString("Preferences_LeftButton", resourceCulture);

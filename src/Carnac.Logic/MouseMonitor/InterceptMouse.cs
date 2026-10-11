@@ -22,6 +22,10 @@ namespace Carnac.Logic.MouseMonitor
         const int WM_LBUTTONDOWN = 0x0201;
         const int WM_RBUTTONDOWN = 0x0204;
         const int WM_MBUTTONDOWN = 0x0207;
+        const int WM_MOUSEWHEEL = 0x020A;
+        const int WM_XBUTTONDOWN = 0x020B;
+        const ushort XBUTTON1 = 1;
+        const ushort XBUTTON2 = 2;
 
         // A native hook keeps calling its callback until Windows has taken it away, so the callback is kept alive until
         // then, also when nobody gets round to unsubscribing (the dispatcher that was to do it is shutting down).
@@ -82,11 +86,30 @@ namespace Carnac.Logic.MouseMonitor
             return clickStream;
         }
 
-        /// <summary>The click a mouse hook message stands for, or null for anything but a left, middle or right button press.</summary>
+        /// <summary>The mouse action a mouse hook message stands for, or null for messages that are not button presses or wheel scrolls.</summary>
         public static MouseClick CreateClick(IntPtr wParam, IntPtr lParam)
         {
-            MouseButtons button;
-            switch (wParam.ToInt64())
+            var message = wParam.ToInt64();
+            switch (message)
+            {
+                case WM_LBUTTONDOWN:
+                case WM_MBUTTONDOWN:
+                case WM_RBUTTONDOWN:
+                case WM_MOUSEWHEEL:
+                case WM_XBUTTONDOWN:
+                    break;
+                default:
+                    return null;
+            }
+
+            if (lParam == IntPtr.Zero)
+                return null;
+
+            var hookData = (MouseHookData)Marshal.PtrToStructure(lParam, typeof(MouseHookData));
+            var button = MouseButtons.None;
+            var wheelDelta = 0;
+
+            switch (message)
             {
                 case WM_LBUTTONDOWN:
                     button = MouseButtons.Left;
@@ -97,15 +120,37 @@ namespace Carnac.Logic.MouseMonitor
                 case WM_RBUTTONDOWN:
                     button = MouseButtons.Right;
                     break;
-                default:
-                    return null;
+                case WM_MOUSEWHEEL:
+                    wheelDelta = unchecked((short)(hookData.MouseData >> 16));
+                    if (wheelDelta == 0)
+                        return null;
+                    break;
+                case WM_XBUTTONDOWN:
+                    var xButton = (ushort)(hookData.MouseData >> 16);
+                    if (xButton == XBUTTON1)
+                        button = MouseButtons.XButton1;
+                    else if (xButton == XBUTTON2)
+                        button = MouseButtons.XButton2;
+                    else
+                        return null;
+                    break;
             }
 
-            var hookData = (MouseHookData)Marshal.PtrToStructure(lParam, typeof(MouseHookData));
-            return new MouseClick(hookData.X, hookData.Y, button);
+            var modifiers = Control.ModifierKeys;
+            return new MouseClick(
+                hookData.X,
+                hookData.Y,
+                button,
+                wheelDelta,
+                altPressed: (modifiers & Keys.Alt) != 0,
+                controlPressed: (modifiers & Keys.Control) != 0,
+                shiftPressed: (modifiers & Keys.Shift) != 0)
+            {
+                IsFromMouseHook = true
+            };
         }
 
-        // MSLLHOOKSTRUCT: only the position is used
+        // MSLLHOOKSTRUCT: position and button/wheel data
         [StructLayout(LayoutKind.Sequential)]
         struct MouseHookData
         {

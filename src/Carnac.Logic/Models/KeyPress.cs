@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Carnac.Logic.KeyMonitor;
+using Carnac.Logic.MouseMonitor;
 
 namespace Carnac.Logic.Models
 {
@@ -25,6 +26,11 @@ namespace Carnac.Logic.Models
         public bool IsModifierOnly
         {
             get { return InterceptKeyEventArgs.IsModifier(); }
+        }
+
+        public bool IsMouseKey
+        {
+            get { return MouseKeys.IsMouseKey(Key); }
         }
 
         public bool HasModifierPressed

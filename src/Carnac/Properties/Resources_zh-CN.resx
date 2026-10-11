@@ -345,6 +345,15 @@
   <data name="Preferences_TabMouse" xml:space="preserve">
     <value>鼠标</value>
   </data>
+  <data name="Preferences_ShowMouseKeys" xml:space="preserve">
+    <value>显示鼠标按键</value>
+  </data>
+  <data name="Preferences_ShowMouseKeysDescription" xml:space="preserve">
+    <value>在弹出窗口中显示鼠标按键与滚轮操作</value>
+  </data>
+  <data name="Preferences_ShowMouseKeysHint" xml:space="preserve">
+    <value>将鼠标点击、侧键及滚轮滚动（含同时按住的 Ctrl、Shift 等修饰键）以鼠标键帽图标显示在按键弹出窗口中。</value>
+  </data>
   <data name="Preferences_ShowMouseClicks" xml:space="preserve">
     <value>显示鼠标点击</value>
   </data>

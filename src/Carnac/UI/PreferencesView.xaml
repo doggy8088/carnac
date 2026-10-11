@@ -513,6 +513,13 @@
                         <Border Margin="16,14,16,16" VerticalAlignment="Top" Background="#232328" BorderBrush="#2E2E34"
                                 BorderThickness="1,1,1,0" CornerRadius="6" ClipToBounds="True" SnapsToDevicePixels="True">
                             <StackPanel Orientation="Vertical">
+                                <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_ShowMouseKeys}">
+                                    <StackPanel Orientation="Vertical">
+                                        <CheckBox HorizontalAlignment="Left" IsChecked="{Binding Settings.ShowMouseKeys}" Content="{x:Static properties:Resources.Preferences_ShowMouseKeysDescription}" />
+                                        <TextBlock Margin="0,6,0,0" FontSize="12" Foreground="#A6A6B0" HorizontalAlignment="Left" TextWrapping="Wrap"
+                                                   Text="{x:Static properties:Resources.Preferences_ShowMouseKeysHint}" />
+                                    </StackPanel>
+                                </ui:PreferencesField>
                                 <ui:PreferencesField Header="{x:Static properties:Resources.Preferences_ShowMouseClicks}">
                                     <StackPanel Orientation="Vertical">
                                         <CheckBox HorizontalAlignment="Left" IsChecked="{Binding Settings.ShowMouseClicks}" Content="{x:Static properties:Resources.Preferences_ShowMouseClicksDescription}" />
