@@ -24,7 +24,7 @@ Carnac shows the keys and shortcuts you press as an on-screen overlay, so the pe
 
 It labels shortcuts from bundled keymaps for Visual Studio, VS Code, ReSharper, Chrome, Kdenlive and NCrunch, supports your own YAML keymaps, and can be anchored to the top or bottom, left or right of any monitor.
 
-This is the community-maintained fork of Code52's Carnac. The package downloads the official `Carnac-<version>-Setup.exe` from the project's GitHub Releases and runs it silently.
+This is the community-maintained fork of Code52's Carnac. The package downloads the official `Carnac-2.6.1-Setup.exe` from the project's GitHub Releases and runs it silently.
 
 ## Package notes
 

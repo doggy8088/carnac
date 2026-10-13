@@ -39,6 +39,7 @@ try {
 $nuspecPath = Join-Path $chocoDir 'carnac.nuspec'
 $nuspec = Get-Content $nuspecPath -Raw
 $nuspec = $nuspec -replace '<version>[^<]*</version>', "<version>$Version</version>"
+$nuspec = $nuspec -replace 'Carnac-[^`\s]+-Setup\.exe', $setupName
 $nuspec = $nuspec -replace '<releaseNotes>[^<]*</releaseNotes>', "<releaseNotes>https://github.com/$Repository/releases/tag/v$Version</releaseNotes>"
 Set-Content $nuspecPath $nuspec -Encoding UTF8 -NoNewline
 
