@@ -3,8 +3,8 @@ $ErrorActionPreference = 'Stop'
 $packageArgs = @{
   packageName    = $env:ChocolateyPackageName
   fileType       = 'exe'
-  url            = 'https://github.com/doggy8088/carnac/releases/download/v2.6.1/Carnac-2.6.1-Setup.exe'
-  checksum       = '117A89D026747CB8C2C4F5231082D7CF2BE7A3C0440C06ED72F016AAD6244555'
+  url            = 'https://github.com/doggy8088/carnac/releases/download/v2.6.2/Carnac-2.6.2-Setup.exe'
+  checksum       = 'F18EF9BD1A190620D782B6BF1A86EBDA923735793CAF05296E20481F2D0C3B6B'
   checksumType   = 'sha256'
   # Inno Setup silent install. The installer is per user (PrivilegesRequired=lowest),
   # so it lands in %LocalAppData%\Programs\Carnac for the account running Chocolatey.
