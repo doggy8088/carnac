@@ -12,11 +12,12 @@ namespace Carnac.Logic
         readonly UpdateChecker checker;
         readonly ReleaseVersion currentVersion;
         readonly ITrayNotifier notifier;
-        readonly Action<string> openUrl;
+        readonly Action<UpdateCheckResult> onBalloonClicked;
         readonly ILogger logger;
 
-        /// <param name="openUrl">Opens an address in the browser; invoked when the user clicks the balloon.</param>
-        public UpdateCheckRunner(UpdateChecker checker, ReleaseVersion currentVersion, ITrayNotifier notifier, Action<string> openUrl, ILogger logger)
+        /// <param name="openUrl">Opens an address in the browser; invoked when the user clicks the balloon unless <paramref name="onBalloonClicked"/> is provided.</param>
+        public UpdateCheckRunner(UpdateChecker checker, ReleaseVersion currentVersion, ITrayNotifier notifier, Action<string> openUrl, ILogger logger,
+            Action<UpdateCheckResult> onBalloonClicked = null)
         {
             if (checker == null)
                 throw new ArgumentNullException("checker");
@@ -24,7 +25,7 @@ namespace Carnac.Logic
                 throw new ArgumentNullException("currentVersion");
             if (notifier == null)
                 throw new ArgumentNullException("notifier");
-            if (openUrl == null)
+            if (openUrl == null && onBalloonClicked == null)
                 throw new ArgumentNullException("openUrl");
             if (logger == null)
                 throw new ArgumentNullException("logger");
@@ -32,7 +33,11 @@ namespace Carnac.Logic
             this.checker = checker;
             this.currentVersion = currentVersion;
             this.notifier = notifier;
-            this.openUrl = openUrl;
+            this.onBalloonClicked = onBalloonClicked ?? (result =>
+            {
+                var notice = UpdateNotice.Create(currentVersion, result.LatestVersion, result.Release);
+                openUrl(notice.Url);
+            });
             this.logger = logger;
         }
 
@@ -45,7 +50,7 @@ namespace Carnac.Logic
                     return;
 
                 var notice = UpdateNotice.Create(currentVersion, result.LatestVersion, result.Release);
-                notifier.ShowBalloon(notice.Title, notice.Text, ToolTipIcon.Info, () => openUrl(notice.Url));
+                notifier.ShowBalloon(notice.Title, notice.Text, ToolTipIcon.Info, () => onBalloonClicked(result));
             }
             catch (Exception ex)
             {

@@ -429,4 +429,49 @@
   <data name="Preferences_ClearHotkey" xml:space="preserve">
     <value>清除</value>
   </data>
+  <data name="TrayMenu_CheckForUpdates" xml:space="preserve">
+    <value>檢查更新…</value>
+  </data>
+  <data name="Preferences_CheckNow" xml:space="preserve">
+    <value>立即檢查</value>
+  </data>
+  <data name="About_CheckForUpdates" xml:space="preserve">
+    <value>檢查更新</value>
+  </data>
+  <data name="Update_Checking" xml:space="preserve">
+    <value>正在檢查…</value>
+  </data>
+  <data name="Update_UpToDateTitle" xml:space="preserve">
+    <value>Carnac 已是最新版本</value>
+  </data>
+  <data name="Update_UpToDateMessage" xml:space="preserve">
+    <value>您目前使用的是最新版本（{0}，安裝管道：{1}）。</value>
+  </data>
+  <data name="Update_AvailableTitle" xml:space="preserve">
+    <value>發現新版本 Carnac {0}</value>
+  </data>
+  <data name="Update_AvailableMessage" xml:space="preserve">
+    <value>發現新版本的 Carnac！
+
+目前版本：{0}
+最新版本：{1}
+安裝管道：{2}
+
+您要立即自動下載並升級嗎？
+（是 = 立即升級，否 = 開啟發佈頁面，取消 = 稍後再說）</value>
+  </data>
+  <data name="Update_FailedTitle" xml:space="preserve">
+    <value>檢查更新失敗</value>
+  </data>
+  <data name="Update_FailedMessage" xml:space="preserve">
+    <value>無法透過 {0} 檢查更新。是否要改為開啟 GitHub Releases 頁面？</value>
+  </data>
+  <data name="Update_UpgradeFailedTitle" xml:space="preserve">
+    <value>升級失敗</value>
+  </data>
+  <data name="Update_UpgradeFailedMessage" xml:space="preserve">
+    <value>無法完成自動升級：{0}
+
+是否要開啟發佈頁面手動下載？</value>
+  </data>
 </root>

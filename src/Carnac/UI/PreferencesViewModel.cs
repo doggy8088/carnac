@@ -34,7 +34,7 @@ namespace Carnac.UI
         {
         }
 
-        public PreferencesViewModel(ISettingsProvider settingsProvider, IScreenManager screenManager, IPreviewService previewService)
+        public PreferencesViewModel(ISettingsProvider settingsProvider, IScreenManager screenManager, IPreviewService previewService, Action checkForUpdates = null)
         {
             if (previewService == null) throw new ArgumentNullException("previewService");
 
@@ -91,6 +91,11 @@ namespace Carnac.UI
             CancelCommand = new DelegateCommand(Cancel);
             ResetToDefaultsCommand = new DelegateCommand(ResetToDefaults);
             VisitCommand = new DelegateCommand(Visit);
+            CheckForUpdatesCommand = new DelegateCommand(() =>
+            {
+                if (checkForUpdates != null)
+                    checkForUpdates();
+            });
             ClearSilentModeHotkeyCommand = new DelegateCommand(() => SetHotkey(h => SilentModeHotkey = h, string.Empty));
             ClearPauseHotkeyCommand = new DelegateCommand(() => SetHotkey(h => PauseHotkey = h, string.Empty));
         }
@@ -104,6 +109,8 @@ namespace Carnac.UI
         public event EventHandler CloseRequested;
 
         public ICommand VisitCommand { get; private set; }
+
+        public ICommand CheckForUpdatesCommand { get; private set; }
 
         public ICommand ResetToDefaultsCommand { get; private set; }
 

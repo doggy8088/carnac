@@ -1,11 +1,26 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
 
 namespace Carnac.Logic
 {
+    [DataContract]
+    public sealed class ReleaseAsset
+    {
+        [DataMember(Name = "name")]
+        public string Name { get; set; }
+
+        [DataMember(Name = "browser_download_url")]
+        public string BrowserDownloadUrl { get; set; }
+
+        [DataMember(Name = "digest")]
+        public string Digest { get; set; }
+    }
+
     /// <summary>The parts of the GitHub "latest release" API answer that Carnac needs.</summary>
     [DataContract]
     public sealed class LatestRelease
@@ -21,6 +36,17 @@ namespace Carnac.Logic
 
         [DataMember(Name = "draft")]
         public bool IsDraft { get; set; }
+
+        [DataMember(Name = "assets")]
+        public List<ReleaseAsset> Assets { get; set; }
+
+        public ReleaseAsset FindAsset(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName) || Assets == null)
+                return null;
+
+            return Assets.FirstOrDefault(a => a != null && string.Equals(a.Name, fileName, StringComparison.OrdinalIgnoreCase));
+        }
 
         /// <summary>Reads the JSON of <c>GET /repos/{owner}/{repo}/releases/latest</c>; other members are ignored.</summary>
         /// <exception cref="SerializationException">The text is not the JSON of a release.</exception>

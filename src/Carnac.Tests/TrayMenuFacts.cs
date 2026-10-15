@@ -360,6 +360,25 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void offers_check_for_updates_when_provided()
+        {
+            var checks = 0;
+            var checkForUpdatesCaption = "Check for updates" + (char)0x2026;
+            using (var sut = new TrayMenu(displayState, settings, () => settingsRequested++, () => exitRequested++, action => action(), null, () => checks++))
+            {
+                var texts = ItemsOf(sut).Select(item => item.Text).ToArray();
+
+                Assert.Equal(new[] { SettingsCaption, "Pause", "Silent mode\tCtrl+Alt+P", "-", checkForUpdatesCaption, "Exit" }, texts);
+
+                ItemsOf(sut)[4].PerformClick();
+
+                Assert.Equal(1, checks);
+                Assert.Equal(0, exitRequested);
+                Assert.Equal(0, settingsRequested);
+            }
+        }
+
+        [Fact]
         public void other_settings_do_not_refresh_the_menu()
         {
             var invocations = 0;

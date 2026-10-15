@@ -1,6 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
 using System.Runtime.Serialization;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows.Forms;
 using Carnac.Logic;
 using Carnac.Logic.Models;
@@ -22,7 +27,18 @@ namespace Carnac.Tests
   ""name"": ""Carnac 2.4.1"",
   ""draft"": false,
   ""prerelease"": false,
-  ""assets"": [ { ""name"": ""Carnac-2.4.1-Setup.exe"", ""size"": 12345 } ],
+  ""assets"": [
+    {
+      ""name"": ""Carnac-2.4.1-Setup.exe"",
+      ""browser_download_url"": ""https://github.com/doggy8088/carnac/releases/download/v2.4.1/Carnac-2.4.1-Setup.exe"",
+      ""digest"": ""sha256:abcdef0123456789""
+    },
+    {
+      ""name"": ""Carnac-2.4.1-portable.zip"",
+      ""browser_download_url"": ""https://github.com/doggy8088/carnac/releases/download/v2.4.1/Carnac-2.4.1-portable.zip"",
+      ""digest"": ""sha256:9876543210fedcba""
+    }
+  ],
   ""body"": ""Line 1\nLine \""two\""""
 }";
 
@@ -35,6 +51,16 @@ namespace Carnac.Tests
             Assert.Equal("https://github.com/doggy8088/carnac/releases/tag/v2.4.1", release.HtmlUrl);
             Assert.False(release.IsDraft);
             Assert.False(release.IsPreRelease);
+
+            var setupAsset = release.FindAsset("Carnac-2.4.1-Setup.exe");
+            Assert.NotNull(setupAsset);
+            Assert.Equal("https://github.com/doggy8088/carnac/releases/download/v2.4.1/Carnac-2.4.1-Setup.exe", setupAsset.BrowserDownloadUrl);
+            Assert.Equal("sha256:abcdef0123456789", setupAsset.Digest);
+
+            var portableAsset = release.FindAsset("Carnac-2.4.1-portable.zip");
+            Assert.NotNull(portableAsset);
+            Assert.Equal("https://github.com/doggy8088/carnac/releases/download/v2.4.1/Carnac-2.4.1-portable.zip", portableAsset.BrowserDownloadUrl);
+            Assert.Equal("sha256:9876543210fedcba", portableAsset.Digest);
         }
 
         [Fact]
@@ -329,6 +355,21 @@ namespace Carnac.Tests
         }
 
         [Fact]
+        public void manual_check_with_ignore_interval_bypasses_the_daily_rate_limit()
+        {
+            feed.Json = ReleaseJson("v2.4.1");
+            var checker = CreateChecker();
+            Assert.Equal(UpdateCheckOutcome.UpdateAvailable, checker.CheckForUpdate().Outcome);
+            Assert.Equal(1, feed.Requests);
+
+            now = now.AddMinutes(5);
+            var manualResult = checker.CheckForUpdate(ignoreInterval: true);
+
+            Assert.Equal(UpdateCheckOutcome.UpdateAvailable, manualResult.Outcome);
+            Assert.Equal(2, feed.Requests);
+        }
+
+        [Fact]
         public void constructor_validates_its_arguments()
         {
             Assert.Throws<ArgumentNullException>(() => new UpdateChecker(null, history, Current, logger, () => now));
@@ -539,6 +580,350 @@ namespace Carnac.Tests
         public void requires_a_settings_provider()
         {
             Assert.Throws<ArgumentNullException>(() => new SettingsUpdateCheckHistory(null));
+        }
+    }
+
+    public class InstallMethodDetectorFacts
+    {
+        class FakeInstallEnvironment : IInstallEnvironment
+        {
+            public string AppDirectory { get; set; }
+            public string RegistryInstallLocation { get; set; }
+            public string RegistryInstallSource { get; set; }
+            public bool HasUninstallerInAppDirectory { get; set; }
+            public bool HasChocolateyPackage { get; set; }
+            public bool HasWinGetInstallerLog { get; set; }
+        }
+
+        [Fact]
+        public void detects_portable_when_neither_uninstaller_nor_matching_registry_location_exists()
+        {
+            var env = new FakeInstallEnvironment
+            {
+                AppDirectory = @"C:\Tools\CarnacPortable",
+                RegistryInstallLocation = @"C:\Users\User\AppData\Local\Programs\Carnac",
+                HasUninstallerInAppDirectory = false
+            };
+
+            Assert.Equal(InstallMethod.Portable, InstallMethodDetector.Detect(env));
+        }
+
+        [Fact]
+        public void detects_install_source_from_registry_when_installed()
+        {
+            var env = new FakeInstallEnvironment
+            {
+                AppDirectory = @"C:\Users\User\AppData\Local\Programs\Carnac\",
+                RegistryInstallLocation = @"C:\Users\User\AppData\Local\Programs\Carnac",
+                HasUninstallerInAppDirectory = true,
+                RegistryInstallSource = "winget"
+            };
+            Assert.Equal(InstallMethod.WinGet, InstallMethodDetector.Detect(env));
+
+            env.RegistryInstallSource = "chocolatey";
+            Assert.Equal(InstallMethod.Chocolatey, InstallMethodDetector.Detect(env));
+
+            env.RegistryInstallSource = "innosetup";
+            Assert.Equal(InstallMethod.InnoSetup, InstallMethodDetector.Detect(env));
+        }
+
+        [Fact]
+        public void falls_back_to_chocolatey_or_winget_heuristics_for_legacy_installations()
+        {
+            var env = new FakeInstallEnvironment
+            {
+                AppDirectory = @"C:\Users\User\AppData\Local\Programs\Carnac",
+                HasUninstallerInAppDirectory = true,
+                HasChocolateyPackage = true
+            };
+            Assert.Equal(InstallMethod.Chocolatey, InstallMethodDetector.Detect(env));
+
+            env.HasChocolateyPackage = false;
+            env.HasWinGetInstallerLog = true;
+            Assert.Equal(InstallMethod.WinGet, InstallMethodDetector.Detect(env));
+
+            env.HasWinGetInstallerLog = false;
+            Assert.Equal(InstallMethod.InnoSetup, InstallMethodDetector.Detect(env));
+        }
+    }
+
+    public class WinGetReleaseFeedFacts
+    {
+        [Fact]
+        public void parses_the_highest_version_from_winget_versions_output()
+        {
+            const string sampleOutput = @"Found Carnac [doggy8088.Carnac]
+Version
+-------
+2.6.1
+2.6.0
+2.5.1
+2.3.13
+";
+            var feed = new WinGetReleaseFeed(() => sampleOutput);
+            var release = LatestRelease.Parse(feed.GetLatestReleaseJson());
+
+            Assert.Equal("v2.6.1", release.TagName);
+            Assert.Equal("https://github.com/doggy8088/carnac/releases/tag/v2.6.1", release.HtmlUrl);
+        }
+
+        [Fact]
+        public void throws_serialization_exception_when_no_version_is_found()
+        {
+            var feed = new WinGetReleaseFeed(() => "No package found matching input criteria.");
+
+            Assert.Throws<SerializationException>(() => feed.GetLatestReleaseJson());
+        }
+    }
+
+    public class ChocolateyReleaseFeedFacts
+    {
+        [Fact]
+        public void parses_choco_limit_output_first()
+        {
+            var odataCalled = false;
+            var feed = new ChocolateyReleaseFeed(
+                () => "carnac|2.6.1\r\n",
+                () => { odataCalled = true; return ""; });
+
+            var release = LatestRelease.Parse(feed.GetLatestReleaseJson());
+
+            Assert.Equal("v2.6.1", release.TagName);
+            Assert.False(odataCalled);
+        }
+
+        [Fact]
+        public void falls_back_to_odata_xml_when_choco_cli_fails()
+        {
+            const string sampleODataXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<feed xmlns=""http://www.w3.org/2005/Atom"" xmlns:d=""http://schemas.microsoft.com/ado/2007/08/dataservices"" xmlns:m=""http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"">
+  <entry>
+    <m:properties>
+      <d:Id>carnac</d:Id>
+      <d:Version>2.6.1</d:Version>
+    </m:properties>
+  </entry>
+</feed>";
+            var feed = new ChocolateyReleaseFeed(
+                () => { throw new InvalidOperationException("choco not installed"); },
+                () => sampleODataXml);
+
+            var release = LatestRelease.Parse(feed.GetLatestReleaseJson());
+
+            Assert.Equal("v2.6.1", release.TagName);
+        }
+    }
+
+    public class UpdateInstallerFacts
+    {
+        static string ComputeSha256Hex(byte[] bytes)
+        {
+            using (var sha = SHA256.Create())
+            {
+                var hash = sha.ComputeHash(bytes);
+                var sb = new StringBuilder(hash.Length * 2);
+                foreach (var b in hash)
+                    sb.Append(b.ToString("x2"));
+                return sb.ToString();
+            }
+        }
+
+        static string DecodePowerShellScript(ProcessStartInfo psi)
+        {
+            const string marker = "-EncodedCommand ";
+            var index = psi.Arguments.IndexOf(marker, StringComparison.Ordinal);
+            Assert.True(index >= 0, "Expected -EncodedCommand in arguments");
+            var base64 = psi.Arguments.Substring(index + marker.Length).Trim();
+            return Encoding.Unicode.GetString(Convert.FromBase64String(base64));
+        }
+
+        static readonly ReleaseVersion Version261 = ReleaseVersion.FromVersion(new Version(2, 6, 1, 0));
+
+        [Fact]
+        public void innosetup_upgrade_downloads_setup_verifies_sha256_and_starts_silent_installer()
+        {
+            var fakeSetupBytes = Encoding.UTF8.GetBytes("fake-inno-setup-binary");
+            var digest = "sha256:" + ComputeSha256Hex(fakeSetupBytes);
+            var release = new LatestRelease
+            {
+                TagName = "v2.6.1",
+                Assets = new List<ReleaseAsset>
+                {
+                    new ReleaseAsset
+                    {
+                        Name = "Carnac-2.6.1-Setup.exe",
+                        BrowserDownloadUrl = "https://github.com/doggy8088/carnac/releases/download/v2.6.1/Carnac-2.6.1-Setup.exe",
+                        Digest = digest
+                    }
+                }
+            };
+
+            string downloadedUrl = null;
+            string downloadedPath = null;
+            ProcessStartInfo startedPsi = null;
+            var shutdownCalled = false;
+
+            var installer = new UpdateInstaller(
+                @"C:\Program Files\Carnac\Carnac.exe",
+                4321,
+                () => shutdownCalled = true,
+                (url, dest) =>
+                {
+                    downloadedUrl = url;
+                    downloadedPath = dest;
+                    File.WriteAllBytes(dest, fakeSetupBytes);
+                },
+                psi => startedPsi = psi);
+
+            try
+            {
+                installer.ExecuteUpgrade(InstallMethod.InnoSetup, Version261, release);
+
+                Assert.Equal("https://github.com/doggy8088/carnac/releases/download/v2.6.1/Carnac-2.6.1-Setup.exe", downloadedUrl);
+                Assert.True(shutdownCalled);
+                Assert.NotNull(startedPsi);
+                var script = DecodePowerShellScript(startedPsi);
+                Assert.Contains("Wait-Process -Id 4321", script);
+                Assert.Contains("/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /CLOSEAPPLICATIONS /INSTALLSOURCE=innosetup", script);
+            }
+            finally
+            {
+                if (downloadedPath != null && File.Exists(downloadedPath))
+                    File.Delete(downloadedPath);
+            }
+        }
+
+        [Fact]
+        public void innosetup_upgrade_aborts_and_deletes_file_when_sha256_mismatches()
+        {
+            var release = new LatestRelease
+            {
+                TagName = "v2.6.1",
+                Assets = new List<ReleaseAsset>
+                {
+                    new ReleaseAsset
+                    {
+                        Name = "Carnac-2.6.1-Setup.exe",
+                        BrowserDownloadUrl = "https://github.com/doggy8088/carnac/releases/download/v2.6.1/Carnac-2.6.1-Setup.exe",
+                        Digest = "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+                    }
+                }
+            };
+
+            string downloadedPath = null;
+            var processStarted = false;
+            var shutdownCalled = false;
+
+            var installer = new UpdateInstaller(
+                @"C:\Program Files\Carnac\Carnac.exe",
+                4321,
+                () => shutdownCalled = true,
+                (url, dest) =>
+                {
+                    downloadedPath = dest;
+                    File.WriteAllBytes(dest, Encoding.UTF8.GetBytes("corrupted-download"));
+                },
+                psi => processStarted = true);
+
+            Assert.Throws<InvalidDataException>(() => installer.ExecuteUpgrade(InstallMethod.InnoSetup, Version261, release));
+            Assert.False(processStarted);
+            Assert.False(shutdownCalled);
+            Assert.False(File.Exists(downloadedPath));
+        }
+
+        [Fact]
+        public void portable_upgrade_downloads_zip_verifies_sha256_extracts_and_starts_copy_waiter()
+        {
+            byte[] zipBytes;
+            using (var ms = new MemoryStream())
+            {
+                using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, true))
+                {
+                    var entry = archive.CreateEntry("Carnac.exe");
+                    using (var writer = new StreamWriter(entry.Open()))
+                    {
+                        writer.Write("new-portable-exe");
+                    }
+                }
+                zipBytes = ms.ToArray();
+            }
+
+            var digest = "sha256:" + ComputeSha256Hex(zipBytes);
+            var release = new LatestRelease
+            {
+                TagName = "v2.6.1",
+                Assets = new List<ReleaseAsset>
+                {
+                    new ReleaseAsset
+                    {
+                        Name = "Carnac-2.6.1-portable.zip",
+                        BrowserDownloadUrl = "https://github.com/doggy8088/carnac/releases/download/v2.6.1/Carnac-2.6.1-portable.zip",
+                        Digest = digest
+                    }
+                }
+            };
+
+            string downloadedPath = null;
+            ProcessStartInfo startedPsi = null;
+            var shutdownCalled = false;
+
+            var installer = new UpdateInstaller(
+                @"D:\PortableApps\Carnac\Carnac.exe",
+                8765,
+                () => shutdownCalled = true,
+                (url, dest) =>
+                {
+                    downloadedPath = dest;
+                    File.WriteAllBytes(dest, zipBytes);
+                },
+                psi => startedPsi = psi);
+
+            try
+            {
+                installer.ExecuteUpgrade(InstallMethod.Portable, Version261, release);
+
+                Assert.True(shutdownCalled);
+                Assert.NotNull(startedPsi);
+                var script = DecodePowerShellScript(startedPsi);
+                Assert.Contains("Wait-Process -Id 8765", script);
+                Assert.Contains("Copy-Item -Path", script);
+                Assert.Contains(@"D:\PortableApps\Carnac", script);
+            }
+            finally
+            {
+                if (downloadedPath != null)
+                {
+                    var stagingDir = Path.GetDirectoryName(downloadedPath);
+                    if (Directory.Exists(stagingDir))
+                        Directory.Delete(stagingDir, true);
+                }
+            }
+        }
+
+        [Fact]
+        public void winget_and_chocolatey_upgrades_invoke_their_cli_commands()
+        {
+            ProcessStartInfo startedPsi = null;
+            var shutdownCalled = false;
+
+            var installer = new UpdateInstaller(
+                @"C:\Users\User\AppData\Local\Programs\Carnac\Carnac.exe",
+                1111,
+                () => shutdownCalled = true,
+                (url, dest) => { },
+                psi => startedPsi = psi);
+
+            installer.ExecuteUpgrade(InstallMethod.WinGet, Version261, null);
+            Assert.True(shutdownCalled);
+            Assert.False(startedPsi.UseShellExecute);
+            Assert.Contains("winget upgrade --id doggy8088.Carnac --exact", DecodePowerShellScript(startedPsi));
+
+            shutdownCalled = false;
+            installer.ExecuteUpgrade(InstallMethod.Chocolatey, Version261, null);
+            Assert.True(shutdownCalled);
+            Assert.True(startedPsi.UseShellExecute);
+            Assert.Equal("runas", startedPsi.Verb);
+            Assert.Contains("choco upgrade carnac -y", DecodePowerShellScript(startedPsi));
         }
     }
 }

@@ -8,7 +8,7 @@ $packageArgs = @{
   checksumType   = 'sha256'
   # Inno Setup silent install. The installer is per user (PrivilegesRequired=lowest),
   # so it lands in %LocalAppData%\Programs\Carnac for the account running Chocolatey.
-  silentArgs     = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /LOG=`"$env:TEMP\$env:ChocolateyPackageName.$env:ChocolateyPackageVersion.Install.log`""
+  silentArgs     = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /INSTALLSOURCE=chocolatey /LOG=`"$env:TEMP\$env:ChocolateyPackageName.$env:ChocolateyPackageVersion.Install.log`""
   validExitCodes = @(0)
   softwareName   = 'Carnac'
 }

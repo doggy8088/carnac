@@ -50,6 +50,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <!-- BuildOutputFacts names the WPF Carnac.App type, whose base class lives in these assemblies; the C# compiler
          of the Cake/CI build needs them referenced explicitly. -->
     <Reference Include="PresentationCore" />

@@ -806,5 +806,77 @@ namespace Carnac.Properties {
                 return ResourceManager.GetString("Preferences_Cancel", resourceCulture);
             }
         }
+
+        public static string TrayMenu_CheckForUpdates {
+            get {
+                return ResourceManager.GetString("TrayMenu_CheckForUpdates", resourceCulture);
+            }
+        }
+
+        public static string Preferences_CheckNow {
+            get {
+                return ResourceManager.GetString("Preferences_CheckNow", resourceCulture);
+            }
+        }
+
+        public static string About_CheckForUpdates {
+            get {
+                return ResourceManager.GetString("About_CheckForUpdates", resourceCulture);
+            }
+        }
+
+        public static string Update_Checking {
+            get {
+                return ResourceManager.GetString("Update_Checking", resourceCulture);
+            }
+        }
+
+        public static string Update_UpToDateTitle {
+            get {
+                return ResourceManager.GetString("Update_UpToDateTitle", resourceCulture);
+            }
+        }
+
+        public static string Update_UpToDateMessage {
+            get {
+                return ResourceManager.GetString("Update_UpToDateMessage", resourceCulture);
+            }
+        }
+
+        public static string Update_AvailableTitle {
+            get {
+                return ResourceManager.GetString("Update_AvailableTitle", resourceCulture);
+            }
+        }
+
+        public static string Update_AvailableMessage {
+            get {
+                return ResourceManager.GetString("Update_AvailableMessage", resourceCulture);
+            }
+        }
+
+        public static string Update_FailedTitle {
+            get {
+                return ResourceManager.GetString("Update_FailedTitle", resourceCulture);
+            }
+        }
+
+        public static string Update_FailedMessage {
+            get {
+                return ResourceManager.GetString("Update_FailedMessage", resourceCulture);
+            }
+        }
+
+        public static string Update_UpgradeFailedTitle {
+            get {
+                return ResourceManager.GetString("Update_UpgradeFailedTitle", resourceCulture);
+            }
+        }
+
+        public static string Update_UpgradeFailedMessage {
+            get {
+                return ResourceManager.GetString("Update_UpgradeFailedMessage", resourceCulture);
+            }
+        }
     }
 }

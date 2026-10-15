@@ -110,6 +110,26 @@ begin
   end;
 end;
 
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  InstallSource, SrcExeUpper, CmdTailUpper: String;
+begin
+  if CurStep = ssPostInstall then
+  begin
+    InstallSource := Lowercase(Trim(ExpandConstant('{param:INSTALLSOURCE|}')));
+    if (InstallSource <> 'chocolatey') and (InstallSource <> 'winget') and (InstallSource <> 'innosetup') then
+    begin
+      SrcExeUpper := Uppercase(ExpandConstant('{srcexe}'));
+      CmdTailUpper := Uppercase(GetCmdTail());
+      if (Pos('\WINGET\', SrcExeUpper) > 0) or (Pos('DESKTOPAPPINSTALLER', CmdTailUpper) > 0) or (Pos('WINGET-', CmdTailUpper) > 0) then
+        InstallSource := 'winget'
+      else
+        InstallSource := 'innosetup';
+    end;
+    RegWriteStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{DB5C24A2-1558-4272-8C3C-676D68A1E405}_is1', 'InstallSource', InstallSource);
+  end;
+end;
+
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 begin
   if CurUninstallStep = usUninstall then

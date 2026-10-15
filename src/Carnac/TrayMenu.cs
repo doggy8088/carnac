@@ -25,6 +25,7 @@ namespace Carnac
         readonly MenuItem settingsItem;
         readonly MenuItem pauseItem;
         readonly MenuItem silentItem;
+        readonly MenuItem checkForUpdatesItem;
         readonly MenuItem restartAsAdministratorItem;
         readonly MenuItem exitItem;
         bool disposed;
@@ -40,8 +41,11 @@ namespace Carnac
         /// <param name="restartAsAdministrator">
         /// Invoked by the "Restart as administrator" item. Pass null when Carnac already runs as administrator: the item is then left out.
         /// </param>
+        /// <param name="checkForUpdates">
+        /// Invoked by the "Check for updates..." item.
+        /// </param>
         public TrayMenu(IKeyDisplayState displayState, PopupSettings settings, Action openSettings, Action exit, Action<Action> invokeOnUiThread,
-            Action restartAsAdministrator = null)
+            Action restartAsAdministrator = null, Action checkForUpdates = null)
         {
             if (displayState == null)
                 throw new ArgumentNullException("displayState");
@@ -67,6 +71,12 @@ namespace Carnac
             exitItem = new MenuItem(Properties.Resources.ShellView_Exit, (sender, args) => exit());
 
             var items = new List<MenuItem> { settingsItem, pauseItem, silentItem, new MenuItem("-") };
+            if (checkForUpdates != null)
+            {
+                checkForUpdatesItem = new MenuItem(Properties.Resources.TrayMenu_CheckForUpdates, (sender, args) => checkForUpdates());
+                items.Add(checkForUpdatesItem);
+            }
+
             if (restartAsAdministrator != null)
             {
                 restartAsAdministratorItem = new MenuItem(Properties.Resources.TrayMenu_RestartAsAdministrator, (sender, args) => restartAsAdministrator());
@@ -125,6 +135,8 @@ namespace Carnac
 
             settingsItem.Text = Properties.Resources.TrayMenu_Settings;
             silentItem.Text = Properties.Resources.TrayMenu_SilentMode;
+            if (checkForUpdatesItem != null)
+                checkForUpdatesItem.Text = Properties.Resources.TrayMenu_CheckForUpdates;
             if (restartAsAdministratorItem != null)
                 restartAsAdministratorItem.Text = Properties.Resources.TrayMenu_RestartAsAdministrator;
             exitItem.Text = Properties.Resources.ShellView_Exit;

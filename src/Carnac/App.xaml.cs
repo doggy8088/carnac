@@ -101,19 +101,152 @@ namespace Carnac
             }
         }
 
-        // A pause after the start, so the check never competes with Carnac starting up; it then runs on a thread-pool thread.
-        // Only the small settings access goes back to the UI thread: the settings provider is not thread-safe.
-        void StartUpdateCheck()
+        InstallMethod installMethod = InstallMethod.InnoSetup;
+        int manualUpdateCheckRunning;
+
+        UpdateChecker CreateUpdateChecker()
         {
             var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-            var checker = new UpdateChecker(
-                new GitHubReleaseFeed("Carnac/" + currentVersion),
+            return new UpdateChecker(
+                ReleaseFeedFactory.Create(installMethod, "Carnac/" + currentVersion),
                 new MarshalledUpdateCheckHistory(new SettingsUpdateCheckHistory(settingsProvider), action => Dispatcher.Invoke(action)),
                 ReleaseVersion.FromVersion(currentVersion),
                 logger,
                 () => DateTime.UtcNow);
-            var runner = new UpdateCheckRunner(checker, ReleaseVersion.FromVersion(currentVersion), trayIcon, ShellOpen, logger);
+        }
+
+        // A pause after the start, so the check never competes with Carnac starting up; it then runs on a thread-pool thread.
+        // Only the small settings access goes back to the UI thread: the settings provider is not thread-safe.
+        void StartUpdateCheck()
+        {
+            var currentVersion = ReleaseVersion.FromVersion(Assembly.GetExecutingAssembly().GetName().Version);
+            var checker = CreateUpdateChecker();
+            var runner = new UpdateCheckRunner(
+                checker,
+                currentVersion,
+                trayIcon,
+                ShellOpen,
+                logger,
+                result => Dispatcher.BeginInvoke(new Action(() => ShowUpdateAvailablePrompt(result))));
             updateCheck = Observable.Timer(TimeSpan.FromSeconds(30)).Subscribe(x => runner.Run());
+        }
+
+        void CheckForUpdatesNow()
+        {
+            if (System.Threading.Interlocked.CompareExchange(ref manualUpdateCheckRunning, 1, 0) != 0)
+                return;
+
+            var checker = CreateUpdateChecker();
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    var result = checker.CheckForUpdate(ignoreInterval: true);
+                    Dispatcher.BeginInvoke(new Action(() => HandleManualUpdateCheckResult(result)));
+                }
+                finally
+                {
+                    System.Threading.Interlocked.Exchange(ref manualUpdateCheckRunning, 0);
+                }
+            });
+        }
+
+        void HandleManualUpdateCheckResult(UpdateCheckResult result)
+        {
+            var currentVersion = ReleaseVersion.FromVersion(Assembly.GetExecutingAssembly().GetName().Version);
+            var methodDisplay = InstallMethodDetector.FormatDisplayName(installMethod);
+
+            switch (result.Outcome)
+            {
+                case UpdateCheckOutcome.UpdateAvailable:
+                    ShowUpdateAvailablePrompt(result);
+                    break;
+                case UpdateCheckOutcome.UpToDate:
+                    MessageBox.Show(
+                        string.Format(Carnac.Properties.Resources.Update_UpToDateMessage, currentVersion, methodDisplay),
+                        Carnac.Properties.Resources.Update_UpToDateTitle,
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    break;
+                default:
+                    var openPage = MessageBox.Show(
+                        string.Format(Carnac.Properties.Resources.Update_FailedMessage, methodDisplay),
+                        Carnac.Properties.Resources.Update_FailedTitle,
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+                    if (openPage == MessageBoxResult.Yes)
+                        ShellOpen(UpdateNotice.ReleasesPageUrl);
+                    break;
+            }
+        }
+
+        void ShowUpdateAvailablePrompt(UpdateCheckResult result)
+        {
+            var currentVersion = ReleaseVersion.FromVersion(Assembly.GetExecutingAssembly().GetName().Version);
+            var methodDisplay = InstallMethodDetector.FormatDisplayName(installMethod);
+            var releasePageUrl = UpdateNotice.TrustedReleasePage(result.Release != null ? result.Release.HtmlUrl : null);
+
+            var choice = MessageBox.Show(
+                string.Format(Carnac.Properties.Resources.Update_AvailableMessage, currentVersion, result.LatestVersion, methodDisplay),
+                string.Format(Carnac.Properties.Resources.Update_AvailableTitle, result.LatestVersion),
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Information);
+
+            if (choice == MessageBoxResult.Yes)
+            {
+                StartUpgrade(result.LatestVersion, result.Release, releasePageUrl);
+            }
+            else if (choice == MessageBoxResult.No)
+            {
+                ShellOpen(releasePageUrl);
+            }
+        }
+
+        void StartUpgrade(ReleaseVersion latestVersion, LatestRelease release, string releasePageUrl)
+        {
+            string executablePath;
+            int processId;
+            try
+            {
+                using (var self = Process.GetCurrentProcess())
+                {
+                    processId = self.Id;
+                    executablePath = self.MainModule.FileName;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Warn("Could not determine Carnac executable path for upgrade", ex);
+                ShellOpen(releasePageUrl);
+                return;
+            }
+
+            var installer = new UpdateInstaller(
+                executablePath,
+                processId,
+                () => Dispatcher.BeginInvoke(new Action(() => Shutdown())));
+
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    installer.ExecuteUpgrade(installMethod, latestVersion, release);
+                }
+                catch (Exception ex)
+                {
+                    logger.Warn("Automatic upgrade failed", ex);
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        var openManual = MessageBox.Show(
+                            string.Format(Carnac.Properties.Resources.Update_UpgradeFailedMessage, ex.Message),
+                            Carnac.Properties.Resources.Update_UpgradeFailedTitle,
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Error);
+                        if (openManual == MessageBoxResult.Yes)
+                            ShellOpen(releasePageUrl);
+                    }));
+                }
+            });
         }
 
         // Applications that run as administrator hide their keys from a normal Carnac (Windows blocks the keyboard hook).
@@ -178,13 +311,14 @@ namespace Carnac
                 return;
             }
 
-            logger.Info(string.Format("Carnac {0} started ({1}-bit process on a {2}-bit system, CLR {3})",
+            installMethod = InstallMethodDetector.Detect();
+            logger.Info(string.Format("Carnac {0} started ({1}-bit process on a {2}-bit system, CLR {3}, install method: {4})",
                 Assembly.GetExecutingAssembly().GetName().Version, Environment.Is64BitProcess ? 64 : 32,
-                Environment.Is64BitOperatingSystem ? 64 : 32, Environment.Version));
+                Environment.Is64BitOperatingSystem ? 64 : 32, Environment.Version, installMethod));
 
             // Nothing to restart (and no menu item) when Carnac already runs as administrator.
             Action restartAsAdministrator = elevationChecker.IsCurrentProcessElevated ? null : (Action)RestartAsAdministrator;
-            trayIcon = new CarnacTrayIcon(displayState, settings, restartAsAdministrator);
+            trayIcon = new CarnacTrayIcon(displayState, settings, restartAsAdministrator, CheckForUpdatesNow);
             trayIcon.OpenPreferences += TrayIconOnOpenPreferences;
             logger.SetNotifier(trayIcon);
             if (restartAsAdministrator != null)
@@ -254,7 +388,7 @@ namespace Carnac
 
         void TrayIconOnOpenPreferences()
         {
-            var preferencesViewModel = new PreferencesViewModel(settingsProvider, screenManager, previewService);
+            var preferencesViewModel = new PreferencesViewModel(settingsProvider, screenManager, previewService, CheckForUpdatesNow);
             var preferencesView = new PreferencesView(preferencesViewModel);
             preferencesView.Show();
         }

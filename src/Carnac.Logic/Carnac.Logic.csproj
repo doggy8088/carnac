@@ -69,9 +69,12 @@
     <Reference Include="System.Reactive.Windows.Threading, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Reactive.Windows.Threading.3.1.1\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
     </Reference>
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
     <Reference Include="YamlDotNet">
       <HintPath>..\packages\YamlDotNet.5.0.0\lib\net45\YamlDotNet.dll</HintPath>
@@ -80,12 +83,15 @@
   <ItemGroup>
     <Compile Include="AdministratorRestart.cs" />
     <Compile Include="BoundedCache.cs" />
+    <Compile Include="ChocolateyReleaseFeed.cs" />
     <Compile Include="ConfiguredHotkeys.cs" />
     <Compile Include="ElevatedAppDetector.cs" />
     <Compile Include="Enums\KeyCategory.cs" />
     <Compile Include="ErrorNotifyingLogger.cs" />
     <Compile Include="FileLogger.cs" />
     <Compile Include="GitHubReleaseFeed.cs" />
+    <Compile Include="InstallMethod.cs" />
+    <Compile Include="InstallMethodDetector.cs" />
     <Compile Include="Enums\NotificationPlacement.cs" />
     <Compile Include="Enums\RepeatedKeyGrouping.cs" />
     <Compile Include="IConcurrencyService.cs" />
@@ -161,8 +167,10 @@
     <Compile Include="UiLanguages.cs" />
     <Compile Include="UpdateCheckRunner.cs" />
     <Compile Include="UpdateChecker.cs" />
+    <Compile Include="UpdateInstaller.cs" />
     <Compile Include="UpdateNotice.cs" />
     <Compile Include="Win32Methods.cs" />
+    <Compile Include="WinGetReleaseFeed.cs" />
     <Compile Include="WindowBoundsClamper.cs" />
     <Compile Include="Native\DetailedScreen.cs" />
     <Compile Include="Native\DisplayInfo.cs" />

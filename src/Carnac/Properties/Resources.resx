@@ -429,4 +429,49 @@
   <data name="Preferences_ClearHotkey" xml:space="preserve">
     <value>Clear</value>
   </data>
+  <data name="TrayMenu_CheckForUpdates" xml:space="preserve">
+    <value>Check for updates…</value>
+  </data>
+  <data name="Preferences_CheckNow" xml:space="preserve">
+    <value>Check Now</value>
+  </data>
+  <data name="About_CheckForUpdates" xml:space="preserve">
+    <value>Check for Updates</value>
+  </data>
+  <data name="Update_Checking" xml:space="preserve">
+    <value>Checking…</value>
+  </data>
+  <data name="Update_UpToDateTitle" xml:space="preserve">
+    <value>Carnac is up to date</value>
+  </data>
+  <data name="Update_UpToDateMessage" xml:space="preserve">
+    <value>You are running the latest version ({0}) via {1}.</value>
+  </data>
+  <data name="Update_AvailableTitle" xml:space="preserve">
+    <value>Carnac {0} is available</value>
+  </data>
+  <data name="Update_AvailableMessage" xml:space="preserve">
+    <value>A new version of Carnac is available!
+
+Current version: {0}
+Latest version: {1}
+Install method: {2}
+
+Would you like to upgrade now?
+(Yes = Upgrade now, No = Open release page, Cancel = Later)</value>
+  </data>
+  <data name="Update_FailedTitle" xml:space="preserve">
+    <value>Update check failed</value>
+  </data>
+  <data name="Update_FailedMessage" xml:space="preserve">
+    <value>Could not check for updates via {0}. Would you like to open the GitHub Releases page instead?</value>
+  </data>
+  <data name="Update_UpgradeFailedTitle" xml:space="preserve">
+    <value>Upgrade failed</value>
+  </data>
+  <data name="Update_UpgradeFailedMessage" xml:space="preserve">
+    <value>Could not complete the automatic upgrade: {0}
+
+Would you like to open the release page to download it manually?</value>
+  </data>
 </root>

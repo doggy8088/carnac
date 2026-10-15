@@ -75,14 +75,23 @@ namespace Carnac.Logic
         /// <summary>Blocks while the feed is asked, so call it from a background thread. Never throws.</summary>
         public UpdateCheckResult CheckForUpdate()
         {
+            return CheckForUpdate(false);
+        }
+
+        /// <summary>Blocks while the feed is asked, so call it from a background thread. Never throws.</summary>
+        public UpdateCheckResult CheckForUpdate(bool ignoreInterval)
+        {
             try
             {
                 var now = utcNow();
-                var last = history.LastCheckUtc;
+                if (!ignoreInterval)
+                {
+                    var last = history.LastCheckUtc;
 
-                // a last check "in the future" means the clock was set back: check again
-                if (last.HasValue && last.Value <= now && now - last.Value < CheckInterval)
-                    return new UpdateCheckResult(UpdateCheckOutcome.NotDue, null, null);
+                    // a last check "in the future" means the clock was set back: check again
+                    if (last.HasValue && last.Value <= now && now - last.Value < CheckInterval)
+                        return new UpdateCheckResult(UpdateCheckOutcome.NotDue, null, null);
+                }
 
                 // recorded before asking, so a failing lookup is not repeated at every start either
                 history.RecordCheck(now);
